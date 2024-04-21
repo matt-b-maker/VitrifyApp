@@ -1,0 +1,29 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Login</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-label>Email</ion-label>
+    <ion-input type="email" [value]="email" (input)="setEmail($event)"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-label>Password</ion-label>
+    <ion-input type="password" [value]="password" (input)="setPassword($event)"></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" (click)="login()">Login</ion-button>
+
+  <!-- <ion-button expand="block" (click)="register()">Register</ion-button>
+
+  <ion-button expand="block" (click)="forgotPassword()">Forgot Password</ion-button> -->
+
+  <!-- Stylish "Log in with Google" button -->
+  <ion-button expand="block" color="light" (click)="loginWithGoogle()">
+    <ion-icon name="logo-google" slot="start"></ion-icon>
+    Log in with Google
+  </ion-button>
+</ion-content>

@@ -1,10 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit, getPlatform } from '@angular/core';
+import { AuthService } from './Services/auth.service';
+import { Subscription } from 'rxjs';
+
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
 })
-export class AppComponent {
+
+export class AppComponent implements OnInit, OnDestroy{
+  constructor(public auth: AuthService) {}
+  isLoggedIn: boolean = false;
+  private subscription: Subscription | undefined;
   public appPages = [
     { title: 'Inbox', url: '/folder/inbox', icon: 'mail' },
     { title: 'Outbox', url: '/folder/outbox', icon: 'paper-plane' },
@@ -14,5 +21,21 @@ export class AppComponent {
     { title: 'Spam', url: '/folder/spam', icon: 'warning' },
   ];
   public labels = ['Family', 'Friends', 'Notes', 'Work', 'Travel', 'Reminders'];
-  constructor() {}
+
+
+  isLoginPage() {
+    return window.location.pathname === '/login';
+  }
+
+  ngOnInit() {
+    this.subscription = this.auth.user$.subscribe(user => {
+      this.isLoggedIn = !!user;
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+  }
 }
