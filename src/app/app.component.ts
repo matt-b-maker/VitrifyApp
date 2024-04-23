@@ -24,7 +24,7 @@ export class AppComponent implements OnInit, OnDestroy{
 
 
   isLoginPage() {
-    return window.location.pathname === '/login';
+    return window.location.pathname === '/login' || window.location.pathname === '/register';
   }
 
   ngOnInit() {

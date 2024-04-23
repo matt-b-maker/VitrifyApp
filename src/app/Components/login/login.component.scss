@@ -1,0 +1,79 @@
+.centered {
+  display: flex;
+  direction: row;
+  justify-content: center;
+}
+
+.large-font {
+  font-size: 24px;
+}
+
+.centered-text {
+  text-align: center;
+}
+
+.login-layout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh; /* Make the content fill the entire viewport height */
+}
+
+.lato-semibold-italic {
+  font-family: 'lato-italic';
+}
+
+.text-xl {
+  font-size: 48px;
+}
+
+.mt-30 {
+  margin-top: 30px;
+}
+
+.image-container {
+  height: 30%;
+  width: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: whitesmoke;
+  padding: 5px;
+}
+
+.image {
+  height: 90%;
+  width: auto;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  /* you need to match the shadow color to your background or image border for the desired effect*/
+  box-shadow: 0 0 8px 8px white inset;
+}
+
+.image-background {
+  position: absolute; /* Position the background image */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover; /* Cover the entire container */
+  background-position: center; /* Center the background image */
+  filter: blur(5px); /* Adjust the blur amount as needed */
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: auto;
+}
+
+.bordered {
+  border: 2px solid #ccc; /* Border style and color */
+  padding: 10px; /* Optional padding to add space around the content */
+  border-radius: 10px; /* Optional border radius */
+  margin: 10px; /* Optional margin to add space around the element */
+}

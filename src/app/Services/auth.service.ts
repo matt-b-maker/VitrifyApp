@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Auth, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, signInWithPopup, GoogleAuthProvider} from '@angular/fire/auth';
+import { Auth, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, signInWithPopup, GoogleAuthProvider} from '@angular/fire/auth';
 import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
@@ -9,7 +9,7 @@ export class AuthService {
   private userSubject: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   user$: Observable<User | null> = this.userSubject.asObservable();
 
-  user: User | null = null;
+  public user: User | null = null;
 
   constructor(private auth: Auth) {
     this.auth.onAuthStateChanged(user => {
@@ -42,5 +42,18 @@ export class AuthService {
 
   getUser(){
     return this.auth.currentUser;
+  }
+
+  updateUser(user: User){
+    this.userSubject.next(user);
+    this.user = user;
+  }
+
+  isLoggedIn(){
+    return this.user != null;
+  }
+
+  resetPassword(email: string){
+    return sendPasswordResetEmail(this.auth, email);
   }
 }

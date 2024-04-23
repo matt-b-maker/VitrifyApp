@@ -1,0 +1,25 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Register</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <ion-item>
+    <ion-input [required]="true" class="large-font centered-text" label="First Name" labelPlacement="stacked" type="text" [value]="firstName" (input)="setFirstName($event)"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input [required]="true" class="large-font centered-text" label="Last Name" labelPlacement="stacked" type="text" [value]="lastName" (input)="setLastName($event)"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input [required]="true" class="large-font centered-text" label="Email" labelPlacement="stacked" type="email" [value]="email" (input)="setEmail($event)"></ion-input>
+  </ion-item>
+
+  <ion-item>
+    <ion-input [required]="true" class="large-font centered-text" label="Password" labelPlacement="stacked" type="password" [value]="password" (input)="setPassword($event)"></ion-input>
+  </ion-item>
+
+  <ion-button expand="block" (click)="registerNewUser()">Register</ion-button>
+</ion-content>

@@ -35,3 +35,42 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import "@ionic/angular/css/palettes/dark.system.css";
+
+/* Define font faces */
+@font-face {
+  font-family: 'papyrus';
+  src: url('./assets/fonts/papyrus.ttf') format('truetype');
+  /* Include other font formats (e.g., woff, woff2) for better cross-browser support */
+}
+
+@font-face {
+  font-family: 'lato-medium';
+  src: url('./assets/fonts/Lato-Medium.ttf') format('truetype');
+  /* Include other font formats (e.g., woff, woff2) for better cross-browser support */
+}
+
+@font-face {
+  font-family: 'lato-bold';
+  src: url('./assets/fonts/Lato-Bold.ttf') format('truetype');
+  /* Include other font formats (e.g., woff, woff2) for better cross-browser support */
+}
+
+@font-face {
+  font-family: 'lato-italic';
+  src: url('./assets/fonts/Lato-SemiboldItalic.ttf') format('truetype');
+}
+
+/* Apply fonts to elements */
+body {
+  font-family: 'lato-medium', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'lato-bold', sans-serif;
+}
+
+ion-button, ion-title, ion-input, label {
+  font-family: 'lato-medium', sans-serif;
+}
+
+/* Customize other text elements as needed */

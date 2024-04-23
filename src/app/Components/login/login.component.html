@@ -3,27 +3,39 @@
     <ion-title>Login</ion-title>
   </ion-toolbar>
 </ion-header>
-
-<ion-content>
-  <ion-item>
-    <ion-label>Email</ion-label>
-    <ion-input type="email" [value]="email" (input)="setEmail($event)"></ion-input>
+<ion-content class="ion-align-items-center ion-justify-content-center ion-padding login-layout">
+  <ion-text class="centered text-xl mt-30 lato-semibold-italic">The Glaze Vault</ion-text>
+  <div class="image-container bordered">
+    <img [src]="chosenGlaze?.imageUrl" alt="Login Glaze" class="logo image">
+    <label class="ion-text-start" >{{chosenGlaze?.title}}, {{chosenGlaze?.creator}} {{chosenGlaze?.year}}</label>
+  </div>
+  <ion-item class="ion-margin" type="input">
+    <ion-input label="Email" labelPlacement="stacked" class="large-font ion-margin-start ion-margin-end centered-text" [value]="email" required="true" (input)="setEmail($event)"></ion-input>
   </ion-item>
 
-  <ion-item>
-    <ion-label>Password</ion-label>
-    <ion-input type="password" [value]="password" (input)="setPassword($event)"></ion-input>
+  <ion-item class="ion-margin">
+    <ion-input label="Password" labelPlacement="stacked" hideIcon class="large-font ion-margin-start ion-margin-end centered-text" type="password" [required]="true" [value]="password" (input)="setPassword($event)">
+      <!-- <ion-input-password-toggle slot="end"></ion-input-password-toggle> -->
+    </ion-input>
   </ion-item>
 
-  <ion-button expand="block" (click)="login()">Login</ion-button>
-
-  <!-- <ion-button expand="block" (click)="register()">Register</ion-button>
-
-  <ion-button expand="block" (click)="forgotPassword()">Forgot Password</ion-button> -->
-
-  <!-- Stylish "Log in with Google" button -->
-  <ion-button expand="block" color="light" (click)="loginWithGoogle()">
-    <ion-icon name="logo-google" slot="start"></ion-icon>
-    Log in with Google
-  </ion-button>
+  <ion-grid class="ion-margin-bottom">
+    <ion-row class="centered ion-margin">
+      <ion-button expand="block" size="large" (click)="login()">Login</ion-button>
+    </ion-row>
+    <ion-row class="centered ion-margin">
+      <ion-button expand="block" size="large" color="secondary"  (click)="loginWithGoogle()">
+        <ion-icon name="logo-google" slot="start"></ion-icon>
+        Log in with Google
+      </ion-button>
+    </ion-row>
+    <ion-row class="ion-align-items-end ion-justify-content-center">
+      <ion-col size="auto">
+        <ion-router-link class="ion-margin" routerLink="/register">Register</ion-router-link>
+      </ion-col>
+      <ion-col size="auto">
+        <ion-text class="ion-margin" (click)="resetPassword()">Forgot Password?</ion-text>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
 </ion-content>
