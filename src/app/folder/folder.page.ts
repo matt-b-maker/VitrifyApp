@@ -15,13 +15,15 @@ export class FolderPage implements OnInit {
   private activatedRoute = inject(ActivatedRoute);
   constructor(private authService: AuthService, private router: Router, private alertController: AlertController) {}
 
-  ngOnInit() {
-    if (this.authService.isLoggedIn()){
-      this.alertController.create({
+  async ngOnInit() {
+    let loggedIn = this.authService.isLoggedIn();
+    if (!loggedIn){
+      let alert = await this.alertController.create({
         header: "Nope",
         message: "You need to be logged in for this",
         buttons: ['OK']
       });
+      await alert.present();
       this.router.navigate(['/login']);
     }
     this.folder = this.activatedRoute.snapshot.paramMap.get('id') as string;

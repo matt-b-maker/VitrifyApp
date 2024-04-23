@@ -20,6 +20,24 @@
   height: 100vh; /* Make the content fill the entire viewport height */
 }
 
+.custom-modal {
+  --height: auto;
+  --width: auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90%;
+  max-height: 90%;
+  overflow: hidden;
+}
+
+.custom-modal ion-content {
+  height: var(--height);
+  width: var(--width);
+  max-height: calc(100vh - 100px); /* Adjust as needed */
+}
+
 .lato-semibold-italic {
   font-family: 'lato-italic';
 }

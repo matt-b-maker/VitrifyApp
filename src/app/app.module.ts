@@ -13,10 +13,11 @@ import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './Components/login/login.component';
 import { RegisterComponent } from './Components/register/register.component';
+import { BusyModalComponent } from './Components/busy-modal/busy-modal.component';
 const platform = Capacitor.getPlatform();
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent, RegisterComponent],
+  declarations: [AppComponent, LoginComponent, RegisterComponent, BusyModalComponent],
   imports: [BrowserModule,
             IonicModule.forRoot(),
             AppRoutingModule,

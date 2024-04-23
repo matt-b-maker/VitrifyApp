@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { IonicModule } from '@ionic/angular';
+import { IonicModule, LoadingController, ModalController } from '@ionic/angular';
 import { AuthService } from 'src/app/Services/auth.service';
 import { OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { User } from 'firebase/auth';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { GlazeLogoGetterService } from 'src/app/Services/glaze-logo-getter.service';
+import { BusyModalComponent } from '../busy-modal/busy-modal.component';
 
 interface Glaze {
   imageUrl: string;
@@ -26,7 +27,13 @@ export class LoginComponent implements OnInit{
   user: User | null = null;
   chosenGlaze: Glaze | null = null;
 
-  constructor(private authService: AuthService, private router: Router, private alertController: AlertController, private firestore: FirestoreService, private glazeGetter: GlazeLogoGetterService) {}
+  constructor(private authService: AuthService,
+    private router: Router,
+    private alertController: AlertController,
+    private firestore: FirestoreService,
+    private glazeGetter: GlazeLogoGetterService,
+    private loadingCtrl: LoadingController)
+    {}
 
   ngOnInit(): void {
     //get random glaze from glazeGetter service
@@ -34,27 +41,38 @@ export class LoginComponent implements OnInit{
   }
 
   async login() {
+
+    const loading = await this.loadingCtrl.create({
+      message: 'Logging in...',
+      spinner: 'bubbles',
+      translucent: true,
+    });
+
+    loading.present();
+
     try {
       const userCredential = await this.authService.login(this.email, this.password);
       if (userCredential) {
         if (userCredential.user.displayName == null) {
-          await this.firestore.getUser('users', userCredential.user.uid).then((user: User) => {
-            console.log(user);
+          await this.firestore.getUser('users', userCredential.user.uid).then((user: any) => {
+            user.displayName = user.firstName + ' ' + user.lastName;
             this.authService.updateUser(user);
-            console.log(this.authService.user);
           });
         }
 
-        await this.firestore.getCollection('users', undefined).then((collection: any) => {console.log(collection)});
-
         await this.firestore.upsert('users', userCredential.user.uid, { email: this.email, lastLogin: new Date(), displayName: userCredential.user.displayName});
+
+        loading.dismiss();
         // Redirect or navigate to the next page after successful login
         this.router.navigate(['/folder/inbox']);
       }
     } catch (error) {
       console.error('Error logging in:', error);
+      loading.dismiss();
       this.presentLoginErrorAlert("Error", 'Invalid email or password. Please try again or register for a new account below.');
     }
+
+
   }
 
   async logOut() {
