@@ -10,7 +10,7 @@ import { App as CapacitorApp } from '@capacitor/app';
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss', '../login/login.component.scss'],
 })
-export class RegisterComponent implements OnInit{
+export class RegisterComponent {
 
   firstName: string = '';
   lastName: string = '';
@@ -18,16 +18,6 @@ export class RegisterComponent implements OnInit{
   password: string = '';
 
   constructor(private auth: AuthService, private firestoreService: FirestoreService, private router: Router, private alertController: AlertController) {}
-
-  ngOnInit() {
-    CapacitorApp.addListener('backButton', ({canGoBack}) => {
-      if(!canGoBack){
-        CapacitorApp.exitApp();
-      } else {
-        window.history.back();
-      }
-    });
-  }
 
   async registerNewUser() {
     if (this.email == '' || this.password == '' || this.firstName == '' || this.lastName == '') {

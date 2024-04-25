@@ -1,5 +1,7 @@
 {
   "name": "The Glaze Vault",
-  "integrations": {},
+  "integrations": {
+    "cordova": {}
+  },
   "type": "angular"
 }

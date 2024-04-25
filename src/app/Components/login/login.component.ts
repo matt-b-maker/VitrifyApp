@@ -41,6 +41,10 @@ export class LoginComponent implements OnInit{
   }
 
   async login() {
+    if (!this.email || !this.password) {
+      this.presentLoginErrorAlert("Error", 'Please enter your email and password to log in.');
+      return;
+    }
 
     const loading = await this.loadingCtrl.create({
       message: 'Logging in...',
@@ -87,12 +91,21 @@ export class LoginComponent implements OnInit{
   }
 
   async loginWithGoogle() {
+
     try {
       const userCredential = await this.authService.loginWithGoogle();
       if (userCredential) {
+        const loading = await this.loadingCtrl.create({
+          message: 'Logging in...',
+          spinner: 'bubbles',
+          translucent: true,
+        });
+
+        loading.present();
         this.authService.updateUser(userCredential.user);
         await this.firestore.upsert('users', userCredential.user.uid, { email: userCredential.user.email, lastLogin: new Date(), displayName: userCredential.user.displayName});
         // Redirect or navigate to the next page after successful login
+        loading.dismiss();
         this.router.navigate(['/folder/inbox']);
       }
     } catch (error) {

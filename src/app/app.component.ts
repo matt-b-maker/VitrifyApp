@@ -3,7 +3,8 @@ import { AuthService } from './Services/auth.service';
 import { Subscription } from 'rxjs';
 import { User } from 'firebase/auth';
 import { Router } from '@angular/router';
-import { AlertController } from '@ionic/angular';
+import { AlertController, Platform } from '@ionic/angular';
+import { App as CapacitorApp } from '@capacitor/app';
 
 @Component({
   selector: 'app-root',
@@ -12,7 +13,10 @@ import { AlertController } from '@ionic/angular';
 })
 
 export class AppComponent implements OnInit, OnDestroy{
-  constructor(public auth: AuthService, private router: Router, private alertController: AlertController) {}
+  constructor(public auth: AuthService, private router: Router, private alertController: AlertController, private platform: Platform
+  ) {
+    this.initializeApp();
+  }
   isLoggedIn: boolean = false;
   user : User | null = null;
   private subscription: Subscription | undefined;
@@ -22,6 +26,20 @@ export class AppComponent implements OnInit, OnDestroy{
     { title: 'Profile', url: '/profile', icon: 'person' }
   ];
   public labels = ['Family', 'Friends'];
+
+  initializeApp() {
+    this.platform.ready().then(() => {
+      CapacitorApp.addListener('backButton', ({canGoBack}) => {
+        if(!canGoBack){
+          CapacitorApp.exitApp();
+        } else {
+          window.history.back();
+        }
+      });
+    });
+  }
+
+
 
   isLoginPage() {
     return window.location.pathname === '/login' || window.location.pathname === '/register';
