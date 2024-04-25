@@ -1,0 +1,13 @@
+<app-side-menu-header [title]="title + '\'s Profile Page'"></app-side-menu-header>
+
+<ion-content [fullscreen]="true">
+  <ion-grid class="ion-justify-content-center">
+    <ion-row>
+      <ion-button (click)="askGemini()">Get Suggestion</ion-button>
+    </ion-row>
+    <ion-row *ngFor="let line of glazeRecipe">
+      <ion-text>{{line}}</ion-text>
+    </ion-row>
+  </ion-grid>>
+</ion-content>
+

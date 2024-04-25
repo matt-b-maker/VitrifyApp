@@ -10,7 +10,7 @@ import { AlertController } from '@ionic/angular';
   styleUrls: ['./folder.page.scss'],
 })
 export class FolderPage implements OnInit {
-  public user: User | null = null;
+  user: User | null = null;
   public folder!: string;
   private activatedRoute = inject(ActivatedRoute);
   constructor(private authService: AuthService, private router: Router, private alertController: AlertController) {}
@@ -68,14 +68,12 @@ export class FolderPage implements OnInit {
     // Wait for the user's response
     const role = await confirm.onDidDismiss();
 
-    console.log(role)
     // Check the user's response
     if (role.data === 'Yup') {
       await this.authService.logout();
       // Redirect or navigate to the next page after successful logout
       this.router.navigate(['/login']);
     } else {
-      console.log('User cancelled logout.');
     }
   }
 }

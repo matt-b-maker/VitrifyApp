@@ -14,10 +14,12 @@ import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './Components/login/login.component';
 import { RegisterComponent } from './Components/register/register.component';
 import { BusyModalComponent } from './Components/busy-modal/busy-modal.component';
+import { IngredientComponent } from './Components/ingredient/ingredient.component';
+
 const platform = Capacitor.getPlatform();
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent, RegisterComponent, BusyModalComponent],
+  declarations: [AppComponent, LoginComponent, RegisterComponent, BusyModalComponent, IngredientComponent],
   imports: [BrowserModule,
             IonicModule.forRoot(),
             AppRoutingModule,

@@ -21,7 +21,6 @@ export class RegisterComponent {
   async registerNewUser() {
     try {
       const userCredential = await this.auth.register(this.email, this.password);
-      console.log(userCredential.user);
       if (userCredential) {
         await this.firestoreService.upsert('users', userCredential.user.uid, {uid: userCredential.user.uid, email: this.email, firstName: this.firstName, lastName: this.lastName, lastLogin: new Date(), displayName: this.firstName + " " + this.lastName});
         this.router.navigate(['/login']);

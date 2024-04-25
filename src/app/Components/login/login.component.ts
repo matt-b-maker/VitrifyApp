@@ -90,6 +90,7 @@ export class LoginComponent implements OnInit{
     try {
       const userCredential = await this.authService.loginWithGoogle();
       if (userCredential) {
+        this.authService.updateUser(userCredential.user);
         await this.firestore.upsert('users', userCredential.user.uid, { email: userCredential.user.email, lastLogin: new Date(), displayName: userCredential.user.displayName});
         // Redirect or navigate to the next page after successful login
         this.router.navigate(['/folder/inbox']);
@@ -107,7 +108,6 @@ export class LoginComponent implements OnInit{
     }
     let emailExists: boolean = false;
     await this.firestore.getCollection('users', undefined).then((collection: any) => {
-      console.log(collection);
       collection.forEach((user: User) => {
         if (user.email == this.email) {
           emailExists = true;

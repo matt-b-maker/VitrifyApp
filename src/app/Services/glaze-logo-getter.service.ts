@@ -12,7 +12,7 @@ interface glaze {
 })
 export class GlazeLogoGetterService {
   glazes: glaze[] = [];
-  chosenNumber: number | undefined;
+  chosenNumber: number | undefined = 0;
   constructor() {
     this.glazes = [
       {

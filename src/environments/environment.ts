@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  geminiApiKey: 'AIzaSyCuh0O1qPMB5OURAinioSf2Rv0U0rBNKd4',
   firebaseAndroidConfig: {
     apiKey: "AIzaSyCHQxCe516Xg8F3ruuqhh1JEuzcO6AZ2-E",
     authDomain: "glazevault.firebaseapp.com",
