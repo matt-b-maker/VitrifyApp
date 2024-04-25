@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { LoginComponent } from './Components/login/login.component';
 import { RegisterComponent } from './Components/register/register.component';
+import { AuthGuard } from './Services/auth.guard';
 
 const routes: Routes = [
   {
@@ -12,28 +13,34 @@ const routes: Routes = [
   {
     path: 'folder/:id',
     loadChildren: () => import('./folder/folder.module').then( m => m.FolderPageModule),
+    canActivate: [AuthGuard]
   },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   {
     path: 'recipe',
-    loadChildren: () => import('./Pages/recipe/recipe.module').then( m => m.RecipePageModule)
+    loadChildren: () => import('./Pages/recipe/recipe.module').then( m => m.RecipePageModule),
+    canActivate: [AuthGuard]
   },
   {
     path: 'profile',
-    loadChildren: () => import('./Pages/profile/profile.module').then( m => m.ProfilePageModule)
+    loadChildren: () => import('./Pages/profile/profile.module').then( m => m.ProfilePageModule),
+    canActivate: [AuthGuard]
   },
   {
     path: 'user-recipes',
     children: [
       {
         path: '',
-        loadChildren: () => import('./Pages/user-recipes/user-recipes.module').then( m => m.UserRecipesPageModule)
+        loadChildren: () => import('./Pages/user-recipes/user-recipes.module').then( m => m.UserRecipesPageModule),
+        canActivate: [AuthGuard]
       },
       {
         path: ':recipeId',
-        loadChildren: () => import('./Pages/user-recipes/user-recipe-detail/user-recipe-detail.module').then( m => m.UserRecipeDetailPageModule)
-      }
+        loadChildren: () => import('./Pages/user-recipes/user-recipe-detail/user-recipe-detail.module').then( m => m.UserRecipeDetailPageModule),
+        canActivate: [AuthGuard]
+      },
+
     ]
   },
   {
@@ -41,11 +48,13 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        loadChildren: () => import('./Pages/community-recipes/community-recipes.module').then( m => m.CommunityRecipesPageModule)
+        loadChildren: () => import('./Pages/community-recipes/community-recipes.module').then( m => m.CommunityRecipesPageModule),
+        canActivate: [AuthGuard]
       },
       {
         path: ':recipeId',
-        loadChildren: () => import('./Pages/community-recipes/community-recipe-detail/community-recipe-detail.module').then( m => m.CommunityRecipeDetailPageModule)
+        loadChildren: () => import('./Pages/community-recipes/community-recipe-detail/community-recipe-detail.module').then( m => m.CommunityRecipeDetailPageModule),
+        canActivate: [AuthGuard]
       }
     ]
   },
@@ -54,11 +63,13 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        loadChildren: () => import('./Pages/user-firing-schedules/user-firing-schedules.module').then( m => m.UserFiringSchedulesPageModule)
+        loadChildren: () => import('./Pages/user-firing-schedules/user-firing-schedules.module').then( m => m.UserFiringSchedulesPageModule),
+        canActivate: [AuthGuard]
       },
       {
         path: ':firingScheduleId',
-        loadChildren: () => import('./Pages/user-firing-schedules/user-firing-schedule-detail/user-firing-schedule-detail.module').then( m => m.UserFiringScheduleDetailPageModule)
+        loadChildren: () => import('./Pages/user-firing-schedules/user-firing-schedule-detail/user-firing-schedule-detail.module').then( m => m.UserFiringScheduleDetailPageModule),
+        canActivate: [AuthGuard]
       }
     ]
   },
@@ -67,11 +78,13 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        loadChildren: () => import('./Pages/community-firing-schedules/community-firing-schedules.module').then( m => m.CommunityFiringSchedulesPageModule)
+        loadChildren: () => import('./Pages/community-firing-schedules/community-firing-schedules.module').then( m => m.CommunityFiringSchedulesPageModule),
+        canActivate: [AuthGuard]
       },
       {
         path: ':firingScheduleId',
-        loadChildren: () => import('./Pages/community-firing-schedules/community-firing-schedule-detail/community-firing-schedule-detail.module').then( m => m.CommunityFiringScheduleDetailPageModule)
+        loadChildren: () => import('./Pages/community-firing-schedules/community-firing-schedule-detail/community-firing-schedule-detail.module').then( m => m.CommunityFiringScheduleDetailPageModule),
+        canActivate: [AuthGuard]
       }
     ]
   },

@@ -3,30 +3,46 @@ import { Router } from '@angular/router';
 import { AlertController } from '@ionic/angular';
 import { AuthService } from 'src/app/Services/auth.service';
 import { FirestoreService } from 'src/app/Services/firestore.service';
+import { App as CapacitorApp } from '@capacitor/app';
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss', '../login/login.component.scss'],
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit{
 
   firstName: string = '';
   lastName: string = '';
   email: string = '';
   password: string = '';
 
-  constructor(private auth: AuthService, private firestoreService: FirestoreService, private router: Router, private alertController: AlertController) { }
+  constructor(private auth: AuthService, private firestoreService: FirestoreService, private router: Router, private alertController: AlertController) {}
+
+  ngOnInit() {
+    CapacitorApp.addListener('backButton', ({canGoBack}) => {
+      if(!canGoBack){
+        CapacitorApp.exitApp();
+      } else {
+        window.history.back();
+      }
+    });
+  }
 
   async registerNewUser() {
+    if (this.email == '' || this.password == '' || this.firstName == '' || this.lastName == '') {
+      this.presentRegisterPageAlert("Error", "Please fill in all the fields.");
+      return;
+    }
     try {
       const userCredential = await this.auth.register(this.email, this.password);
       if (userCredential) {
         await this.firestoreService.upsert('users', userCredential.user.uid, {uid: userCredential.user.uid, email: this.email, firstName: this.firstName, lastName: this.lastName, lastLogin: new Date(), displayName: this.firstName + " " + this.lastName});
+        this.presentRegisterPageAlert("Success", "User registered successfully. Feel free to log in now. :D");
         this.router.navigate(['/login']);
       }
     } catch (error: any) {
-      this.presentRegisterErrorAlert("Error", error.message);
+      this.presentRegisterPageAlert("Error", error.message);
     }
   }
 
@@ -46,7 +62,7 @@ export class RegisterComponent {
     this.lastName = event.target.value;
   }
 
-  async presentRegisterErrorAlert(header: string, message: string) {
+  async presentRegisterPageAlert(header: string, message: string) {
     const alert = await this.alertController.create({
       header: header,
       message: message,

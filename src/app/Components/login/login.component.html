@@ -10,31 +10,31 @@
     <label class="ion-text-start" >{{chosenGlaze?.title}}, {{chosenGlaze?.creator}} {{chosenGlaze?.year}}</label>
   </div>
   <ion-item class="ion-margin" type="input">
-    <ion-input label="Email" labelPlacement="stacked" class="large-font ion-margin-start ion-margin-end centered-text" [value]="email" required="true" (input)="setEmail($event)"></ion-input>
+    <ion-input label="Email" labelPlacement="stacked" class="medium-font ion-margin-start ion-margin-end centered-text" [value]="email" type="email" required="true" (input)="setEmail($event)"></ion-input>
   </ion-item>
 
   <ion-item class="ion-margin">
-    <ion-input label="Password" labelPlacement="stacked" hideIcon class="large-font ion-margin-start ion-margin-end centered-text" type="password" [required]="true" [value]="password" (input)="setPassword($event)">
-      <!-- <ion-input-password-toggle slot="end"></ion-input-password-toggle> -->
+    <ion-input label="Password" labelPlacement="stacked" hideIcon class="medium-font ion-margin-start ion-margin-end centered-text" type="password" [required]="true" [value]="password" (input)="setPassword($event)">
+      <ion-input-password-toggle slot="end"></ion-input-password-toggle>
     </ion-input>
   </ion-item>
 
   <ion-grid class="ion-margin-bottom">
     <ion-row class="centered ion-margin">
-      <ion-button id="loginbutton" expand="block" size="large" (click)="login()">Log In</ion-button>
+      <ion-button id="loginbutton" expand="block" size="medium" (click)="login()">Log In</ion-button>
     </ion-row>
     <ion-row class="centered ion-margin">
-      <ion-button expand="block" size="large" color="secondary"  (click)="loginWithGoogle()">
+      <ion-button expand="block" size="medium" color="secondary"  (click)="loginWithGoogle()">
         <ion-icon name="logo-google" slot="start"></ion-icon>
         Log in with Google
       </ion-button>
     </ion-row>
-    <ion-row class="ion-align-items-end ion-justify-content-center">
+    <ion-row class="ion-justify-content-center">
       <ion-col size="auto">
-        <ion-router-link class="ion-margin" routerLink="/register">Register</ion-router-link>
+        <ion-button class="" fill="clear" routerLink="/register">Register</ion-button>
       </ion-col>
       <ion-col size="auto">
-        <ion-text class="ion-margin" (click)="resetPassword()">Forgot Password?</ion-text>
+        <ion-button class="" fill="clear" (click)="resetPassword()">Forgot Password?</ion-button>
       </ion-col>
     </ion-row>
   </ion-grid>
