@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "478684273334",
+    "project_id": "glazevault",
+    "storage_bucket": "glazevault.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:478684273334:android:62b1ff65467d65537ba417",
+        "android_client_info": {
+          "package_name": "com.sorminsshack.glazevaultapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "478684273334-ldkfvm2garts0vdvrcebk77b66ooa1u4.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sorminsshack.glazevaultapp",
+            "certificate_hash": "70fca8cedd7cdf43df478136ce4e54b9df802154"
+          }
+        },
+        {
+          "client_id": "478684273334-cupehva2rmu8ce5h0ibti3fmrjgr659j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHQxCe516Xg8F3ruuqhh1JEuzcO6AZ2-E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "478684273334-cupehva2rmu8ce5h0ibti3fmrjgr659j.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "478684273334-fue2g42o7fcqd657uvjoi9v3rnipapja.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sorminsshack.glazevaultapp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
