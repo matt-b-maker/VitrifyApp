@@ -4,9 +4,9 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { RecipePageRoutingModule } from './recipe-routing.module';
+import { RecipeBuilderPageRoutingModule } from './recipe-builder-routing.module';
 
-import { RecipePage } from './recipe.page';
+import { RecipeBuilderPage } from './recipe-builder.page';
 import { SideMenuHeaderComponent } from 'src/app/Components/side-menu-header/side-menu-header.component';
 import { IngredientComponent } from 'src/app/Components/ingredient/ingredient.component';
 
@@ -15,10 +15,10 @@ import { IngredientComponent } from 'src/app/Components/ingredient/ingredient.co
     CommonModule,
     FormsModule,
     IonicModule,
-    RecipePageRoutingModule,
+    RecipeBuilderPageRoutingModule,
     SideMenuHeaderComponent,
     IngredientComponent
   ],
-  declarations: [RecipePage]
+  declarations: [RecipeBuilderPage],
 })
-export class RecipePageModule {}
+export class RecipeBuilderPageModule {}

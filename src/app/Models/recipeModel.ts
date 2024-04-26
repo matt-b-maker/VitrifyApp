@@ -11,6 +11,7 @@ export class Recipe {
   fluxes: Ingredient[] = [];
   stabilizers: Ingredient[] = [];
   colorants: Ingredient[] = [];
+  revision: number = 0;
 
   constructor(id: string, name: string, description: string, creator: string, cone: number, Silicas: Ingredient[], Fluxes: Ingredient[], Stabilizers: Ingredient[], Colorants: Ingredient[]) {
     this.id = id;

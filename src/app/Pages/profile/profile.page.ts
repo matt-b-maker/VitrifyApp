@@ -27,7 +27,6 @@ export class ProfilePage implements OnInit{
     loading.present();
     const rawRecipe = await this.gemini.runChat("Give me a glaze recipe for a cone 6 turqouise glaze in a list format, and keep it brief. like 1,2,3,4,5... no asterisks, but include notes if you think they are necessary.");
     this.glazeRecipe = rawRecipe.split(/\r?\n/);
-    console.log(rawRecipe);
     loading.dismiss();
   }
 

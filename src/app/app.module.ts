@@ -21,7 +21,7 @@ import { GooglePlus } from '@ionic-native/google-plus/ngx';
 const platform = Capacitor.getPlatform();
 
 @NgModule({
-  declarations: [AppComponent, LoginComponent, RegisterComponent, BusyModalComponent, IngredientComponent],
+  declarations: [AppComponent, LoginComponent, RegisterComponent, BusyModalComponent],
   imports: [BrowserModule,
             IonicModule.forRoot(),
             AppRoutingModule,

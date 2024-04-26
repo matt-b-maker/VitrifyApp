@@ -8,6 +8,15 @@ import { SideMenuHeaderComponent } from 'src/app/Components/side-menu-header/sid
 })
 export class RecipePage  {
 
-  title: string = "Recipe Page, FUCK!!!";
+  name: string = "";
+  cone: number = 0;
   constructor() { }
+
+  setName(event: any) {
+    this.name = event.target.value;
+  }
+
+  setCone(event: any) {
+    this.cone = event.target.value;
+  }
 }

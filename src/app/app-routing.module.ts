@@ -88,6 +88,11 @@ const routes: Routes = [
       }
     ]
   },
+  {
+    path: 'recipe-builder',
+    loadChildren: () => import('./Pages/recipe-builder/recipe-builder.module').then( m => m.RecipeBuilderPageModule),
+    canActivate: [AuthGuard]
+  },
 ];
 
 @NgModule({

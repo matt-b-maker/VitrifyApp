@@ -1,13 +1,13 @@
 export class Ingredient {
     name: string;
-    amount: number;
-    unit: string;
+    type: string;
+    quantity: number;
     percentage: number;
 
-    constructor(name: string, amount: number, unit: string, percentage: number) {
+    constructor(name: string, type: string, quantity: number, percentage: number) {
         this.name = name;
-        this.amount = amount;
-        this.unit = unit;
+        this.type = type;
+        this.quantity = quantity;
         this.percentage = percentage;
     }
 }

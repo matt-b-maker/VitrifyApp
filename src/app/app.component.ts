@@ -23,7 +23,8 @@ export class AppComponent implements OnInit, OnDestroy{
   public appPages = [
     { title: 'Home', url: '/folder/inbox', icon: 'mail' },
     { title: 'Glaze Recipes', url: '/recipe', icon: 'beaker' },
-    { title: 'Profile', url: '/profile', icon: 'person' }
+    { title: 'Profile', url: '/profile', icon: 'person' },
+    { title: 'Recipe builder', url: '/recipe-builder', icon: 'log-out' }
   ];
   public labels = ['Family', 'Friends'];
 
