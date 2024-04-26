@@ -36,6 +36,7 @@
     "@ionic/angular": "^8.0.0",
     "angularfire2": "^5.4.2",
     "firebase": "^10.11.1",
+    "ionic-selectable": "^5.0.2",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",

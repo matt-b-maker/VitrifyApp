@@ -4,3 +4,48 @@
   align-items: center;
   height: 100vh;
 }
+
+.w-auto {
+  width: auto;
+}
+
+.w-full {
+  width: 100%;
+
+}
+
+.ionic-selectable-inner {
+  width: auto;
+}
+
+.ionic-selectable-value-item{
+  display: flex;
+  justify-content: space-between;
+  width: auto !important;
+}
+
+.red-border {
+  border: 1px solid red;
+}
+
+.black-border {
+  border: 1px solid black;
+}
+
+.item-outline {
+  border: 1px solid black;  /* Replace with your desired color */
+  border-radius: 3px;
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.mr-auto {
+  margin-right: auto;
+}
+
+.mx-auto {
+  margin-left: auto;
+  margin-right: auto;
+}

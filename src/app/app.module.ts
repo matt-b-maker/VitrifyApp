@@ -7,7 +7,7 @@ import { getFirestore, provideFirestore } from '@angular/fire/firestore';
 import { environment } from '../environments/environment';
 import { Capacitor } from '@capacitor/core';
 
-import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
+import { IonSelect, IonicModule, IonicRouteStrategy } from '@ionic/angular';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -17,6 +17,7 @@ import { BusyModalComponent } from './Components/busy-modal/busy-modal.component
 import { IngredientComponent } from './Components/ingredient/ingredient.component';
 import { AngularFireModule } from '@angular/fire/compat';
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
+import { IonicSelectableComponent } from 'ionic-selectable';
 
 const platform = Capacitor.getPlatform();
 
@@ -26,6 +27,7 @@ const platform = Capacitor.getPlatform();
             IonicModule.forRoot(),
             AppRoutingModule,
             AngularFireModule.initializeApp(determineFirebaseConfig(platform)),
+            IonicSelectableComponent,
             provideFirebaseApp(() => {
               switch (platform) {
                 case 'android':

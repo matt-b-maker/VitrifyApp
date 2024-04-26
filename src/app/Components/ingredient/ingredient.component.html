@@ -1,12 +1,14 @@
-<ion-grid>
-  <ion-row>
-    <ion-col size="5">
-      <ion-select label="Name" labelPlacement="stacked">
-        <ion-select-option *ngFor="let option of optionsList" [value]="option">{{option}}</ion-select-option>
-      </ion-select>
-    </ion-col>
-    <ion-col size="5">
-      <ion-input label="%" type="number" maxlength="3" labelPlacement="fixed" [value]="percentage" (input)="setPercentage($event)"></ion-input>
-    </ion-col>
-  </ion-row>
-</ion-grid>
+<ion-row>
+  <ion-col size="8">
+    <ion-item class="item-outline">
+      <ionic-selectable [items]="optionsList" [ariaSelected]="placeholder" [canSearch]="true" (onChange)="setName($event)"></ionic-selectable>
+    </ion-item>
+  </ion-col>
+  <ion-col size="3">
+    <ion-badge *ngIf="badgeShowing"></ion-badge>
+    <ion-input class="ion-text-center text-medium" label="%" labelPlacement="stacked" fill="outline" type="number" [value]="percentage" (input)="setPercentage($event)" maxlength="3"></ion-input>
+  </ion-col>
+  <ion-col size="1" class="ion-align-items-center">
+    <ion-icon name="trash" (click)="removeIngredient()"></ion-icon>
+  </ion-col>
+</ion-row>

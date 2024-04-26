@@ -41,12 +41,6 @@ export class AuthService {
     if (this.platform.is('cordova')) {
       return await this.nativeGoogleLogin();
     } else {
-      const alert = await this.alertController.create({
-        header: 'Platform is...',
-        message: 'Web',
-        buttons: ['OK']
-      });
-      await alert.present();
       return await this.webGoogleLogin();
     }
   }

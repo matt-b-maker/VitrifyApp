@@ -25,6 +25,7 @@
 @import "@ionic/angular/css/text-transformation.css";
 @import "@ionic/angular/css/flex-utils.css";
 
+
 /**
  * Ionic Dark Mode
  * -----------------------------------------------------
@@ -81,6 +82,15 @@ h1, h2, h3, h4, h5, h6 {
 
 ion-button, ion-title, ion-input, label {
   font-family: 'roboto-reg', sans-serif;
+}
+
+ion-input {
+  fill: "outline";
+}
+
+.text-medium {
+  font-family: 'lato-medium', sans-serif;
+  font-size: medium;
 }
 
 /* Customize other text elements as needed */
