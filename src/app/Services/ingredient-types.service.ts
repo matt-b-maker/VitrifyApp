@@ -5,7 +5,8 @@ import { Injectable } from '@angular/core';
 })
 export class IngredientTypesService {
 
-  silicaSources: string[] = [
+  silicaMaterials: string[] = [
+    "Silica",
     "Quartz",
     "Flint",
     "Silica Sand",
@@ -64,7 +65,7 @@ export class IngredientTypesService {
     "Copper Oxide (in reduction firings) **"
   ];
 
-  stabilizers: string[] = [
+  stabilizerMaterials: string[] = [
     "Alumina",
     "Zirconium Oxide",
     "Magnesium Carbonate",
@@ -89,7 +90,7 @@ export class IngredientTypesService {
     "Selenium Dioxide"
   ];
 
-  colorants: string[] = [
+  colorantMaterials: string[] = [
     "Iron Oxide (Red, Yellow, Brown)",
     "Copper Oxide (Green, Blue, Red)",
     "Cobalt Oxide (Blue)",

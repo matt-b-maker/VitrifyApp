@@ -1,14 +1,17 @@
-<ion-row>
-  <ion-col size="8">
-    <ion-item class="item-outline">
-      <ionic-selectable [items]="optionsList" [ariaSelected]="placeholder" [canSearch]="true" (onChange)="setName($event)"></ionic-selectable>
+<ion-row class>
+  <ion-col size="8" class="w-100 vertical-align">
+    <ion-item class="item-outline d-flex w-100">
+      <ionic-selectable [(ngModel)]="name" [items]="optionsList" [shouldStoreItemValue]="true" [placeholder]="placeholder" [canSearch]="true" (onChange)="setName($event)"></ionic-selectable>
     </ion-item>
   </ion-col>
   <ion-col size="3">
     <ion-badge *ngIf="badgeShowing"></ion-badge>
-    <ion-input class="ion-text-center text-medium" label="%" labelPlacement="stacked" fill="outline" type="number" [value]="percentage" (input)="setPercentage($event)" maxlength="3"></ion-input>
+    <ion-input #ionInputEl label="%" labelPlacement="stacked" fill="outline" type="number" (ionInput)="checkLength($event, 4)"></ion-input>
+    <!-- <ion-select class="text-align-center" label="%" labelPlacement="stacked" fill="outline" interface="popover" [value]="percentage" (ionChange)="setPercentage($event)">
+      <ion-select-option *ngFor="let number of numbers" [value]="number">{{ number }}</ion-select-option>
+    </ion-select> -->
   </ion-col>
-  <ion-col size="1" class="ion-align-items-center">
+  <ion-col size="1" class="ion-align-items-center d-flex align-center">
     <ion-icon name="trash" (click)="removeIngredient()"></ion-icon>
   </ion-col>
 </ion-row>

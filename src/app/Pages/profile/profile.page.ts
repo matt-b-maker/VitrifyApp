@@ -13,11 +13,10 @@ export class ProfilePage implements OnInit{
   glazeRecipe: string[] = [];
   title: string = '';
   user: User | null = null;
-  constructor(private auth: AuthService, private gemini: GeminiService, private loadingCtrl: LoadingController) {
+  suggestionDescription: string = '';
+  constructor(private auth: AuthService, private gemini: GeminiService, private loadingCtrl: LoadingController) {}
 
-  }
-
-  async askGemini(){
+  async askGemini() {
     const loading = await this.loadingCtrl.create({
       message: 'Getting Recipe Suggestion...',
       spinner: 'bubbles',
@@ -25,7 +24,10 @@ export class ProfilePage implements OnInit{
     });
 
     loading.present();
-    const rawRecipe = await this.gemini.runChat("Give me a glaze recipe for a cone 6 turqouise glaze in a list format, and keep it brief. like 1,2,3,4,5... no asterisks, but include notes if you think they are necessary.");
+
+    var suggestionLine = this.suggestionDescription === '' ? 'cone 6 turqouise' : this.suggestionDescription;
+
+    const rawRecipe = await this.gemini.runChat(`Give me a glaze recipe for a ${suggestionLine} glaze in a list format, and keep it brief. like 1,2,3,4,5... no asterisks, but include notes if you think they are necessary.`);
     this.glazeRecipe = rawRecipe.split(/\r?\n/);
     loading.dismiss();
   }
@@ -35,5 +37,9 @@ export class ProfilePage implements OnInit{
       this.user = user;
       this.title = this.user?.displayName ?? '';
     });
+  }
+
+  setDescription(event: any) {
+    this.suggestionDescription = event.target.value;
   }
 }

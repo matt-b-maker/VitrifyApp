@@ -3,6 +3,7 @@
 <ion-content [fullscreen]="true">
   <ion-grid class="ion-justify-content-center">
     <ion-row>
+      <ion-input label="Short Description" labelPlacement="floating" [value]="suggestionDescription" (input)="setDescription($event)"></ion-input>
       <ion-button (click)="askGemini()">Get Suggestion</ion-button>
     </ion-row>
     <ion-row *ngFor="let line of glazeRecipe">

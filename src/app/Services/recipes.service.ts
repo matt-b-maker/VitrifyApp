@@ -1,16 +1,17 @@
 import { Injectable } from '@angular/core';
 import { Recipe } from '../Models/recipeModel';
+import { RecipeRevision } from '../Models/recipeRevision';
 
 @Injectable({
   providedIn: 'root'
 })
 
 export class RecipesService {
-
   recipes: Recipe[] = [
-    //create three random recipes
-
   ];
+
+  recipeInProgess: Recipe = new Recipe("", "", "", "", '06', [new RecipeRevision(1, [])]);
+
   constructor() { }
 
   getAllRecipes() {

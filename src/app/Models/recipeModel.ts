@@ -1,4 +1,5 @@
 import { Ingredient } from './ingredientModel';
+import { RecipeRevision } from './recipeRevision';
 
 export class Recipe {
 
@@ -6,22 +7,20 @@ export class Recipe {
   name: string = "";
   description: string = "";
   creator: string = "";
-  cone: number = 0;
-  silicas: Ingredient[] = [];
-  fluxes: Ingredient[] = [];
-  stabilizers: Ingredient[] = [];
-  colorants: Ingredient[] = [];
-  revision: number = 0;
+  userId: string = "";
+  cone: string = '06';
+  firingType: string = 'Oxidation';
+  notes: string = "";
+  revisions: RecipeRevision[] = [
+    new RecipeRevision(1, [])
+  ];
 
-  constructor(id: string, name: string, description: string, creator: string, cone: number, Silicas: Ingredient[], Fluxes: Ingredient[], Stabilizers: Ingredient[], Colorants: Ingredient[]) {
+  constructor(id: string, name: string, description: string, creator: string, cone: string, revisions: RecipeRevision[]) {
     this.id = id;
     this.name = name;
     this.description = description;
     this.creator = creator;
     this.cone = cone;
-    this.silicas = Silicas;
-    this.fluxes = Fluxes;
-    this.stabilizers = Stabilizers;
-    this.colorants = Colorants;
+    this.revisions = revisions;
   }
 }

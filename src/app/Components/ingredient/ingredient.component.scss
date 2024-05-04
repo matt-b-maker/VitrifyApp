@@ -5,13 +5,43 @@
   height: 100vh;
 }
 
+.text-align-center {
+  text-align: center;
+}
+
+.align-center {
+  display: flex;
+  justify-content: center;
+}
+
 .w-auto {
   width: auto;
 }
 
-.w-full {
-  width: 100%;
+.w-fill-available {
+  width: -webkit-fill-available;
 
+}
+
+.vertical-align {
+  display: flex;
+  align-items: center;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.p-1 {
+  padding: 0.25rem;
+}
+
+.d-flex {
+  display: flex;
+}
+
+text-small {
+  font-size: 0.8rem;
 }
 
 .ionic-selectable-inner {

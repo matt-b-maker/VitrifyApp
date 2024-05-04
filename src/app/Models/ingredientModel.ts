@@ -1,13 +1,15 @@
 export class Ingredient {
-    name: string;
-    type: string;
-    quantity: number;
-    percentage: number;
+  state: 'in' | 'out' = 'in'; // Default state
 
-    constructor(name: string, type: string, quantity: number, percentage: number) {
-        this.name = name;
-        this.type = type;
-        this.quantity = quantity;
-        this.percentage = percentage;
-    }
+  name: string;
+  type: string;
+  quantity: number;
+  percentage: number;
+
+  constructor(name: string, type: string, quantity: number, percentage: number) {
+      this.name = name;
+      this.type = type;
+      this.quantity = quantity;
+      this.percentage = percentage;
+  }
 }

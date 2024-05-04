@@ -9,16 +9,22 @@ import { RecipeBuilderPageRoutingModule } from './recipe-builder-routing.module'
 import { RecipeBuilderPage } from './recipe-builder.page';
 import { SideMenuHeaderComponent } from 'src/app/Components/side-menu-header/side-menu-header.component';
 import { IngredientComponent } from 'src/app/Components/ingredient/ingredient.component';
+import { FilterSilicaPipe } from "../../Pipes/filter-silica.pipe";
+import { FilterFluxPipe } from "../../Pipes/filter-flux.pipe";
+import { FilterStabilizerPipe } from 'src/app/Pipes/filter-stabilizer.pipe';
+import { FilterColorantPipe } from 'src/app/Pipes/filter-colorant.pipe';
 
 @NgModule({
-  imports: [
-    CommonModule,
-    FormsModule,
-    IonicModule,
-    RecipeBuilderPageRoutingModule,
-    SideMenuHeaderComponent,
-    IngredientComponent
-  ],
-  declarations: [RecipeBuilderPage],
+    declarations: [RecipeBuilderPage],
+    imports: [
+        CommonModule,
+        FormsModule,
+        IonicModule,
+        RecipeBuilderPageRoutingModule,
+        SideMenuHeaderComponent,
+        IngredientComponent,
+        FilterSilicaPipe,
+        FilterFluxPipe
+    ]
 })
 export class RecipeBuilderPageModule {}

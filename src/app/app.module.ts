@@ -14,10 +14,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { LoginComponent } from './Components/login/login.component';
 import { RegisterComponent } from './Components/register/register.component';
 import { BusyModalComponent } from './Components/busy-modal/busy-modal.component';
-import { IngredientComponent } from './Components/ingredient/ingredient.component';
 import { AngularFireModule } from '@angular/fire/compat';
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
 import { IonicSelectableComponent } from 'ionic-selectable';
+import { FormsModule } from '@angular/forms';
 
 const platform = Capacitor.getPlatform();
 
@@ -28,6 +28,7 @@ const platform = Capacitor.getPlatform();
             AppRoutingModule,
             AngularFireModule.initializeApp(determineFirebaseConfig(platform)),
             IonicSelectableComponent,
+            FormsModule,
             provideFirebaseApp(() => {
               switch (platform) {
                 case 'android':
