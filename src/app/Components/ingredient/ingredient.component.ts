@@ -50,8 +50,9 @@ export class IngredientComponent implements OnInit {
   }
 
   setPercentage(event: any) {
+    console.log(event.target.value);
     this.percentage = event.target.value;
-      this.percentageValueChange.emit(this.percentage);
+    this.percentageValueChange.emit(this.percentage);
   }
 
   getQuantity(totalGrams: number) {

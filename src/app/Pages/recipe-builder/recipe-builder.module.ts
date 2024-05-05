@@ -13,6 +13,7 @@ import { FilterSilicaPipe } from "../../Pipes/filter-silica.pipe";
 import { FilterFluxPipe } from "../../Pipes/filter-flux.pipe";
 import { FilterStabilizerPipe } from 'src/app/Pipes/filter-stabilizer.pipe';
 import { FilterColorantPipe } from 'src/app/Pipes/filter-colorant.pipe';
+import { IonicSelectableComponent, IonicSelectableItemEndTemplateDirective, IonicSelectableItemTemplateDirective, IonicSelectableTitleTemplateDirective } from 'ionic-selectable';
 
 @NgModule({
     declarations: [RecipeBuilderPage],
@@ -24,7 +25,10 @@ import { FilterColorantPipe } from 'src/app/Pipes/filter-colorant.pipe';
         SideMenuHeaderComponent,
         IngredientComponent,
         FilterSilicaPipe,
-        FilterFluxPipe
+        FilterFluxPipe,
+        IonicSelectableComponent,
+        IonicSelectableItemTemplateDirective,
+        IonicSelectableItemEndTemplateDirective
     ]
 })
 export class RecipeBuilderPageModule {}

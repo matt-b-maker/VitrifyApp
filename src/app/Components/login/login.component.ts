@@ -67,6 +67,7 @@ export class LoginComponent implements OnInit{
         await this.firestore.upsert('users', userCredential.user.uid, { email: this.email, lastLogin: new Date(), displayName: userCredential.user.displayName});
 
         loading.dismiss();
+        this.authService.storeAuthData(userCredential.user);
         // Redirect or navigate to the next page after successful login
         this.router.navigate(['/folder/inbox']);
       }
@@ -104,6 +105,7 @@ export class LoginComponent implements OnInit{
         loading.present();
         this.authService.updateUser(userCredential.user);
         await this.firestore.upsert('users', userCredential.user.uid, { email: userCredential.user.email, lastLogin: new Date(), displayName: userCredential.user.displayName});
+        this.authService.storeAuthData(userCredential.user);
         // Redirect or navigate to the next page after successful login
         loading.dismiss();
         this.router.navigate(['/folder/inbox']);

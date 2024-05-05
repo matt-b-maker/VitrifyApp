@@ -12,113 +12,141 @@
         <ion-card-title>Recipe Builder</ion-card-title>
         <ion-card-subtitle>Let's write a GOD DAMN recipe</ion-card-subtitle>
         <div slot="end">
-          <ion-button slot="end" (click)="aiGenerateRecipe()">Generate</ion-button>
+          <ion-button slot="end" (click)="aiGenerateRecipe()"
+            >Generate</ion-button
+          >
         </div>
       </ion-toolbar>
     </ion-card-header>
     <ion-card-content>
       <ion-grid>
-        <ion-row class="my-4">
+        <ion-row class="">
           <ion-col size="9">
-            <ion-input fill="outline" label="Recipe Name" labelPlacement="stacked" [value]="recipeService.recipeInProgess.name" (input)="setName($event)"></ion-input>
+            <ion-input
+              fill="outline"
+              label="Recipe Name"
+              labelPlacement="stacked"
+              [value]="recipeService.recipeInProgess.name"
+              (input)="setName($event)"
+            ></ion-input>
           </ion-col>
         </ion-row>
         <ion-row>
           <ion-col size="3">
-            <ion-input label="Cone" labelPlacement="stacked" fill="outline" [value]="recipeService.recipeInProgess.cone" [clearOnEdit]="true" type="number" #coneInput (input)="setCone($event)"></ion-input>
+            <ion-input
+              label="Cone"
+              labelPlacement="stacked"
+              fill="outline"
+              [value]="recipeService.recipeInProgess.cone"
+              [clearOnEdit]="true"
+              type="number"
+              #coneInput
+              (input)="setCone($event)"
+            ></ion-input>
             <!-- <ion-select interface="action-sheet" label="Cone" labelPlacement="stacked" fill="outline" [value]="cone" (ionChange)="setCone($event)">
               <ion-select-option *ngFor="let coneSelection of cones" [value]="coneSelection">{{coneSelection}}</ion-select-option>
             </ion-select> -->
           </ion-col>
           <ion-col size="6">
-            <ion-select [(ngModel)]="recipeService.recipeInProgess.firingType" label="Firing Type" labelPlacement="stacked" fill="outline">
-              <ion-select-option *ngFor="let type of firingTypes" [value]="type">{{type}}</ion-select-option>
+            <ion-select
+              [(ngModel)]="recipeService.recipeInProgess.firingType"
+              label="Firing Type"
+              labelPlacement="stacked"
+              fill="outline"
+            >
+              <ion-select-option *ngFor="let type of firingTypes" [value]="type"
+                >{{type}}</ion-select-option
+              >
             </ion-select>
           </ion-col>
         </ion-row>
         <ion-row>
           <ion-col>
-            <ion-input fill="outline" label="Description" labelPlacement="stacked" [value]="recipeService.recipeInProgess.description" [autocorrect]="true" (input)="setDescription($event)"></ion-input>
+            <ion-input
+              fill="outline"
+              label="Description"
+              labelPlacement="stacked"
+              [value]="recipeService.recipeInProgess.description"
+              [autocorrect]="true"
+              (input)="setDescription($event)"
+            ></ion-input>
           </ion-col>
         </ion-row>
       </ion-grid>
     </ion-card-content>
   </ion-card>
 
-  <ion-accordion>
-    <ion-item slot="header">
-      <ion-label>Notes</ion-label>
-    </ion-item>
-    <ion-card slot="content">
-      <ion-card-content>
-        <ion-textarea [value]="recipeService.recipeInProgess.notes" (input)="setNotes($event)"></ion-textarea>
-      </ion-card-content>
-    </ion-card>
-  </ion-accordion>
+  <ion-card>
+    <ion-card-header>
+      <ion-toolbar>
+        <ion-card-title>Ingredients</ion-card-title>
+        <ion-button slot="end" (click)="addIngredient()">Add</ion-button>
+      </ion-toolbar>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-grid>
+        <ion-row
+          class="ingredient slide-in-animation"
+          *ngFor="let ingredient of recipeService.recipeInProgess.revisions[0].ingredients; let i = index"
+        >
+          <ion-grid>
+            <ion-row>
+              <ion-col size="8">
+                <ion-item class="">
+                  <ionic-selectable
+                    class="item-content"
+                    [(ngModel)]="recipeService.recipeInProgess.revisions[0].ingredients[i].name"
+                    [items]="allMaterials"
+                    itemTextField="listName"
+                    [canSearch]="true"
+                    (onSearch)="searchIngredients($event)"
+                    (onClose)="allMaterials = ingredientService.allMaterials"
+                    (onClear)="allMaterials = ingredientService.allMaterials"
+                    (onChange)="updateMaterialsList($event)"
+                  >
+                  <!-- <ng-template ionicSelectableItemTemplate let-ingredient="item" let-isIngredientSelected="isItemSelected">
+                    {{ ingredient.name }} ({{ ingredient.listName }})
+                  </ng-template> -->
 
-  <ion-grid id="Silicas">
-    <ion-row class="ingredient-type-header ion-justify-content-center ion-align-items-center align-center r-3 border-black">
-      <ion-col size="8">
-        <ion-label class="ml-8 font-size-1-5 mb-2 mr-2">Silicas</ion-label>
-        <ion-icon name="information-circle-outline" class="ion-align-items-center" (click)="showSilicaInfo()"></ion-icon>
-      </ion-col>
-      <ion-col size="4" >
-        <ion-button size="small" (click)="addIngredient('Silica')">Add Silica</ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngFor="let ingredient of recipeService.recipeInProgess.revisions[0].ingredients; let i = index" class="centered-content ingredient slide-in-animation">
-      <app-ingredient *ngIf="ingredient.type === 'Silica'" class="w-fill-available" [name]="ingredient.name" [quantity]="ingredient.quantity" [percentage]="ingredient.percentage" [optionsList]="silicas" [placeholder]="'Select a Silica'" (percentageValueChange)="onPercentageValueChange(i, $event)" (nameValueChange)="onNameValueChange(i, $event)" (removeIngredientEvent)="onRemoveIngredientEvent($event, i)"></app-ingredient>
-    </ion-row>
-  </ion-grid>
+                  <!-- Use end-template for customizing the end template -->
+                  <ng-template ionicSelectableItemEndTemplate let-ingredient="item">
+                    <img class="" [src]="ingredient.imageUrl" />
+                  </ng-template>
+                  </ionic-selectable>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-row>
+      </ion-grid>
+    </ion-card-content>
+  </ion-card>
 
-  <ion-grid id="Fluxes">
-    <ion-row class="ingredient-type-header ion-justify-content-center ion-align-items-center align-center r-3 border-black">
-      <ion-col size="8">
-        <ion-label class="ml-8 font-size-1-5 mb-2 mr-2">Fluxes</ion-label>
-        <ion-icon name="information-circle-outline" class="ion-align-items-center" (click)="showFluxInfo()"></ion-icon>
-      </ion-col>
-      <ion-col size="4" >
-        <ion-button size="small" (click)="addIngredient('Flux')">Add a Flux</ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngFor="let ingredient of recipeService.recipeInProgess.revisions[0].ingredients; let i = index" class="centered-content ingredient slide-in-animation">
-      <app-ingredient *ngIf="ingredient.type === 'Flux'" class="w-fill-available" [name]="ingredient.name" [quantity]="ingredient.quantity" [percentage]="ingredient.percentage" [optionsList]="fluxes" [placeholder]="'Select a Flux'" (percentageValueChange)="onPercentageValueChange(i, $event)" (nameValueChange)="onNameValueChange(i, $event)" (removeIngredientEvent)="onRemoveIngredientEvent($event, i)"></app-ingredient>
-    </ion-row>
-  </ion-grid>
-
-  <ion-grid id="Stabilizers">
-    <ion-row class="ingredient-type-header ion-justify-content-center ion-align-items-center align-center r-3 border-black">
-      <ion-col size="8">
-        <ion-label class="ml-8 font-size-1-5 mb-2 mr-2">Stabilizers</ion-label>
-        <ion-icon name="information-circle-outline" class="ion-align-items-center" (click)="showStabilizerInfo()"></ion-icon>
-      </ion-col>
-      <ion-col size="4" >
-        <ion-button size="small" (click)="addIngredient('Stabilizer')">Add a Stabilizer</ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngFor="let ingredient of recipeService.recipeInProgess.revisions[0].ingredients; let i = index" class="centered-content ingredient slide-in-animation">
-      <app-ingredient *ngIf="ingredient.type === 'Stabilizer'" class="w-fill-available" [name]="ingredient.name" [quantity]="ingredient.quantity" [percentage]="ingredient.percentage" [optionsList]="stabilizers" [placeholder]="'Select a Stabilizer'" (percentageValueChange)="onPercentageValueChange(i, $event)" (nameValueChange)="onNameValueChange(i, $event)" (removeIngredientEvent)="onRemoveIngredientEvent($event, i)"></app-ingredient>
-    </ion-row>
-  </ion-grid>
-
-  <ion-grid id="Colorants">
-    <ion-row class="ingredient-type-header ion-justify-content-center ion-align-items-center align-center r-3 border-black">
-      <ion-col size="8">
-        <ion-label class="ml-8 font-size-1-5 mb-2 mr-2">Colorants</ion-label>
-        <ion-icon name="information-circle-outline" class="ion-align-items-center" (click)="showColorantInfo()"></ion-icon>
-      </ion-col>
-      <ion-col size="4" >
-        <ion-button size="small" (click)="addIngredient('Colorant')">Add a Colorant</ion-button>
-      </ion-col>
-    </ion-row>
-    <ion-row *ngFor="let ingredient of recipeService.recipeInProgess.revisions[0].ingredients; let i = index" class="centered-content ingredient slide-in-animation">
-      <app-ingredient *ngIf="ingredient.type === 'Colorant'" class="w-fill-available" [name]="ingredient.name" [quantity]="ingredient.quantity" [percentage]="ingredient.percentage" [optionsList]="colorants" [placeholder]="'Select a Flux'" (percentageValueChange)="onPercentageValueChange(i, $event)" (nameValueChange)="onNameValueChange(i, $event)" (removeIngredientEvent)="onRemoveIngredientEvent($event, i)"></app-ingredient>
-    </ion-row>
-  </ion-grid>
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Notes</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-textarea
+        fill="outline"
+        [maxlength]="300"
+        [value]="recipeService.recipeInProgess.notes"
+        [autoGrow]="true"
+        (input)="setNotes($event)"
+      ></ion-textarea>
+    </ion-card-content>
+  </ion-card>
 </ion-content>
 <ion-footer>
   <ion-toolbar>
-    <ion-label slot="start" class="ion-margin">Total: {{totalPercentage}}%</ion-label>
-    <ion-label slot="end" [ngClass]="remainingPercentageOver ? 'red' : 'black'" class="ion-margin">Remaining: {{remainingPercentage}}%</ion-label>
+    <ion-label slot="start" class="ion-margin"
+      >Total: {{totalPercentage}}%</ion-label
+    >
+    <ion-label
+      slot="end"
+      [ngClass]="remainingPercentageOver ? 'red' : 'black'"
+      class="ion-margin"
+      >Remaining: {{remainingPercentage}}%</ion-label
+    >
   </ion-toolbar>
 </ion-footer>

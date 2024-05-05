@@ -1,3 +1,13 @@
+.ionic-selectable-inner {
+  display: grid;
+  grid-template-columns: 1fr auto; /* Defines columns: value, icon */
+  align-items: center; /* Centers content vertically */
+}
+
+.ionic-selectable-icon {
+  justify-self: end; /* Pushes icon to the right */
+}
+
 .slide-in-animation {
   animation-name: slideIn;
   animation-duration: 0.3s;

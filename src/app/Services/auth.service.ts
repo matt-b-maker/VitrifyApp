@@ -4,7 +4,7 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
 import { AlertController, Platform } from '@ionic/angular';
 import { signInWithCredential } from 'firebase/auth';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -87,5 +87,27 @@ export class AuthService {
 
   resetPassword(email: string){
     return sendPasswordResetEmail(this.auth, email);
+  }
+
+  storeAuthData(user: User){
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  autoLogin(): Observable<boolean> {
+    const userDataString = localStorage.getItem('user');
+    if (!userDataString) {
+      return of(false); // No user data in localStorage
+    }
+
+    const userData = JSON.parse(userDataString);
+    // Check if token is still valid
+    if (userData.stsTokenManager && userData.stsTokenManager.expirationTime >= new Date().getTime()) {
+      this.user = userData;
+      this.userSubject.next(userData);
+      this.updateUser(userData);
+      return of(true); // User auto-logged in successfully
+    } else {
+      return of(false); // Token has expired
+    }
   }
 }
