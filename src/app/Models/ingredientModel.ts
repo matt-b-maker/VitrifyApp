@@ -14,7 +14,7 @@ export class Ingredient {
   type: string;
   quantity: number;
   percentage: number;
-  imageUrl: string;
+  imageUrl!: string;
   listName: string;
 
   constructor(name: string, composition: Composition, type: string, quantity: number, percentage: number) {
@@ -24,6 +24,6 @@ export class Ingredient {
       this.quantity = quantity;
       this.percentage = percentage;
       this.listName = name + ' ' + composition.composition;
-      this.imageUrl = '../../assets/images/silica-powder.jpg';
+      // this.imageUrl = '../../assets/images/silica-powder.jpg';
   }
 }

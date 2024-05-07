@@ -7,13 +7,17 @@ export class Recipe {
   name: string = "";
   description: string = "";
   creator: string = "";
-  userId: string = "";
+  uid: string = "";
   cone: string = '06';
   firingType: string = 'Oxidation';
   notes: string = "";
+  dateCreated!: Date;
+  dateModified!: Date;
   revisions: RecipeRevision[] = [
     new RecipeRevision(1, [])
   ];
+  public: boolean = true;
+  tested: boolean = false;
 
   constructor(id: string, name: string, description: string, creator: string, cone: string, revisions: RecipeRevision[]) {
     this.id = id;

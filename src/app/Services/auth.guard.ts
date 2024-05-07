@@ -15,10 +15,8 @@ export class AuthGuard {
       take(1),
       switchMap(user => {
         if (user) {
-          console.log('User already logged in');
           return of(true); // User is already logged in, allow access
         } else {
-          console.log('Performing auto-login');
           // User is not logged in, perform auto-login and emit result
           return this.auth.autoLogin().pipe(
             tap(autoLoginUser => console.log('Auto-login user:', autoLoginUser)),
@@ -28,10 +26,8 @@ export class AuthGuard {
       }),
       tap(loggedIn => {
         if (!loggedIn) {
-          console.log('Access Denied');
           this.router.navigate(['/login']);
         } else {
-          console.log('Redirecting to home');
           // User is logged in, navigate to home page
           this.router.navigate(['/folder/inbox']);
         }

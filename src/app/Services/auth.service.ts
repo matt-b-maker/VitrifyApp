@@ -10,7 +10,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  private userSubject: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
+  public userSubject: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   user$: Observable<User | null> = this.userSubject.asObservable();
 
   errorMessage: string = '';
@@ -90,6 +90,7 @@ export class AuthService {
   }
 
   storeAuthData(user: User){
+    console.log(user);
     localStorage.setItem('user', JSON.stringify(user));
   }
 
@@ -104,6 +105,7 @@ export class AuthService {
     if (userData.stsTokenManager && userData.stsTokenManager.expirationTime >= new Date().getTime()) {
       this.user = userData;
       this.userSubject.next(userData);
+      console.log('Auto-login successful', userData);
       this.updateUser(userData);
       return of(true); // User auto-logged in successfully
     } else {

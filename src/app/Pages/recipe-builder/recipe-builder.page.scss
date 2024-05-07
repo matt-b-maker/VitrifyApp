@@ -8,6 +8,19 @@
   justify-self: end; /* Pushes icon to the right */
 }
 
+.text-center {
+  text-align: center;
+}
+
+.vertical-stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.text-small {
+  font-size: 0.8rem;
+}
+
 .slide-in-animation {
   animation-name: slideIn;
   animation-duration: 0.3s;
@@ -20,6 +33,11 @@
   to {
     transform: translateX(0);
   }
+}
+
+.translucent {
+  background-color: rgba(255, 255, 255, 0.5);
+
 }
 
 .bg-white {
@@ -36,6 +54,22 @@
 
 .display-contents {
   display: contents;
+}
+
+/* Your global.scss or component-specific SCSS file */
+
+.ingredient-row {
+  border-bottom: 1px solid #ccc; /* Add a border between rows */
+}
+
+.item-content {
+  --placeholder-color: #999; /* Customize placeholder color */
+}
+
+.percentage-input {
+  --padding-start: 8px; /* Adjust input padding */
+  --padding-end: 8px; /* Adjust input padding */
+  font-size: 14px; /* Customize font size */
 }
 
 .align-center {

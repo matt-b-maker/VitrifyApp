@@ -1,4 +1,14 @@
-<app-side-menu-header title=""></app-side-menu-header>
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button fill="outline" size="small" *ngIf="recipeComplete()" (click)="saveRecipeToFirestore()">Save</ion-button>
+    </ion-buttons>
+    <ion-title></ion-title>
+  </ion-toolbar>
+</ion-header>
 
 <ion-content [fullscreen]="true">
   <!-- <ion-header collapse="condense">
@@ -84,42 +94,53 @@
       </ion-toolbar>
     </ion-card-header>
     <ion-card-content>
-      <ion-grid>
-        <ion-row
-          class="ingredient slide-in-animation"
-          *ngFor="let ingredient of recipeService.recipeInProgess.revisions[0].ingredients; let i = index"
-        >
-          <ion-grid>
-            <ion-row>
-              <ion-col size="8">
-                <ion-item class="">
+      <ion-list lines="none">
+        <ion-item-sliding *ngFor="let ingredient of recipeService.recipeInProgess.revisions[0].ingredients; let i = index" #itemSliding class="slide-in-animation">
+          <ion-item>
+            <ion-grid class="ingredient-row">
+              <ion-row>
+                <ion-col size="9">
                   <ionic-selectable
+                    fill="outline"
                     class="item-content"
                     [(ngModel)]="recipeService.recipeInProgess.revisions[0].ingredients[i].name"
-                    [items]="allMaterials"
-                    itemTextField="listName"
+                    [(items)]="allMaterials"
+                    itemTextField="name"
+                    itemValueField="name"
                     [canSearch]="true"
                     (onSearch)="searchIngredients($event)"
                     (onClose)="allMaterials = ingredientService.allMaterials"
                     (onClear)="allMaterials = ingredientService.allMaterials"
-                    (onChange)="updateMaterialsList($event)"
-                  >
-                  <!-- <ng-template ionicSelectableItemTemplate let-ingredient="item" let-isIngredientSelected="isItemSelected">
-                    {{ ingredient.name }} ({{ ingredient.listName }})
-                  </ng-template> -->
-
-                  <!-- Use end-template for customizing the end template -->
-                  <ng-template ionicSelectableItemEndTemplate let-ingredient="item">
-                    <img class="" [src]="ingredient.imageUrl" />
-                  </ng-template>
+                    (onChange)="updateMaterialsList()">
+                    <ng-template ionicSelectableItemTemplate let-ingredient="item">
+                      <div class="vertical-stack">
+                        <label>{{ingredient.name}}</label>
+                        <label class="text-small" [ngClass]="ingredient.type + '-color'">{{ingredient.composition.composition}}</label>
+                      </div>
+                    </ng-template>
                   </ionic-selectable>
-                </ion-item>
-              </ion-col>
-            </ion-row>
-          </ion-grid>
-        </ion-row>
-      </ion-grid>
+                </ion-col>
+                <ion-col size="3" class="ion-text-center">
+                  <ion-input
+                    fill="outline"
+                    type="number"
+                    label="%"
+                    labelPlacement="floating"
+                    [(ngModel)]="ingredient.percentage"
+                    (ionChange)="setPercentage($event, i)"></ion-input>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="danger" (click)="removeIngredient(i)">
+              <ion-icon slot="icon-only" name="trash"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
+      </ion-list>
     </ion-card-content>
+
   </ion-card>
 
   <ion-card>

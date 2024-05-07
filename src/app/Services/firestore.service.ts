@@ -1,16 +1,29 @@
 import { Injectable } from '@angular/core';
 import { Observable, firstValueFrom } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Firestore, collectionData, doc, collection, setDoc, updateDoc, deleteDoc, docData, query, where } from '@angular/fire/firestore';
+import { v4 as uuidv4 } from 'uuid';
+import {
+  Firestore,
+  collectionData,
+  doc,
+  collection,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  docData,
+  query,
+  where,
+} from '@angular/fire/firestore';
+import { Recipe } from '../Models/recipeModel';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FirestoreService {
-  constructor(private firestore: Firestore) { }
+  constructor(private firestore: Firestore) {}
 
-  async create(collectionPath: string, data: any): Promise<void> {
-    const docRef = doc(collection(this.firestore, collectionPath));
+  async create(collectionPath: string, documentId: string, data: any): Promise<void> {
+    const docRef = doc(collection(this.firestore, collectionPath), documentId);
     await setDoc(docRef, data);
   }
 
@@ -26,15 +39,22 @@ export class FirestoreService {
   async getCollection(collectionPath: string, uid?: string): Promise<any> {
     if (uid) {
       // If uid is provided, return the specific document
-      return firstValueFrom(docData(doc(this.firestore, `${collectionPath}/${uid}`)));
+      return firstValueFrom(
+        docData(doc(this.firestore, `${collectionPath}/${uid}`))
+      );
     } else {
       // If uid is not provided, return all documents in the collection
-      return firstValueFrom(collectionData(collection(this.firestore, collectionPath)));
+      return firstValueFrom(
+        collectionData(collection(this.firestore, collectionPath))
+      );
     }
   }
 
   async getDocumentsByUid(collectionPath: string, uid: string): Promise<any> {
-    const q = query(collection(this.firestore, collectionPath), where('uid', '==', uid));
+    const q = query(
+      collection(this.firestore, collectionPath),
+      where('uid', '==', uid)
+    );
     return firstValueFrom(collectionData(q));
   }
 
@@ -47,4 +67,89 @@ export class FirestoreService {
     const docRef = doc(this.firestore, collectionPath, id);
     await deleteDoc(docRef);
   }
+
+  //Recipes
+  async saveRecipe(recipe: Recipe) {
+    const data = {
+      id: recipe.id || uuidv4(),
+      name: recipe.name,
+      description: recipe.description,
+      creator: recipe.creator,
+      uid: recipe.uid,
+      cone: recipe.cone,
+      firingType: recipe.firingType,
+      notes: recipe.notes,
+      dateCreated: new Date(),
+      dateModified: new Date(),
+      revisions: recipe.revisions.map((revision) => ({
+        revision: revision.revision,
+        ingredients: revision.ingredients.map((ingredient) => ({
+          name: ingredient.name,
+          composition: {
+            composition: ingredient.composition.composition,
+            colorClass: ingredient.composition.colorClass,
+          },
+          type: ingredient.type,
+          quantity: ingredient.quantity,
+          percentage: ingredient.percentage,
+          // imageUrl: ingredient.imageUrl, // Include imageUrl if needed
+          listName: ingredient.listName,
+        })),
+      })),
+    };
+    await this.upsert('recipes', data.id, data);
+  }
+
+  //update recipe
+  async updateRecipe(recipe: Recipe) {
+    const data = {
+      id: recipe.id,
+      name: recipe.name,
+      description: recipe.description,
+      creator: recipe.creator,
+      uid: recipe.uid,
+      cone: recipe.cone,
+      firingType: recipe.firingType,
+      notes: recipe.notes,
+      dateCreated: recipe.dateCreated,
+      dateModified: new Date(),
+      revisions: recipe.revisions.map((revision) => ({
+        revision: revision.revision,
+        ingredients: revision.ingredients.map((ingredient) => ({
+          name: ingredient.name,
+          composition: {
+            composition: ingredient.composition.composition,
+            colorClass: ingredient.composition.colorClass,
+          },
+          type: ingredient.type,
+          quantity: ingredient.quantity,
+          percentage: ingredient.percentage,
+          // imageUrl: ingredient.imageUrl, // Include imageUrl if needed
+          listName: ingredient.listName,
+        })),
+      })),
+      public: recipe.public,
+      tested: recipe.tested,
+    };
+    await this.upsert('recipes', recipe.id, data);
+  }
+
+  //get user recipes
+  async getUserRecipes(uid: string): Promise<any> {
+    return await this.getDocumentsByUid('recipes', uid);
+  }
+
+  //get all public and tested recipes
+  async getPublicRecipes(): Promise<any> {
+    const q = query(
+      collection(this.firestore, 'recipes'),
+      where('public', '==', true),
+      where('tested', '==', true)
+    );
+    return await firstValueFrom(collectionData(q));
+  }
 }
+function uuid4() {
+  throw new Error('Function not implemented.');
+}
+

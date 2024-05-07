@@ -1,13 +1,23 @@
 <ion-header [translucent]="true">
   <ion-toolbar>
-    <ion-title>user-recipe-detail</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button></ion-back-button>
+    </ion-buttons>
+    <ion-title>{{loadedRecipe.name}}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button >
+        <ion-icon slot="icon-only" name="create"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">user-recipe-detail</ion-title>
-    </ion-toolbar>
-  </ion-header>
+  <ion-label>{{loadedRecipe.name}}</ion-label>
+  <ion-label>{{loadedRecipe.cone}}</ion-label>
+  <ion-item *ngFor="let ingredient of loadedRecipe.revisions[revision].ingredients">
+    <ion-label>{{ingredient.name}}</ion-label>
+    <ion-label>{{ingredient.percentage}}</ion-label>
+    <ion-label>{{loadedRecipe.id}}</ion-label>
+  </ion-item>
 </ion-content>

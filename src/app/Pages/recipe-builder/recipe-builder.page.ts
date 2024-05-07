@@ -1,4 +1,11 @@
-import { Component, Inject, ViewChild, ViewChildren } from '@angular/core';
+import {
+  Component,
+  Inject,
+  ViewChild,
+  ViewChildren,
+  QueryList,
+  OnInit,
+} from '@angular/core';
 import { Ingredient } from 'src/app/Models/ingredientModel';
 import { Recipe } from 'src/app/Models/recipeModel';
 import { AuthService } from 'src/app/Services/auth.service';
@@ -14,14 +21,19 @@ import {
 } from '@ionic/angular';
 import { RecipesService } from 'src/app/Services/recipes.service';
 import { GeminiService } from 'src/app/Services/gemini.service';
+import { IonicSelectableComponent } from 'ionic-selectable';
+import { FirestoreService } from 'src/app/Services/firestore.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-recipe-builder',
   templateUrl: './recipe-builder.page.html',
-  styleUrls: ['./recipe-builder.page.scss', '../../../ionic-selectable.component.scss'],
+  styleUrls: [
+    './recipe-builder.page.scss',
+    '../../../ionic-selectable.component.scss',
+  ],
 })
 export class RecipeBuilderPage {
-
   cone: string = '06';
   notes: string = '';
   firingTypes: string[] = [
@@ -53,19 +65,16 @@ export class RecipeBuilderPage {
   remainingPercentageOver: boolean = false;
   coneRegex: RegExp = /^(0[1-9]|1[0-2]|[1-9])([-/](0[1-9]|1[0-2]|[1-9]))?$/;
   //get all app-ingredient components
-  @ViewChildren(IngredientComponent) ingredientComponents: any;
   @ViewChild('inputCone', { static: true }) inputCone!: IonInput;
 
-  chipLabel: string = 'Remove things';
-  removeIconsShowing: boolean = false;
   totalPercentage: number = 0;
   remainingPercentage: number = 100;
 
-  allMaterials: Ingredient[] = Array.from(this.ingredientService.allMaterials.sort((a, b) => a.name.localeCompare(b.name)));
-  silicas: string[] = Array.from(this.ingredientService.silicaMaterials);
-  fluxes: string[] = Array.from(this.ingredientService.fluxMaterials);
-  stabilizers: string[] = Array.from(this.ingredientService.stabilizerMaterials);
-  colorants: string[] = Array.from(this.ingredientService.colorantMaterials);
+  allMaterials: Ingredient[] = Array.from(
+    this.ingredientService.allMaterials.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    )
+  );
 
   name: string = '';
   description: string = '';
@@ -79,26 +88,92 @@ export class RecipeBuilderPage {
     private animationCtrl: AnimationController,
     private alertController: AlertController,
     private geminiService: GeminiService,
-    private loadingController: LoadingController
+    private loadingController: LoadingController,
+    private firestoreService: FirestoreService,
+    private router: Router
   ) {
-    this.silicas.sort();
-    this.fluxes.sort();
-    this.stabilizers.sort();
-    this.colorants.sort();
     this.calculateTotalPercentage();
+    this.recipeService.recipeInProgess.revisions[0].ingredients.push(this.allMaterials[0]);
   }
 
   searchIngredients(event: any) {
     let search = event.text.toLowerCase();
-    console.log(search);
     this.allMaterials = this.ingredientService.allMaterials.filter((material) =>
       material.name.toLowerCase().includes(search)
     );
   }
 
-  updateMaterialsList(event: any) {
+  updateMaterialsList() {
     //remove any materials that are already in the recipe
-    this.allMaterials = this.allMaterials.filter(ingredient => !this.recipeService.recipeInProgess.revisions[0].ingredients.map(ingredient => ingredient.name).includes(ingredient.name));
+    this.allMaterials = this.ingredientService.allMaterials.filter(
+      (material) =>
+        !this.recipeService.recipeInProgess.revisions[0].ingredients.find(
+          (ingredient) => ingredient.name === material.name
+        )
+    );
+  }
+
+  recipeComplete(): boolean {
+    return (
+      this.recipeService.recipeInProgess.name !== '' &&
+      this.recipeService.recipeInProgess.description !== '' &&
+      this.recipeService.recipeInProgess.cone !== '' &&
+      this.recipeService.recipeInProgess.revisions[0].ingredients.length > 0
+    );
+  }
+
+  async saveRecipeToFirestore() {
+    let cancel = false;
+    if (
+      this.recipeService.recipes.find((recipe) => recipe.name === this.name)
+    ) {
+      await this.dialogueService
+        .presentConfirmationDialog(
+          'Recipe Exists',
+          'You already have a recipe with that name. Overwrite?',
+          'Yes',
+          'No'
+        )
+        .then((result) => {
+          if (result === false) {
+            cancel = true;
+          } else {
+            this.recipeService.recipeInProgess.id =
+              this.recipeService.recipes.find(
+                (recipe) => recipe.name === this.name
+              )?.id || uuidv4();
+            this.firestoreService.saveRecipe(
+              this.recipeService.recipeInProgess
+            );
+          }
+        });
+    }
+    if (cancel) return;
+    this.recipeService.recipeInProgess.creator =
+      this.auth.user?.displayName || '';
+    this.recipeService.recipeInProgess.uid = this.auth.user?.uid || '';
+    await this.firestoreService.saveRecipe(this.recipeService.recipeInProgess);
+    this.alertController
+      .create({
+        header: 'Recipe Saved',
+        message: 'Done. Would you like to go to your recipes?',
+        buttons: [
+          {
+            text: 'Yes',
+            handler: () => {
+              this.router.navigate(['/user-recipes']);
+            },
+          },
+          {
+            text: 'No',
+            handler: () => {
+              this.recipeService.recipes.push(this.recipeService.recipeInProgess);
+              return;
+            },
+          },
+        ],
+      })
+      .then((alert) => alert.present());
   }
 
   //animation methods
@@ -176,7 +251,6 @@ export class RecipeBuilderPage {
 
   async addIngredient() {
     let cancel = false;
-
     if (
       this.recipeService.recipeInProgess.revisions[0].ingredients.length >= 5
     ) {
@@ -198,7 +272,7 @@ export class RecipeBuilderPage {
 
     this.recipeService.recipeInProgess.revisions[0].ingredients.push(
       new Ingredient(
-        `Select one`,
+        ``,
         { composition: '', colorClass: '' },
         '',
         0,
@@ -228,15 +302,35 @@ export class RecipeBuilderPage {
     );
   }
 
-  onPercentageValueChange(index: number, event: any) {
+  // setMaterialName(event: any, index: number) {
+  //   console.log(event.value.name);
+  //   this.recipeService.recipeInProgess.revisions[0].ingredients[
+  //     index
+  //   ].name = event.value.name;
+  //   this.updateMaterialsList();
+  // }
+
+  setPercentage(event: any, index: number) {
+    if (event.target.value === '') {
+      this.recipeService.recipeInProgess.revisions[0].ingredients[
+        index
+      ].percentage = 0;
+      this.calculateTotalPercentage();
+      return;
+    }
+    //check max length
+    if (event.target.value.length > 5) {
+      event.target.value = event.target.value.slice(0, 5);
+      console.log('Max length reached');
+      return;
+    }
     this.recipeService.recipeInProgess.revisions[0].ingredients[
       index
-    ].percentage = Number.isNaN(parseFloat(event)) ? 0 : parseFloat(event);
+    ].percentage = parseFloat(event.target.value);
     this.calculateTotalPercentage();
-    this.remainingPercentageOver = this.remainingPercentage < 0;
   }
 
-  async onRemoveIngredientEvent(event: any, index: number) {
+  async removeIngredient(index: number) {
     // Get the HTML element of the ingredient to be removed
     const ingredientElements = document.querySelectorAll('.ingredient');
     const ingredientElementToRemove = ingredientElements[index] as HTMLElement;
@@ -250,14 +344,8 @@ export class RecipeBuilderPage {
       index,
       1
     );
-    this.updateIngredients();
+    this.updateMaterialsList();
     this.calculateTotalPercentage();
-  }
-
-  onNameValueChange(index: number, event: string) {
-    this.recipeService.recipeInProgess.revisions[0].ingredients[index].name =
-      event;
-    this.updateIngredients();
   }
 
   calculateTotalPercentage() {
@@ -269,109 +357,21 @@ export class RecipeBuilderPage {
       return;
     }
     this.totalPercentage =
-      this.recipeService.recipeInProgess.revisions[0].ingredients.reduce(
-        (acc, ingredient) => acc + ingredient.percentage,
-        0
-      );
+      Math.round(
+        this.recipeService.recipeInProgess.revisions[0].ingredients.reduce(
+          (acc, ingredient) => acc + ingredient.percentage,
+          0
+        ) * 100
+      ) / 100;
     this.remainingPercentage = Number.isNaN(100 - this.totalPercentage)
       ? 100
-      : 100 - this.totalPercentage;
-  }
-
-  updateIngredients() {
-    this.silicas = this.ingredientService.silicaMaterials.filter(
-      (silica) =>
-        !this.recipeService.recipeInProgess.revisions[0].ingredients
-          .map((ingredient) => ingredient.name)
-          .includes(silica)
-    );
-    this.silicas.sort();
-
-    this.fluxes = this.ingredientService.fluxMaterials.filter(
-      (flux) =>
-        !this.recipeService.recipeInProgess.revisions[0].ingredients
-          .map((ingredient) => ingredient.name)
-          .includes(flux)
-    );
-    this.fluxes.sort();
-
-    this.stabilizers = this.ingredientService.stabilizerMaterials.filter(
-      (stabilizer) =>
-        !this.recipeService.recipeInProgess.revisions[0].ingredients
-          .map((ingredient) => ingredient.name)
-          .includes(stabilizer)
-    );
-    this.stabilizers.sort();
-
-    this.colorants = this.ingredientService.colorantMaterials.filter(
-      (colorant) =>
-        !this.recipeService.recipeInProgess.revisions[0].ingredients
-          .map((ingredient) => ingredient.name)
-          .includes(colorant)
-    );
-    this.colorants.sort();
-  }
-
-  showSilicaInfo() {
-    this.alertController
-      .create({
-        header: 'Some Stuff About Silicas',
-        message:
-          'Silica is a common ingredient in glazes. It is a glass former and is used to create a stable glaze. It is a refractory material and has a high melting point.',
-        buttons: ['OK'],
-      })
-      .then((alert) => {
-        alert.present();
-      });
-  }
-
-  showFluxInfo() {
-    this.alertController
-      .create({
-        header: 'Some Stuff About Fluxes',
-        message:
-          'Fluxes are used to lower the melting point of glazes. They are used to make glazes more fluid and to help them adhere to the clay body.',
-        buttons: ['OK'],
-      })
-      .then((alert) => {
-        alert.present();
-      });
-  }
-
-  showStabilizerInfo() {
-    this.alertController
-      .create({
-        header: 'Some Stuff About Stabilizers',
-        message:
-          'Stabilizers are used to help control the expansion and contraction of glazes. They are used to help prevent crazing and shivering.',
-        buttons: ['OK'],
-      })
-      .then((alert) => {
-        alert.present();
-      });
-  }
-
-  showColorantInfo() {
-    this.alertController
-      .create({
-        header: 'Some Stuff About Colorants',
-        message:
-          'Colorants are used to add color to glazes. They are typically metal oxides and carbonates.',
-        buttons: ['OK'],
-      })
-      .then((alert) => {
-        alert.present();
-      });
+      : Math.round((100 - this.totalPercentage) * 100) / 100;
   }
 
   async aiGenerateRecipe() {
-    this.recipeService.recipeInProgess.revisions[0].clear();
 
-    console.log(
-      this.recipeService.recipeInProgess.cone,
-      this.recipeService.recipeInProgess.description,
-      this.recipeService.recipeInProgess.name
-    );
+    let ingredients: Ingredient[] = [];
+
     if (
       this.recipeService.recipeInProgess.name === '' ||
       this.recipeService.recipeInProgess.description === '' ||
@@ -389,6 +389,8 @@ export class RecipeBuilderPage {
       return;
     }
 
+    this.recipeService.recipeInProgess.revisions[0].clear();
+
     const loading = await this.loadingController.create({
       message: 'Getting you that recipe...',
       spinner: 'bubbles',
@@ -397,50 +399,60 @@ export class RecipeBuilderPage {
 
     loading.present();
 
-    const newRecipe = await this.geminiService.runChat(
-      `Glaze recipe for cone ${this.recipeService.recipeInProgess.cone}, firing type ${this.recipeService.recipeInProgess.firingType} and deccription ${this.recipeService.recipeInProgess.description}.
-      Put it in a list format like this: IngredientName Type Percentage (e.g. Red Iron Oxide Colorant 3.1). My types are Silica, Flux, Stabilizer, and Colorant.
-      Include only one note at the end of the list like this: Notes: [Your notes here]. No non alpha numeric characters in your response please.`
-    );
+    try {
+      const newRecipeResponse = await this.geminiService.runChat(
+        `Glaze recipe for cone ${this.recipeService.recipeInProgess.cone}, firing type ${this.recipeService.recipeInProgess.firingType} and deccription ${this.recipeService.recipeInProgess.description}.
+        Put it in a list format like this: IngredientName Type Percentage (e.g. Red Iron Oxide Colorant 3.1). My types are Silica, Flux, Stabilizer, and Colorant.
+        Include only one note at the end of the list like this: Notes: [Your notes here]. No non alpha numeric characters in your response please. This is for an automation, so it's important that your response is formatted correctly. Thank you, you're the best`
+      );
 
-    console.log(newRecipe);
+      let recipeLines = newRecipeResponse
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line !== '');
+      recipeLines.forEach((line) => {
+        line = line.replace('*', '').trim();
+        if (line.includes('#') || line.toUpperCase().includes('INGREDIENT') || line.toUpperCase().includes('INGREDIENTNAME') || line.includes('-'))
+          return;
+        if (line.startsWith('Notes:')) {
+          this.recipeService.recipeInProgess.notes = line
+            .replace('Notes:', '')
+            .trim();
+        } else {
+          let parts = line.split(/\s{1,2}/);
 
-    let recipeLines = newRecipe
-      .split('\n')
-      .map((line) => line.trim())
-      .filter((line) => line !== '');
-    recipeLines.forEach((line) => {
-      line = line.replace('*', '').trim();
-      if (line.includes('###')) return;
-      if (line.startsWith('Notes:')) {
-        this.recipeService.recipeInProgess.notes = line
-          .replace('Notes:', '')
-          .trim();
-      } else {
-        let parts = line.split(/\s{1,2}/);
-        //the last one is the percentage
-        let percentage = parseFloat(parts[parts.length - 1]);
+          //the last one is the percentage
+          let percentage = parseFloat(parts[parts.length - 1]);
 
-        //the second to last one is the type
-        let type = parts[parts.length - 2];
+          //the second to last one is the type
+          let type = parts[parts.length - 2];
 
-        //everything else is the name
-        let name = parts.slice(0, parts.length - 2).join(' ');
+          //everything else is the name
+          let name = parts.slice(0, parts.length - 2).join(' ');
 
-        let newIngredient = new Ingredient(
-          name,
-          { composition: '', colorClass: '' },
-          type,
-          0,
-          percentage
-        );
+          let matchingIngredient = this.allMaterials.find((material) =>
+            material.name.includes(name)
+          );
 
-        this.recipeService.recipeInProgess.revisions[0].ingredients.push(
-          newIngredient
-        );
-      }
-    });
-    this.calculateTotalPercentage();
+          let newIngredient = new Ingredient(
+            matchingIngredient?.name || name,
+            { composition: matchingIngredient?.composition.composition || '', colorClass: '' },
+            type.toLowerCase(),
+            0,
+            percentage
+          );
+
+          console.log(newIngredient);
+
+          ingredients.push(newIngredient);
+        }
+      });
+      this.recipeService.recipeInProgess.revisions[0].ingredients = ingredients;
+      this.calculateTotalPercentage();
+    }
+    catch (error) {
+      console.error('Error in aiGenerateRecipe:', error);
+    }
     loading.dismiss();
   }
 }

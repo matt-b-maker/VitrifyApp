@@ -22,6 +22,7 @@ export class AppComponent implements OnInit, OnDestroy{
   private subscription: Subscription | undefined;
   public appPages = [
     { title: 'Home', url: '/folder/inbox', icon: 'mail' },
+    { title: 'My Recipes', url: '/user-recipes', icon: 'book'},
     { title: 'Glaze Recipes', url: '/recipe', icon: 'beaker' },
     { title: 'Profile', url: '/profile', icon: 'person' },
     { title: 'Recipe builder', url: '/recipe-builder', icon: 'log-out' }

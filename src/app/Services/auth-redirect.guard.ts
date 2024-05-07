@@ -14,7 +14,9 @@ export class AuthRedirectGuard {
     //check local storage for user
     let user = localStorage.getItem('user');
     if (user) {
-      console.log('User already logged in');
+      this.auth.user = JSON.parse(user);
+      this.auth.userSubject.next(this.auth.user);
+      console.log('User already logged in', this.auth.user, this.auth.user$);
       return of(true); // User is already logged in, allow access
     } else {
       console.log('Access Denied');
