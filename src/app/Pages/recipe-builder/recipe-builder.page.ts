@@ -5,6 +5,7 @@ import {
   ViewChildren,
   QueryList,
   OnInit,
+  ChangeDetectorRef
 } from '@angular/core';
 import { Ingredient } from 'src/app/Models/ingredientModel';
 import { Recipe } from 'src/app/Models/recipeModel';
@@ -70,11 +71,9 @@ export class RecipeBuilderPage {
   totalPercentage: number = 0;
   remainingPercentage: number = 100;
 
-  allMaterials: Ingredient[] = Array.from(
-    this.ingredientService.allMaterials.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    )
-  );
+  allMaterials: Ingredient[] = [...this.ingredientService.allMaterials.sort((a, b) =>
+    a.name.localeCompare(b.name)
+  )];
 
   name: string = '';
   description: string = '';
@@ -90,7 +89,8 @@ export class RecipeBuilderPage {
     private geminiService: GeminiService,
     private loadingController: LoadingController,
     private firestoreService: FirestoreService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.calculateTotalPercentage();
     this.recipeService.recipeInProgess.revisions[0].ingredients.push(this.allMaterials[0]);
@@ -103,6 +103,15 @@ export class RecipeBuilderPage {
     );
   }
 
+  setIngredientValue(event: any, index: number) {
+    this.recipeService.recipeInProgess.revisions[0].ingredients[index].name =
+      event.value.name;
+    this.recipeService.recipeInProgess.revisions[0].ingredients[index].type = event.value.type;
+    this.recipeService.recipeInProgess.revisions[0].ingredients[index].composition.composition = event.value.composition.composition;
+    this.recipeService.recipeInProgess.revisions[0].ingredients[index].composition.colorClass = event.value.composition.colorClass;
+    this.updateMaterialsList();
+  }
+
   updateMaterialsList() {
     //remove any materials that are already in the recipe
     this.allMaterials = this.ingredientService.allMaterials.filter(
@@ -111,6 +120,9 @@ export class RecipeBuilderPage {
           (ingredient) => ingredient.name === material.name
         )
     );
+
+    console.log(this.allMaterials);
+    console.log(this.recipeService.recipeInProgess.revisions[0].ingredients);
   }
 
   recipeComplete(): boolean {
@@ -257,7 +269,7 @@ export class RecipeBuilderPage {
       await this.dialogueService
         .presentConfirmationDialog(
           'Wait a sec',
-          'You really want more than 5 ingredients?',
+          `You really want more than ${this.recipeService.recipeInProgess.revisions[0].ingredients.length} ingredients?`,
           'Yeah',
           'No'
         )
@@ -272,7 +284,7 @@ export class RecipeBuilderPage {
 
     this.recipeService.recipeInProgess.revisions[0].ingredients.push(
       new Ingredient(
-        ``,
+        '',
         { composition: '', colorClass: '' },
         '',
         0,
@@ -321,7 +333,6 @@ export class RecipeBuilderPage {
     //check max length
     if (event.target.value.length > 5) {
       event.target.value = event.target.value.slice(0, 5);
-      console.log('Max length reached');
       return;
     }
     this.recipeService.recipeInProgess.revisions[0].ingredients[
@@ -406,6 +417,8 @@ export class RecipeBuilderPage {
         Include only one note at the end of the list like this: Notes: [Your notes here]. No non alpha numeric characters in your response please. This is for an automation, so it's important that your response is formatted correctly. Thank you, you're the best`
       );
 
+      console.log(newRecipeResponse);
+
       let recipeLines = newRecipeResponse
         .split('\n')
         .map((line) => line.trim())
@@ -431,7 +444,7 @@ export class RecipeBuilderPage {
           let name = parts.slice(0, parts.length - 2).join(' ');
 
           let matchingIngredient = this.allMaterials.find((material) =>
-            material.name.includes(name)
+            material.name == name
           );
 
           let newIngredient = new Ingredient(
@@ -441,8 +454,6 @@ export class RecipeBuilderPage {
             0,
             percentage
           );
-
-          console.log(newIngredient);
 
           ingredients.push(newIngredient);
         }

@@ -4,7 +4,7 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
 import { AlertController, Platform } from '@ionic/angular';
 import { signInWithCredential } from 'firebase/auth';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, map, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -12,11 +12,16 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 export class AuthService {
   public userSubject: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   user$: Observable<User | null> = this.userSubject.asObservable();
-
+  public loggedIn: boolean = false;
   errorMessage: string = '';
   public user: User | null = null;
 
   constructor(private auth: Auth, private gPlus: GooglePlus, private afAuth: AngularFireModule, private platform: Platform, private alertController: AlertController) {
+    let user = localStorage.getItem('user');
+    if (user) {
+      this.user = JSON.parse(user);
+      this.userSubject.next(this.user);
+    }
     this.auth.onAuthStateChanged(user => {
       this.userSubject.next(user);
     });
@@ -27,6 +32,9 @@ export class AuthService {
   }
 
   async logout() {
+    this.removeAuthData();
+    this.user = null;
+    this.userSubject.next(null);
     if (this.platform.is('cordova')) {
       return await this.gPlus.logout();
     }
@@ -89,14 +97,44 @@ export class AuthService {
     return sendPasswordResetEmail(this.auth, email);
   }
 
+  get userIsAuthenticated() {
+    if (!this.userSubject) {
+      return of(false);
+    }
+    return this.userSubject.asObservable().pipe(
+      map(user => {
+        if (user) {
+          return !!user.refreshToken;
+        } else {
+          return false;
+        }
+      })
+    );
+  }
+
+  userAuthenticated(): boolean {
+    return this.user != null;
+  }
+
+
   storeAuthData(user: User){
     console.log(user);
-    localStorage.setItem('user', JSON.stringify(user));
+    //store based on platform
+    if (this.platform.is('cordova')) {
+      localStorage.setItem('user', JSON.stringify(user));
+    } else {
+      localStorage.setItem('user', JSON.stringify(user));
+    }
+  }
+
+  removeAuthData(){
+    localStorage.removeItem('user');
   }
 
   autoLogin(): Observable<boolean> {
     const userDataString = localStorage.getItem('user');
     if (!userDataString) {
+      console.log('no user');
       return of(false); // No user data in localStorage
     }
 

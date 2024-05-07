@@ -1,4 +1,4 @@
-import { Router } from '@angular/router';
+import { Route, Router, UrlSegment } from '@angular/router';
 import { AuthService } from './auth.service';
 import { Injectable } from '@angular/core';
 import { Observable, map, take, tap, switchMap, of } from 'rxjs';
@@ -8,28 +8,25 @@ import { Observable, map, take, tap, switchMap, of } from 'rxjs';
 })
 
 export class AuthGuard {
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(private authService: AuthService, private router: Router) {}
 
-  canActivate(): Observable<boolean> {
-    return this.auth.user$.pipe(
+  canActivate(): Observable<boolean> | Promise<boolean> | boolean {
+    console.log('checking')
+    return this.authService.userIsAuthenticated.pipe(
       take(1),
-      switchMap(user => {
-        if (user) {
-          return of(true); // User is already logged in, allow access
+      switchMap(isAuthenticated => {
+        if (!isAuthenticated) {
+          console.log('Auto-logging in...');
+          return this.authService.autoLogin();
         } else {
-          // User is not logged in, perform auto-login and emit result
-          return this.auth.autoLogin().pipe(
-            tap(autoLoginUser => console.log('Auto-login user:', autoLoginUser)),
-            map(autoLoginUser => !!autoLoginUser)
-          );
+          console.log('User is authenticated');
+          return of(isAuthenticated);
         }
       }),
-      tap(loggedIn => {
-        if (!loggedIn) {
-          this.router.navigate(['/login']);
-        } else {
-          // User is logged in, navigate to home page
-          this.router.navigate(['/folder/inbox']);
+      tap(isAuthenticated => {
+        console.log('isAuthenticated', isAuthenticated);
+        if (!isAuthenticated) {
+          this.router.navigateByUrl('/folder/inbox');
         }
       })
     );

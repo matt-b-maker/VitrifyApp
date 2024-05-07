@@ -24,8 +24,9 @@ interface Glaze {
 export class LoginComponent implements OnInit{
   email: string = '';
   password: string = '';
-  user: User | null = null;
   chosenGlaze: Glaze | null = null;
+  userFromStorage: User | null = null;
+  authenticated: boolean = this.authService.userAuthenticated();
 
   constructor(private authService: AuthService,
     private router: Router,
@@ -33,7 +34,8 @@ export class LoginComponent implements OnInit{
     private firestore: FirestoreService,
     private glazeGetter: GlazeLogoGetterService,
     private loadingCtrl: LoadingController)
-    {}
+    {
+    }
 
   ngOnInit(): void {
     //get random glaze from glazeGetter service
@@ -86,6 +88,7 @@ export class LoginComponent implements OnInit{
     if (!confirm) {
       return;
     }
+
     await this.authService.logout();
     // Redirect or navigate to the next page after successful logout
     this.router.navigate(['/login']);

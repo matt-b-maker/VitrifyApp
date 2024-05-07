@@ -9,24 +9,24 @@ const routes: Routes = [
   {
     path: '',
     redirectTo: 'login',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'folder/:id',
     loadChildren: () => import('./folder/folder.module').then( m => m.FolderPageModule),
-    canActivate: [AuthRedirectGuard]
+    canActivate: [AuthGuard]
   },
-  { path: 'login', component: LoginComponent },
+  { path: 'login', component: LoginComponent, canActivate: [AuthRedirectGuard]},
   { path: 'register', component: RegisterComponent },
   {
     path: 'recipe',
     loadChildren: () => import('./Pages/recipe/recipe.module').then( m => m.RecipePageModule),
-    canActivate: [AuthRedirectGuard]
+    canActivate: [AuthGuard]
   },
   {
     path: 'profile',
     loadChildren: () => import('./Pages/profile/profile.module').then( m => m.ProfilePageModule),
-    canActivate: [AuthRedirectGuard]
+    canActivate: [AuthGuard]
   },
   {
     path: 'user-recipes',
@@ -34,12 +34,12 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () => import('./Pages/user-recipes/user-recipes.module').then( m => m.UserRecipesPageModule),
-        canActivate: [AuthRedirectGuard]
+        canActivate: [AuthGuard]
       },
       {
         path: ':recipeId',
         loadChildren: () => import('./Pages/user-recipes/user-recipe-detail/user-recipe-detail.module').then( m => m.UserRecipeDetailPageModule),
-        canActivate: [AuthRedirectGuard]
+        canActivate: [AuthGuard]
       },
 
     ]
@@ -50,12 +50,12 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () => import('./Pages/community-recipes/community-recipes.module').then( m => m.CommunityRecipesPageModule),
-        canActivate: [AuthRedirectGuard]
+        canActivate: [AuthGuard]
       },
       {
         path: ':recipeId',
         loadChildren: () => import('./Pages/community-recipes/community-recipe-detail/community-recipe-detail.module').then( m => m.CommunityRecipeDetailPageModule),
-        canActivate: [AuthRedirectGuard]
+        canActivate: [AuthGuard]
       }
     ]
   },
@@ -65,12 +65,12 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () => import('./Pages/user-firing-schedules/user-firing-schedules.module').then( m => m.UserFiringSchedulesPageModule),
-        canActivate: [AuthRedirectGuard]
+        canActivate: [AuthGuard]
       },
       {
         path: ':firingScheduleId',
         loadChildren: () => import('./Pages/user-firing-schedules/user-firing-schedule-detail/user-firing-schedule-detail.module').then( m => m.UserFiringScheduleDetailPageModule),
-        canActivate: [AuthRedirectGuard]
+        canActivate: [AuthGuard]
       }
     ]
   },
@@ -80,19 +80,19 @@ const routes: Routes = [
       {
         path: '',
         loadChildren: () => import('./Pages/community-firing-schedules/community-firing-schedules.module').then( m => m.CommunityFiringSchedulesPageModule),
-        canActivate: [AuthRedirectGuard]
+        canActivate: [AuthGuard]
       },
       {
         path: ':firingScheduleId',
         loadChildren: () => import('./Pages/community-firing-schedules/community-firing-schedule-detail/community-firing-schedule-detail.module').then( m => m.CommunityFiringScheduleDetailPageModule),
-        canActivate: [AuthRedirectGuard]
+        canActivate: [AuthGuard]
       }
     ]
   },
   {
     path: 'recipe-builder',
     loadChildren: () => import('./Pages/recipe-builder/recipe-builder.module').then( m => m.RecipeBuilderPageModule),
-    canActivate: [AuthRedirectGuard]
+    canActivate: [AuthGuard]
   },
 ];
 

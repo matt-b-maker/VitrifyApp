@@ -72,14 +72,14 @@
         </ion-row>
         <ion-row>
           <ion-col>
-            <ion-input
+            <ion-textarea
               fill="outline"
               label="Description"
               labelPlacement="stacked"
               [value]="recipeService.recipeInProgess.description"
-              [autocorrect]="true"
+              [autoGrow]="true"
               (input)="setDescription($event)"
-            ></ion-input>
+            ></ion-textarea>
           </ion-col>
         </ion-row>
       </ion-grid>
@@ -101,17 +101,14 @@
               <ion-row>
                 <ion-col size="9">
                   <ionic-selectable
+                    item-content
+                    [(ngModel)]="recipeService.recipeInProgess.revisions[0].ingredients[i].name"
                     fill="outline"
                     class="item-content"
-                    [(ngModel)]="recipeService.recipeInProgess.revisions[0].ingredients[i].name"
                     [(items)]="allMaterials"
-                    itemTextField="name"
-                    itemValueField="name"
                     [canSearch]="true"
                     (onSearch)="searchIngredients($event)"
-                    (onClose)="allMaterials = ingredientService.allMaterials"
-                    (onClear)="allMaterials = ingredientService.allMaterials"
-                    (onChange)="updateMaterialsList()">
+                    (onChange)="setIngredientValue($event, i)">
                     <ng-template ionicSelectableItemTemplate let-ingredient="item">
                       <div class="vertical-stack">
                         <label>{{ingredient.name}}</label>
@@ -127,6 +124,7 @@
                     label="%"
                     labelPlacement="floating"
                     [(ngModel)]="ingredient.percentage"
+                    [clearOnEdit]="true"
                     (ionChange)="setPercentage($event, i)"></ion-input>
                 </ion-col>
               </ion-row>
