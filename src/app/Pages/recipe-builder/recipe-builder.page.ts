@@ -25,6 +25,7 @@ import { GeminiService } from 'src/app/Services/gemini.service';
 import { IonicSelectableComponent } from 'ionic-selectable';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { Router } from '@angular/router';
+import { OpenAiService } from 'src/app/Services/open-ai.service';
 
 @Component({
   selector: 'app-recipe-builder',
@@ -87,6 +88,7 @@ export class RecipeBuilderPage {
     private animationCtrl: AnimationController,
     private alertController: AlertController,
     private geminiService: GeminiService,
+    private openAiService: OpenAiService,
     private loadingController: LoadingController,
     private firestoreService: FirestoreService,
     private router: Router,
@@ -94,6 +96,9 @@ export class RecipeBuilderPage {
   ) {
     this.calculateTotalPercentage();
     this.recipeService.recipeInProgess.revisions[0].ingredients.push(this.allMaterials[0]);
+    this.recipeService.recipeInProgess.name = 'matt\'s red';
+    this.recipeService.recipeInProgess.description = 'a red glaze';
+    this.recipeService.recipeInProgess.cone = '6';
   }
 
   searchIngredients(event: any) {
@@ -411,53 +416,43 @@ export class RecipeBuilderPage {
     loading.present();
 
     try {
-      const newRecipeResponse = await this.geminiService.runChat(
-        `Glaze recipe for cone ${this.recipeService.recipeInProgess.cone}, firing type ${this.recipeService.recipeInProgess.firingType} and deccription ${this.recipeService.recipeInProgess.description}.
-        Put it in a list format like this: IngredientName Type Percentage (e.g. Red Iron Oxide Colorant 3.1). My types are Silica, Flux, Stabilizer, and Colorant.
-        Include only one note at the end of the list like this: Notes: [Your notes here]. No non alpha numeric characters in your response please. This is for an automation, so it's important that your response is formatted correctly. Thank you, you're the best`
+      const newRecipeResponse: string = await this.openAiService.getCompletion(
+        `Glaze recipe, cone: ${this.recipeService.recipeInProgess.cone}, firing type: ${this.recipeService.recipeInProgess.firingType} and description: ${this.recipeService.recipeInProgess.description}.
+        Your response should be formatted as follows:
+        IngredientName: [Ingredient Name Here][newline]IngredientType(Silica, Flux, Stabilizer, or Colorant): [Ingredient Type Here][newline]Percentage: [Percentage Here][newline][newline]
+        Put any notes you have at the end of the response.
+        Like this: [Notes: any notes you want to add.]
+        Also, feel free to play with the percentages as floats and be as creative as you want!
+        Ingredients should be ordered from most to least percentage. And please don't include any non alpha numeric characters anywhere in the response.
+        This is for an automation, so it's extremely important that the response is formatted correctly. Thanks!`
       );
 
       console.log(newRecipeResponse);
 
-      let recipeLines = newRecipeResponse
-        .split('\n')
-        .map((line) => line.trim())
-        .filter((line) => line !== '');
+      let recipeLines = newRecipeResponse.split('\n\n');
+
       recipeLines.forEach((line) => {
-        line = line.replace('*', '').trim();
-        if (line.includes('#') || line.toUpperCase().includes('INGREDIENT') || line.toUpperCase().includes('INGREDIENTNAME') || line.includes('-'))
-          return;
-        if (line.startsWith('Notes:')) {
-          this.recipeService.recipeInProgess.notes = line
-            .replace('Notes:', '')
-            .trim();
-        } else {
-          let parts = line.split(/\s{1,2}/);
+          if (line.includes('Notes:')) {
+            this.recipeService.recipeInProgess.notes = line.replace('Notes: ', '');
+          }
+          else {
+            let name: string = line.split('\n')[0].replace('IngredientName: ', '');
+            let type: string = line.split('\n')[1].replace('IngredientType: ', '');
+            let percentage: number = parseFloat(line.split('\n')[2].replace('Percentage: ', ''));
+            let matchingIngredient = this.ingredientService.allMaterials.find((material) => material.name.toLowerCase() === name.toLowerCase());
+            let newIngredient = new Ingredient(
+              matchingIngredient?.name || name,
+              { composition: matchingIngredient?.composition.composition || '', colorClass: '' },
+              type.toLowerCase(),
+              0,
+              percentage
+            );
 
-          //the last one is the percentage
-          let percentage = parseFloat(parts[parts.length - 1]);
-
-          //the second to last one is the type
-          let type = parts[parts.length - 2];
-
-          //everything else is the name
-          let name = parts.slice(0, parts.length - 2).join(' ');
-
-          let matchingIngredient = this.allMaterials.find((material) =>
-            material.name == name
-          );
-
-          let newIngredient = new Ingredient(
-            matchingIngredient?.name || name,
-            { composition: matchingIngredient?.composition.composition || '', colorClass: '' },
-            type.toLowerCase(),
-            0,
-            percentage
-          );
-
-          ingredients.push(newIngredient);
+            ingredients.push(newIngredient);
+          }
         }
-      });
+      );
+      ingredients.sort((a, b) => b.percentage - a.percentage);
       this.recipeService.recipeInProgess.revisions[0].ingredients = ingredients;
       this.calculateTotalPercentage();
     }

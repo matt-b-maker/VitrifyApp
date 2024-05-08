@@ -1,8 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { LoadingController } from '@ionic/angular';
 import { User } from 'firebase/auth';
+import { Recipe } from 'src/app/Models/recipeModel';
 import { AuthService } from 'src/app/Services/auth.service';
+import { FirestoreService } from 'src/app/Services/firestore.service';
 import { GeminiService } from 'src/app/Services/gemini.service';
+import { RecipesService } from 'src/app/Services/recipes.service';
 
 @Component({
   selector: 'app-profile',
@@ -14,22 +17,26 @@ export class ProfilePage implements OnInit{
   title: string = '';
   user: User | null = null;
   suggestionDescription: string = '';
-  constructor(private auth: AuthService, private gemini: GeminiService, private loadingCtrl: LoadingController) {}
+  userRecipes!: Recipe[];
+  loaded: boolean = false;
 
-  async askGemini() {
-    const loading = await this.loadingCtrl.create({
-      message: 'Getting Recipe Suggestion...',
-      spinner: 'bubbles',
-      translucent: true,
+  constructor(private auth: AuthService, private loadingCtrl: LoadingController, private recipeService: RecipesService, private firestoreService: FirestoreService) {
+    (async () => {
+      await this.initializeRecipes();
+    })();
+  }
+
+  async initializeRecipes(): Promise<void> {
+    this.loaded = false;
+    let uid = this.auth.user?.uid || '';
+    if (!uid) return console.error('User not logged in');
+    console.log('User ID:', uid);
+    await this.firestoreService.getUserRecipes(uid).then((recipes) => {
+      this.userRecipes = recipes;
+      this.recipeService.recipes = recipes;
+      console.log('User recipes:', this.userRecipes);
     });
-
-    loading.present();
-
-    var suggestionLine = this.suggestionDescription === '' ? 'cone 6 turqouise' : this.suggestionDescription;
-
-    const rawRecipe = await this.gemini.runChat(`Give me a glaze recipe for a ${suggestionLine} glaze in a list format, and keep it brief. like 1,2,3,4,5... no asterisks, but include notes if you think they are necessary.`);
-    this.glazeRecipe = rawRecipe.split(/\r?\n/);
-    loading.dismiss();
+    this.loaded = true;
   }
 
   ngOnInit(): void {

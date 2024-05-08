@@ -97,7 +97,7 @@ export class AuthService {
     return sendPasswordResetEmail(this.auth, email);
   }
 
-  get userIsAuthenticated() {
+  get userIsAuthenticated() : Observable<boolean> {
     if (!this.userSubject) {
       return of(false);
     }

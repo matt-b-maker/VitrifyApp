@@ -4,10 +4,13 @@
   <ion-grid class="ion-justify-content-center">
     <ion-row>
       <ion-input label="Short Description" labelPlacement="floating" [value]="suggestionDescription" (input)="setDescription($event)"></ion-input>
-      <ion-button (click)="askGemini()">Get Suggestion</ion-button>
     </ion-row>
-    <ion-row *ngFor="let line of glazeRecipe">
-      <ion-text>{{line}}</ion-text>
+    <ion-row>
+      <ion-list>
+        <ion-item *ngFor="let recipe of userRecipes; let i = index">
+          <ion-label>{{recipe.name}}</ion-label>
+        </ion-item>
+      </ion-list>
     </ion-row>
   </ion-grid>
 </ion-content>

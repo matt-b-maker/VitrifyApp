@@ -1,14 +1,12 @@
 import {
   ActivatedRouteSnapshot,
-  CanActivateFn,
   Router,
   RouterStateSnapshot,
   UrlTree,
 } from '@angular/router';
-import { Observable, map, take, tap } from 'rxjs';
+import { Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 import { Injectable } from '@angular/core';
-import { of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -16,20 +14,13 @@ import { of } from 'rxjs';
 export class AuthRedirectGuard {
   constructor(private authService: AuthService, private router: Router) {}
 
-  canActivate(
-    route: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot
-  ):
-    | Observable<boolean | UrlTree>
-    | Promise<boolean | UrlTree>
-    | boolean
-    | UrlTree {
+  canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     if (this.authService.userAuthenticated()) {
       console.log('User is authenticated');
-      return this.router.createUrlTree(['/folder/inbox']);
+      return true; // User is authenticated, allow access
     } else {
-      console.log('User is not authenticated');
-      return true;
+      console.log('User is not authenticated, redirecting to login');
+      return this.router.createUrlTree(['/login']); // Redirect to login
     }
   }
 }

@@ -26,7 +26,7 @@ export class AuthGuard {
       tap(isAuthenticated => {
         console.log('isAuthenticated', isAuthenticated);
         if (!isAuthenticated) {
-          this.router.navigateByUrl('/folder/inbox');
+          this.router.navigateByUrl('/login');
         }
       })
     );
