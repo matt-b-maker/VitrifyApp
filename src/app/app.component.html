@@ -3,7 +3,12 @@
     <ion-menu contentId="main-content" type="overlay" *ngIf="!isLoginPage()">
       <ion-content>
         <ion-list id="inbox-list">
-          <ion-list-header>Welcome to the Vault</ion-list-header>
+          <ion-list-header>
+            <ion-avatar>
+              <img [src]="profileImageUrl">
+            </ion-avatar>
+            {{user?.displayName}}
+          </ion-list-header>
           <ion-note>{{user?.email}}</ion-note>
 
           <ion-menu-toggle auto-hide="false" *ngFor="let p of appPages; let i = index">

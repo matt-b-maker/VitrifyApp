@@ -1,6 +1,24 @@
 <app-side-menu-header [title]="title + '\'s Profile Page'"></app-side-menu-header>
 
 <ion-content [fullscreen]="true">
+  <!--Profile user image and info-->
+  <ion-grid class="ion-justify-content-center">
+    <ion-row>
+      <ion-avatar>
+        <img [src]="userMeta?.photoUrl">
+      </ion-avatar>
+      <ion-item *ngIf="!isMobile">
+        <ion-label>Profile Picture</ion-label>
+        <input type="file" accept="image/*" (change)="uploadAndSetProfilePicture($event)" hidden #fileInput>
+        <ion-button (click)="fileInput.click()">Upload Image from Computer</ion-button>
+      </ion-item>
+      <ion-button *ngIf="isMobile" (click)="selectImage(cameraSource)">Take Photo</ion-button>
+      <ion-button *ngIf="isMobile" (click)="selectImage(photosSource)">Select from Gallery</ion-button>
+    </ion-row>
+    <ion-row>
+      <ion-label>{{user?.displayName}}</ion-label>
+    </ion-row>
+  </ion-grid>
   <ion-grid class="ion-justify-content-center">
     <ion-row>
       <ion-input label="Short Description" labelPlacement="floating" [value]="suggestionDescription" (input)="setDescription($event)"></ion-input>

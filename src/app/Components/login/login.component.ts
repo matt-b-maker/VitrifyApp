@@ -8,6 +8,7 @@ import { User } from 'firebase/auth';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { GlazeLogoGetterService } from 'src/app/Services/glaze-logo-getter.service';
 import { BusyModalComponent } from '../busy-modal/busy-modal.component';
+import { UserMeta } from 'src/app/Models/user';
 
 interface Glaze {
   imageUrl: string;
@@ -26,6 +27,7 @@ export class LoginComponent implements OnInit{
   password: string = '';
   chosenGlaze: Glaze | null = null;
   userFromStorage: User | null = null;
+  userMeta: UserMeta | null = null;
 
   constructor(private authService: AuthService,
     private router: Router,
@@ -34,6 +36,9 @@ export class LoginComponent implements OnInit{
     private glazeGetter: GlazeLogoGetterService,
     private loadingCtrl: LoadingController)
     {
+      this.authService.userMetaSubject.subscribe((userMeta) => {
+        this.userMeta = userMeta;
+      });
     }
 
   ngOnInit(): void {
@@ -68,7 +73,12 @@ export class LoginComponent implements OnInit{
         await this.firestore.upsert('users', userCredential.user.uid, { email: this.email, lastLogin: new Date(), displayName: userCredential.user.displayName});
 
         loading.dismiss();
-        this.authService.storeAuthData(userCredential.user);
+        this.firestore.getUser('users', userCredential.user.uid).then((userMetaData: any) => {
+          console.log('User meta:', userMetaData);
+          this.authService.userMeta = userMetaData;
+          this.authService.userMetaSubject.next(userMetaData);
+          this.authService.storeAuthData(userCredential.user, userMetaData);
+        });
         // Redirect or navigate to the next page after successful login
         this.router.navigate(['/folder/inbox']);
       }
@@ -77,20 +87,6 @@ export class LoginComponent implements OnInit{
       loading.dismiss();
       this.presentLoginErrorAlert("Error", 'Invalid email or password. Please try again or register for a new account below.');
     }
-
-
-  }
-
-  async logOut() {
-    //check with user first
-    var confirm = window.confirm("Are you sure you want to log out?");
-    if (!confirm) {
-      return;
-    }
-
-    await this.authService.logout();
-    // Redirect or navigate to the next page after successful logout
-    this.router.navigate(['/login']);
   }
 
   async loginWithGoogle() {
@@ -107,7 +103,11 @@ export class LoginComponent implements OnInit{
         loading.present();
         this.authService.updateUser(userCredential.user);
         await this.firestore.upsert('users', userCredential.user.uid, { email: userCredential.user.email, lastLogin: new Date(), displayName: userCredential.user.displayName});
-        this.authService.storeAuthData(userCredential.user);
+        this.firestore.getUser('users', userCredential.user.uid).then((userMetaData: any) => {
+          this.authService.userMeta = userMetaData;
+          this.authService.userMetaSubject.next(userMetaData);
+          this.authService.storeAuthData(userCredential.user, userMetaData);
+        });
         // Redirect or navigate to the next page after successful login
         loading.dismiss();
         this.router.navigate(['/folder/inbox']);
@@ -116,6 +116,18 @@ export class LoginComponent implements OnInit{
       console.error('Error logging in with Google:', error);
       this.presentLoginErrorAlert("Error", 'An error occurred while logging in with Google. Please try again.');
     }
+  }
+
+  async logOut() {
+    //check with user first
+    var confirm = window.confirm("Are you sure you want to log out?");
+    if (!confirm) {
+      return;
+    }
+
+    await this.authService.logout();
+    // Redirect or navigate to the next page after successful logout
+    this.router.navigate(['/login']);
   }
 
   async resetPassword() {
@@ -159,4 +171,6 @@ export class LoginComponent implements OnInit{
   setPassword(event:any){
     this.password = event.target.value;
   }
+
+
 }

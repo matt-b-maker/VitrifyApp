@@ -5,6 +5,7 @@ import { GooglePlus } from '@ionic-native/google-plus/ngx';
 import { AlertController, Platform } from '@ionic/angular';
 import { signInWithCredential } from 'firebase/auth';
 import { BehaviorSubject, Observable, map, of } from 'rxjs';
+import { UserMeta } from '../Models/user';
 
 @Injectable({
   providedIn: 'root'
@@ -12,9 +13,12 @@ import { BehaviorSubject, Observable, map, of } from 'rxjs';
 export class AuthService {
   public userSubject: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
   user$: Observable<User | null> = this.userSubject.asObservable();
+  public userMetaSubject: BehaviorSubject<UserMeta | null> = new BehaviorSubject<UserMeta | null>(null);
+  userMeta$: Observable<UserMeta | null> = this.userMetaSubject.asObservable();
   public loggedIn: boolean = false;
   errorMessage: string = '';
   public user: User | null = null;
+  public userMeta: UserMeta | null = null;
 
   constructor(private auth: Auth, private gPlus: GooglePlus, private afAuth: AngularFireModule, private platform: Platform, private alertController: AlertController) {
     let user = localStorage.getItem('user');
@@ -22,10 +26,14 @@ export class AuthService {
       this.user = JSON.parse(user);
       this.userSubject.next(this.user);
     }
-    else {
-      this.auth.onAuthStateChanged(user => {
-        this.userSubject.next(user);
-      });
+    this.auth.onAuthStateChanged(user => {
+      this.userSubject.next(user);
+    });
+
+    let userMeta = localStorage.getItem('userMeta');
+    if (userMeta) {
+      this.userMeta = JSON.parse(userMeta);
+      this.userMetaSubject.next(this.userMeta);
     }
   }
 
@@ -37,6 +45,8 @@ export class AuthService {
     this.removeAuthData();
     this.user = null;
     this.userSubject.next(null);
+    this.userMeta = null;
+    this.userMetaSubject.next(null);
     if (this.platform.is('cordova')) {
       return await this.gPlus.logout();
     }
@@ -89,6 +99,13 @@ export class AuthService {
   updateUser(user: User){
     this.userSubject.next(user);
     this.user = user;
+    localStorage.setItem('user', JSON.stringify(user));
+  }
+
+  updateMeta(userMeta: UserMeta){
+    this.userMetaSubject.next(userMeta);
+    this.userMeta = userMeta;
+    localStorage.setItem('userMeta', JSON.stringify(userMeta));
   }
 
   isLoggedIn(){
@@ -123,19 +140,16 @@ export class AuthService {
     }
   }
 
-
-  storeAuthData(user: User){
-    console.log(user);
+  storeAuthData(user: User, userMeta: UserMeta | null){
     //store based on platform
-    if (this.platform.is('cordova')) {
-      localStorage.setItem('user', JSON.stringify(user));
-    } else {
-      localStorage.setItem('user', JSON.stringify(user));
-    }
+    localStorage.setItem('user', JSON.stringify(user));
+    console.log('User meta:', userMeta);
+    localStorage.setItem('userMeta', JSON.stringify(userMeta));
   }
 
   removeAuthData(){
     localStorage.removeItem('user');
+    localStorage.removeItem('userMeta');
   }
 
   autoLogin(): Observable<boolean> {
@@ -148,6 +162,13 @@ export class AuthService {
     const userData = JSON.parse(userDataString);
     // Check if token is still valid
     if (userData.stsTokenManager && userData.stsTokenManager.expirationTime >= new Date().getTime()) {
+      const userMetaString = localStorage.getItem('userMeta');
+      if (userMetaString) {
+        console.log('User meta string:', userMetaString)
+        this.userMeta = JSON.parse(userMetaString);
+        this.userMetaSubject.next(this.userMeta);
+        console.log('User meta:', this.userMeta);
+      }
       this.user = userData;
       this.userSubject.next(userData);
       console.log('Auto-login successful', userData);

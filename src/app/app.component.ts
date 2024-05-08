@@ -11,28 +11,36 @@ import { App as CapacitorApp } from '@capacitor/app';
   templateUrl: 'app.component.html',
   styleUrls: ['app.component.scss'],
 })
-
-export class AppComponent implements OnInit, OnDestroy{
-  constructor(public auth: AuthService, private router: Router, private alertController: AlertController, private platform: Platform
+export class AppComponent implements OnInit, OnDestroy {
+  constructor(
+    public auth: AuthService,
+    private router: Router,
+    private alertController: AlertController,
+    private platform: Platform
   ) {
+    this.auth.userMeta$.subscribe((userMeta) => {
+      this.profileImageUrl = userMeta?.photoUrl || '';
+      console.log('User meta:', userMeta);
+    });
     this.initializeApp();
   }
   isLoggedIn: boolean = false;
-  user : User | null = null;
+  user: User | null = null;
+  profileImageUrl: string = '';
   private subscription: Subscription | undefined;
   public appPages = [
     { title: 'Home', url: '/folder/inbox', icon: 'mail' },
-    { title: 'My Recipes', url: '/user-recipes', icon: 'book'},
+    { title: 'My Recipes', url: '/user-recipes', icon: 'book' },
     { title: 'Glaze Recipes', url: '/recipe', icon: 'beaker' },
     { title: 'Profile', url: '/profile', icon: 'person' },
-    { title: 'Recipe builder', url: '/recipe-builder', icon: 'log-out' }
+    { title: 'Recipe builder', url: '/recipe-builder', icon: 'log-out' },
   ];
   public labels = ['Family', 'Friends'];
 
   initializeApp() {
     this.platform.ready().then(() => {
-      CapacitorApp.addListener('backButton', ({canGoBack}) => {
-        if(!canGoBack){
+      CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+        if (!canGoBack) {
           CapacitorApp.exitApp();
         } else {
           window.history.back();
@@ -41,34 +49,35 @@ export class AppComponent implements OnInit, OnDestroy{
     });
   }
 
-
-
   isLoginPage() {
-    return window.location.pathname === '/login' || window.location.pathname === '/register';
+    return (
+      window.location.pathname === '/login' ||
+      window.location.pathname === '/register'
+    );
   }
 
   async logOut() {
     //check with user first
     var confirm = await this.alertController.create({
-      header: "Just Checking",
-      message: "Are you sure you want to log out?",
+      header: 'Just Checking',
+      message: 'Are you sure you want to log out?',
       buttons: [
         {
           text: 'Yup',
           handler: () => {
             confirm.dismiss('Yup');
             return true;
-          }
+          },
         },
         {
           text: 'Nope',
           handler: () => {
             confirm.dismiss('Nope');
             return false;
-          }
-        }
-      ]
-    })
+          },
+        },
+      ],
+    });
 
     await confirm.present();
 
@@ -85,7 +94,7 @@ export class AppComponent implements OnInit, OnDestroy{
   }
 
   ngOnInit() {
-    this.subscription = this.auth.user$.subscribe(user => {
+    this.subscription = this.auth.user$.subscribe((user) => {
       this.isLoggedIn = !!user;
       this.user = user;
     });
