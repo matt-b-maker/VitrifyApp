@@ -26,7 +26,6 @@ export class LoginComponent implements OnInit{
   password: string = '';
   chosenGlaze: Glaze | null = null;
   userFromStorage: User | null = null;
-  authenticated: boolean = this.authService.userAuthenticated();
 
   constructor(private authService: AuthService,
     private router: Router,

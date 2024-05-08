@@ -78,6 +78,7 @@ export class AppComponent implements OnInit, OnDestroy{
     if (role.data === 'Yup') {
       await this.auth.logout();
       // Redirect or navigate to the next page after successful logout
+      console.log('Logged out');
       this.router.navigate(['/login']);
     } else {
     }

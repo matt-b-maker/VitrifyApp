@@ -22,9 +22,11 @@ export class AuthService {
       this.user = JSON.parse(user);
       this.userSubject.next(this.user);
     }
-    this.auth.onAuthStateChanged(user => {
-      this.userSubject.next(user);
-    });
+    else {
+      this.auth.onAuthStateChanged(user => {
+        this.userSubject.next(user);
+      });
+    }
   }
 
   async login(email: string, password: string) {
@@ -97,7 +99,8 @@ export class AuthService {
     return sendPasswordResetEmail(this.auth, email);
   }
 
-  get userIsAuthenticated() : Observable<boolean> {
+  get userIsAuthenticated() {
+    console.log(this.userSubject)
     if (!this.userSubject) {
       return of(false);
     }
@@ -113,7 +116,11 @@ export class AuthService {
   }
 
   userAuthenticated(): boolean {
-    return this.user != null;
+    if (this.user) {
+      return !!this.user.refreshToken;
+    } else {
+      return false;
+    }
   }
 
 

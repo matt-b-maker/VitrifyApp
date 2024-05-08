@@ -8,7 +8,7 @@ import { AuthRedirectGuard } from './Services/auth-redirect.guard';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'login',
+    redirectTo: 'profile',
     pathMatch: 'full',
   },
   {
@@ -16,7 +16,7 @@ const routes: Routes = [
     loadChildren: () => import('./folder/folder.module').then( m => m.FolderPageModule),
     canActivate: [AuthGuard]
   },
-  { path: 'login', component: LoginComponent, canActivate: [AuthRedirectGuard]},
+  { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
   {
     path: 'recipe',
