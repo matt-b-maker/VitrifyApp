@@ -94,6 +94,11 @@ const routes: Routes = [
     loadChildren: () => import('./Pages/recipe-builder/recipe-builder.module').then( m => m.RecipeBuilderPageModule),
     canActivate: [AuthGuard]
   },
+  {
+    path: 'profile-editor',
+    loadChildren: () => import('./Pages/profile-editor/profile-editor.module').then( m => m.ProfileEditorPageModule),
+    canActivate: [AuthGuard]
+  },
 ];
 
 @NgModule({

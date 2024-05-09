@@ -29,7 +29,7 @@ export class UserRecipesPage {
     if (!uid) return console.error('User not logged in');
     console.log('User ID:', uid);
     await this.firestore.getUserRecipes(uid).then((recipes) => {
-      this.userRecipes = recipes;
+      this.userRecipes = recipes || [];
       this.recipeService.recipes = recipes;
       console.log('User recipes:', this.userRecipes);
     });

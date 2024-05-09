@@ -11,20 +11,17 @@ export class AuthGuard {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate(): Observable<boolean> | Promise<boolean> | boolean {
-    console.log('checking')
     return this.authService.userIsAuthenticated.pipe(
       take(1),
       switchMap(isAuthenticated => {
         if (!isAuthenticated) {
-          console.log('Auto-logging in...');
           return this.authService.autoLogin();
         } else {
-          console.log('User is authenticated');
           return of(isAuthenticated);
         }
       }),
       tap(isAuthenticated => {
-        console.log('isAuthenticated', isAuthenticated);
+        console.log('isAuthenticated:', isAuthenticated)
         if (!isAuthenticated) {
           this.router.navigateByUrl('/login');
         }

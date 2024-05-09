@@ -5,9 +5,9 @@
         <ion-list id="inbox-list">
           <ion-list-header>
             <ion-avatar>
-              <img [src]="profileImageUrl">
+              <img [src]="userMeta?.photoUrl">
             </ion-avatar>
-            {{user?.displayName}}
+            {{userMeta?.displayName}}
           </ion-list-header>
           <ion-note>{{user?.email}}</ion-note>
 

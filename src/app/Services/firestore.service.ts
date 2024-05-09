@@ -15,6 +15,7 @@ import {
   where,
 } from '@angular/fire/firestore';
 import { Recipe } from '../Models/recipeModel';
+import { UserMeta } from '../Models/userMetaModel';
 
 @Injectable({
   providedIn: 'root',
@@ -32,8 +33,8 @@ export class FirestoreService {
     await setDoc(docRef, data, { merge: true });
   }
 
-  async getUser(collectionPath: string, id: string): Promise<any> {
-    return firstValueFrom(docData(doc(this.firestore, collectionPath, id)));
+  async getUser(collectionPath: string, id: string): Promise<UserMeta | undefined> {
+    return firstValueFrom(docData(doc(this.firestore, collectionPath, id))) as unknown as UserMeta | undefined;
   }
 
   async getCollection(collectionPath: string, uid?: string): Promise<any> {

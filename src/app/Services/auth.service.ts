@@ -3,9 +3,9 @@ import { Auth, User, createUserWithEmailAndPassword, signInWithEmailAndPassword,
 import { AngularFireModule } from '@angular/fire/compat';
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
 import { AlertController, Platform } from '@ionic/angular';
-import { signInWithCredential } from 'firebase/auth';
+import { UserCredential, signInWithCredential } from 'firebase/auth';
 import { BehaviorSubject, Observable, map, of } from 'rxjs';
-import { UserMeta } from '../Models/user';
+import { UserMeta } from '../Models/userMetaModel';
 
 @Injectable({
   providedIn: 'root'
@@ -37,7 +37,7 @@ export class AuthService {
     }
   }
 
-  async login(email: string, password: string) {
+  async login(email: string, password: string): Promise<UserCredential> {
     return await signInWithEmailAndPassword(this.auth, email, password);
   }
 
@@ -47,9 +47,9 @@ export class AuthService {
     this.userSubject.next(null);
     this.userMeta = null;
     this.userMetaSubject.next(null);
-    if (this.platform.is('cordova')) {
-      return await this.gPlus.logout();
-    }
+    // if (this.platform.is('cordova')) {
+    //   return await this.gPlus.logout();
+    // }
     return await signOut(this.auth);
   }
 
@@ -87,7 +87,6 @@ export class AuthService {
       const result = await signInWithPopup(this.auth, provider);
       return result;
     } catch (error) {
-      console.error('Error logging in with Google:', error);
       throw error; // Re-throw the error to handle it in the calling code if needed
     }
   }
@@ -117,7 +116,6 @@ export class AuthService {
   }
 
   get userIsAuthenticated() {
-    console.log(this.userSubject)
     if (!this.userSubject) {
       return of(false);
     }
@@ -143,7 +141,6 @@ export class AuthService {
   storeAuthData(user: User, userMeta: UserMeta | null){
     //store based on platform
     localStorage.setItem('user', JSON.stringify(user));
-    console.log('User meta:', userMeta);
     localStorage.setItem('userMeta', JSON.stringify(userMeta));
   }
 
@@ -155,7 +152,6 @@ export class AuthService {
   autoLogin(): Observable<boolean> {
     const userDataString = localStorage.getItem('user');
     if (!userDataString) {
-      console.log('no user');
       return of(false); // No user data in localStorage
     }
 
@@ -164,14 +160,11 @@ export class AuthService {
     if (userData.stsTokenManager && userData.stsTokenManager.expirationTime >= new Date().getTime()) {
       const userMetaString = localStorage.getItem('userMeta');
       if (userMetaString) {
-        console.log('User meta string:', userMetaString)
         this.userMeta = JSON.parse(userMetaString);
         this.userMetaSubject.next(this.userMeta);
-        console.log('User meta:', this.userMeta);
       }
       this.user = userData;
       this.userSubject.next(userData);
-      console.log('Auto-login successful', userData);
       this.updateUser(userData);
       return of(true); // User auto-logged in successfully
     } else {

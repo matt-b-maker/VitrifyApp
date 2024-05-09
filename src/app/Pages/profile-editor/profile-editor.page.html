@@ -1,0 +1,31 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-back-button slot="start"></ion-back-button>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-avatar class="ion-justify-content-center image-large ion-margin">
+    <img [src]="userMeta?.photoUrl" />
+  </ion-avatar>
+  <ion-item *ngIf="!isMobile">
+    <input
+      type="file"
+      accept="image/*"
+      (change)="uploadAndSetProfilePicture($event)"
+      hidden
+      #fileInput
+    />
+    <ion-button (click)="fileInput.click()"
+      >Upload Image from Computer</ion-button
+    >
+  </ion-item>
+  <ion-item>
+    <ion-button *ngIf="isMobile" (click)="selectImage(cameraSource)"
+      >Take Photo</ion-button
+    >
+    <ion-button *ngIf="isMobile" (click)="selectImage(photosSource)"
+      >Select from Gallery</ion-button
+    >
+  </ion-item>
+</ion-content>

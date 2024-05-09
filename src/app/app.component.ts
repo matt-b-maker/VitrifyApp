@@ -5,6 +5,7 @@ import { User } from 'firebase/auth';
 import { Router } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
 import { App as CapacitorApp } from '@capacitor/app';
+import { UserMeta } from './Models/userMetaModel';
 
 @Component({
   selector: 'app-root',
@@ -18,14 +19,18 @@ export class AppComponent implements OnInit, OnDestroy {
     private alertController: AlertController,
     private platform: Platform
   ) {
+    this.auth.user$.subscribe((user) => {
+      this.user = user;
+    });
     this.auth.userMeta$.subscribe((userMeta) => {
-      this.profileImageUrl = userMeta?.photoUrl || '';
-      console.log('User meta:', userMeta);
+      this.userMeta = userMeta;
     });
     this.initializeApp();
   }
+
   isLoggedIn: boolean = false;
-  user: User | null = null;
+  user: User | null = null || this.auth.user;
+  userMeta: UserMeta | null = this.auth.userMeta;
   profileImageUrl: string = '';
   private subscription: Subscription | undefined;
   public appPages = [
@@ -87,7 +92,6 @@ export class AppComponent implements OnInit, OnDestroy {
     if (role.data === 'Yup') {
       await this.auth.logout();
       // Redirect or navigate to the next page after successful logout
-      console.log('Logged out');
       this.router.navigate(['/login']);
     } else {
     }

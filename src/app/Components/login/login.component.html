@@ -21,10 +21,10 @@
 
   <ion-grid class="ion-margin-bottom">
     <ion-row class="centered ion-margin">
-      <ion-button id="loginbutton" expand="block" size="medium" (click)="login()">Log In</ion-button>
+      <ion-button id="loginbutton" expand="block" size="medium" (click)="login(true)">Log In</ion-button>
     </ion-row>
     <ion-row class="centered ion-margin">
-      <ion-button expand="block" size="medium" color="secondary"  (click)="loginWithGoogle()">
+      <ion-button expand="block" size="medium" color="secondary"  (click)="login(false)">
         <ion-icon name="logo-google" slot="start"></ion-icon>
         Log in with Google
       </ion-button>

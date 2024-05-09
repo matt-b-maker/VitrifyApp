@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { UserMeta } from '../Models/user';
+import { UserMeta } from '../Models/userMetaModel';
 
 @Injectable({
   providedIn: 'root'
