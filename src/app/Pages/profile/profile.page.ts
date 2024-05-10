@@ -20,7 +20,7 @@ export class ProfilePage implements OnInit {
   title: string = '';
   user: User | null = null;
   suggestionDescription: string = '';
-  userRecipes!: Recipe[];
+  userRecipes: Recipe[] = [];
   loaded: boolean = false;
   isMobile: boolean = isPlatform('cordova');
   imageUrl: string = '';
@@ -35,14 +35,14 @@ export class ProfilePage implements OnInit {
   }
 
   async initializeRecipes(): Promise<void> {
-    // this.loaded = false;
-    // let uid = this.auth.user?.uid || '';
-    // if (!uid) return console.error('User not logged in');
-    // await this.firestoreService.getUserRecipes(uid).then((recipes) => {
-    //   this.userRecipes = recipes;
-    //   this.recipeService.recipes = recipes;
-    // });
-    // this.loaded = true;
+    this.loaded = false;
+    let uid = this.auth.user?.uid || '';
+    if (!uid) return console.error('User not logged in');
+    await this.firestoreService.getUserRecipes(uid).then((recipes) => {
+      this.userRecipes = recipes;
+      this.recipeService.userRecipes = recipes;
+    });
+    this.loaded = true;
   }
 
   ngOnInit(): void {

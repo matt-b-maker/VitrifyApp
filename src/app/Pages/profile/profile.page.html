@@ -14,7 +14,7 @@
   <ion-grid class="ion-justify-content-center">
     <ion-row class="ion-justify-content-center">
       <ion-avatar>
-        <img [src]="userMeta?.photoUrl">
+        <ion-img [src]="userMeta?.photoUrl"></ion-img>
       </ion-avatar>
     </ion-row>
     <ion-row>
@@ -29,7 +29,7 @@
       <ion-label>Email: {{userMeta?.email}}</ion-label>
     </ion-row>
     <ion-row>
-      <ion-label>You have {{userMeta?.recipes?.length || '0'}} recipes</ion-label>
+      <ion-label>You have {{userRecipes.length}} recipes</ion-label>
     </ion-row>
   </ion-grid>
 </ion-content>

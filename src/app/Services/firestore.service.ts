@@ -16,12 +16,14 @@ import {
 } from '@angular/fire/firestore';
 import { Recipe } from '../Models/recipeModel';
 import { UserMeta } from '../Models/userMetaModel';
+import { AuthService } from './auth.service';
+import { RecipesService } from './recipes.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class FirestoreService {
-  constructor(private firestore: Firestore) {}
+  constructor(private firestore: Firestore, private auth: AuthService, private recipesService: RecipesService) {}
 
   async create(collectionPath: string, documentId: string, data: any): Promise<void> {
     const docRef = doc(collection(this.firestore, collectionPath), documentId);
@@ -82,9 +84,11 @@ export class FirestoreService {
       notes: recipe.notes,
       dateCreated: new Date(),
       dateModified: new Date(),
-      revisions: recipe.revisions.map((revision) => ({
-        revision: revision.revision,
-        ingredients: revision.ingredients.map((ingredient) => ({
+      revisions: recipe.revisions.map((r) => ({
+        revision: r.revision,
+        status: r.status,
+        notes: r.notes,
+        ingredients: r.ingredients.map((ingredient) => ({
           name: ingredient.name,
           composition: {
             composition: ingredient.composition.composition,
@@ -133,6 +137,13 @@ export class FirestoreService {
       tested: recipe.tested,
     };
     await this.upsert('recipes', recipe.id, data);
+  }
+
+  //delete recipe
+  async deleteRecipe(id: string) {
+    await this.delete('recipes', id);
+    this.recipesService.userRecipes = this.recipesService.userRecipes.filter(recipe => recipe.id !== id);
+    this.auth.updateMeta(this.auth.userMeta!);
   }
 
   //get user recipes

@@ -1,23 +1,74 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button></ion-back-button>
-    </ion-buttons>
-    <ion-title>{{loadedRecipe.name}}</ion-title>
-    <ion-buttons slot="end">
-      <ion-button >
-        <ion-icon slot="icon-only" name="create"></ion-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content [fullscreen]="true">
-  <ion-label>{{loadedRecipe.name}}</ion-label>
-  <ion-label>{{loadedRecipe.cone}}</ion-label>
-  <ion-item *ngFor="let ingredient of loadedRecipe.revisions[revision].ingredients">
-    <ion-label>{{ingredient.name}}</ion-label>
-    <ion-label>{{ingredient.percentage}}</ion-label>
-    <ion-label>{{loadedRecipe.id}}</ion-label>
-  </ion-item>
+  <ion-header translucent>
+    <ion-toolbar>
+      <ion-back-button></ion-back-button>
+      <ion-buttons slot="end">
+        <ion-button (click)="deleteRecipe()">
+          Delete Recipe
+        </ion-button>
+        <ion-button>
+          <ion-icon slot="icon-only" name="create"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-avatar class="ion-margin w-50 horizontal-center" *ngIf="!loadedRecipe.revisions[revision].imageUrl">
+        <!-- <ion-icon size="large" [ios]="'image' + '-outline'" [md]="'image' + '-sharp'"></ion-icon> -->
+        <ion-img src="../../../../assets/images/placeholder-image.png"></ion-img>
+      </ion-avatar>
+      <ion-img
+        *ngIf="loadedRecipe.revisions[revision].imageUrl"
+        class="ion-margin w-50 horizontal-center"
+        [src]="loadedRecipe.revisions[revision].imageUrl"
+        (click)="enlargeImage()"
+      ></ion-img>
+      <ion-card-title class="ion-margin horizontal-center">{{loadedRecipe.name}}</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-card>
+        <ion-card-content>
+          <ion-label>
+            Cone {{loadedRecipe.cone}}, {{loadedRecipe.firingType}}
+          </ion-label>
+        </ion-card-content>
+      </ion-card>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-content>
+      <ion-list>
+        <ion-list-header>
+          <ion-label>
+            <h1>Ingredients</h1>
+          </ion-label>
+        </ion-list-header>
+
+        <ion-item
+          *ngFor="let ingredient of loadedRecipe.revisions[revision].ingredients"
+        >
+          <ion-label class="ion-text-wrap">
+            <h2>{{ingredient.name}}</h2>
+            <p>{{ingredient.percentage}}%</p>
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Notes</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-textarea> {{loadedRecipe.revisions[revision].notes}} </ion-textarea>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-fab vertical="bottom" horizontal="center" slot="fixed">
+    <ion-button>Make this glaze</ion-button>
+  </ion-fab>
 </ion-content>

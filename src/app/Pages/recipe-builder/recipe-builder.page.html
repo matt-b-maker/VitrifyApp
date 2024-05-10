@@ -149,7 +149,7 @@
       <ion-textarea
         fill="outline"
         [maxlength]="300"
-        [value]="recipeService.recipeInProgess.notes"
+        [value]="recipeService.recipeInProgess.revisions[0].notes"
         [autoGrow]="true"
         (input)="setNotes($event)"
       ></ion-textarea>

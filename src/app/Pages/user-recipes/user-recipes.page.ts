@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Recipe } from 'src/app/Models/recipeModel';
+import { Status } from 'src/app/Models/status';
+import { UserMeta } from 'src/app/Models/userMetaModel';
 import { AuthService } from 'src/app/Services/auth.service';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { RecipesService } from 'src/app/Services/recipes.service';
@@ -10,29 +12,25 @@ import { RecipesService } from 'src/app/Services/recipes.service';
   templateUrl: './user-recipes.page.html',
   styleUrls: ['./user-recipes.page.scss'],
 })
-export class UserRecipesPage {
+export class UserRecipesPage implements OnInit {
   loaded: boolean = false;
-  title: string = '';
+  title: string = 'Your Glaze Recipes';
   userRecipes: Recipe[] = [];
+  userMeta: UserMeta | null = this.auth.userMeta;
 
-  constructor(private auth: AuthService, private firestore: FirestoreService, private router: Router, private recipeService: RecipesService) {
-    (async () => {
-      let userDisplayName = this.auth.user?.displayName || '';
-      this.title = userDisplayName === '' ? 'User Recipes' : userDisplayName + '\'s Recipes';
-      await this.initializeRecipes();
-    })();
+  constructor(
+    private auth: AuthService,
+    private firestore: FirestoreService,
+    private router: Router,
+    public recipeService: RecipesService
+  ) {
   }
 
-   async initializeRecipes(): Promise<void> {
+  async ngOnInit() {
     this.loaded = false;
-    let uid = this.auth.user?.uid || '';
-    if (!uid) return console.error('User not logged in');
-    console.log('User ID:', uid);
-    await this.firestore.getUserRecipes(uid).then((recipes) => {
-      this.userRecipes = recipes || [];
-      this.recipeService.recipes = recipes;
-      console.log('User recipes:', this.userRecipes);
-    });
+    this.recipeService.userRecipes = await this.firestore.getUserRecipes(this.auth.user?.uid || '');
+    this.userRecipes = this.recipeService.userRecipes;
+    console.log(this.userRecipes);
     this.loaded = true;
   }
 
@@ -41,5 +39,19 @@ export class UserRecipesPage {
   }
 
   editRecipe() {
+    this.recipeService.isEditing = true;
+    this.router.navigate(['/recipe-builder']);
+  }
+
+  getChipColor(status: Status) {
+    if (status === Status.New) {
+      return 'success';
+    } else if (status === Status.InProgress) {
+      return 'warning';
+    } else if (status === Status.Tested) {
+      return 'danger';
+    } else {
+      return 'medium';
+    }
   }
 }

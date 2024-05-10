@@ -18,6 +18,8 @@ import { AngularFireModule } from '@angular/fire/compat';
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
 import { IonicSelectableComponent } from 'ionic-selectable';
 import { FormsModule } from '@angular/forms';
+import { HttpClient, HttpClientModule, HttpHandler } from '@angular/common/http';
+import { Status } from './Models/status';
 
 const platform = Capacitor.getPlatform();
 
@@ -29,6 +31,7 @@ const platform = Capacitor.getPlatform();
             AngularFireModule.initializeApp(determineFirebaseConfig(platform)),
             IonicSelectableComponent,
             FormsModule,
+            HttpClientModule,
             provideFirebaseApp(() => {
               switch (platform) {
                 case 'android':
@@ -41,7 +44,7 @@ const platform = Capacitor.getPlatform();
             }),
             provideAuth(() => getAuth()),
             provideFirestore(() => getFirestore())],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, GooglePlus],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, GooglePlus, HttpClient],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

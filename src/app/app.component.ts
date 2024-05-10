@@ -34,21 +34,34 @@ export class AppComponent implements OnInit, OnDestroy {
   profileImageUrl: string = '';
   private subscription: Subscription | undefined;
   public appPages = [
-    { title: 'Home', url: '/folder/inbox', icon: 'mail' },
+    { title: 'Home', url: '/folder/inbox', icon: 'home' },
     { title: 'My Recipes', url: '/user-recipes', icon: 'book' },
-    { title: 'Glaze Recipes', url: '/recipe', icon: 'beaker' },
+    { title: 'Recipe Maker', url: '/recipe-builder', icon: 'construct' },
+    { title: 'My Firing Schedules', url: '/user-firing-schedules', icon: 'flame'},
+    { title: 'Firing Schedule Builder', url: '/firing-schedule-builder', icon: 'bar-chart' },
+    { title: 'Materials', url: '/materials', icon: 'flask' },
+    { title: 'Explore', url: '/explore', icon: 'globe' },
+    { title: 'Learn', url: '/learn', icon: 'library' },
     { title: 'Profile', url: '/profile', icon: 'person' },
-    { title: 'Recipe builder', url: '/recipe-builder', icon: 'log-out' },
   ];
-  public labels = ['Family', 'Friends'];
 
   initializeApp() {
     this.platform.ready().then(() => {
-      CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+      CapacitorApp.addListener('backButton', async ({ canGoBack }) => {
         if (!canGoBack) {
           CapacitorApp.exitApp();
         } else {
-          window.history.back();
+          // Get the URL of the previous route if possible
+          let previousUrl = (window.history.state && window.history.state.navigationId > 1)
+            ? window.history.state['url'] : null;
+
+          // Check if the next page in history is the login page
+          if (previousUrl === '/login') {
+            CapacitorApp.exitApp();
+          } else {
+            // This ensures that the default back button behavior is used
+            window.history.back();
+          }
         }
       });
     });

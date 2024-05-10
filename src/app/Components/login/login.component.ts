@@ -1,21 +1,16 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import {
-  IonicModule,
-  LoadingController,
-  ModalController,
-} from '@ionic/angular';
+import { LoadingController } from '@ionic/angular';
 import { AuthService } from 'src/app/Services/auth.service';
 import { OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
 import { User } from 'firebase/auth';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { GlazeLogoGetterService } from 'src/app/Services/glaze-logo-getter.service';
-import { BusyModalComponent } from '../busy-modal/busy-modal.component';
 import { UserMeta } from 'src/app/Models/userMetaModel';
-import { UserService } from 'src/app/Services/user.service';
 import { Recipe } from 'src/app/Models/recipeModel';
-import { user } from '@angular/fire/auth';
+import { Filesystem, Directory } from '@capacitor/filesystem';
+import { FileSystemService } from 'src/app/Services/file-system.service';
 
 interface Glaze {
   imageUrl: string;
@@ -74,15 +69,19 @@ export class LoginComponent implements OnInit {
       }
       loading.present();
       userCredential = await this.authService.login(this.email, this.password);
-      console.log('user logged in with email and password:', userCredential)
+      console.log('user logged in with email and password:', userCredential);
     } else {
       loading.present();
       userCredential = await this.authService.loginWithGoogle();
-      console.log('user logged in with google:', userCredential)
+      console.log('user logged in with google:', userCredential);
     }
     if (userCredential) {
-      let userMeta: UserMeta | undefined = await this.firestore.getUser('users', userCredential.user.uid);
-      let userRecipes: Recipe[] | undefined = await this.firestore.getUserRecipes(userCredential.user.uid);
+      let userMeta: UserMeta | undefined = await this.firestore.getUser(
+        'users',
+        userCredential.user.uid
+      );
+      let userRecipes: Recipe[] | undefined =
+        await this.firestore.getUserRecipes(userCredential.user.uid);
       console.log('user recipes:', userRecipes);
       console.log('user meta:', userMeta);
       if (!userMeta) {
@@ -91,9 +90,12 @@ export class LoginComponent implements OnInit {
           lastName: userCredential.user.lastName,
           email: userCredential.user.email,
           lastLogin: new Date(),
-          displayName: emailAndPassword ? userCredential.user.firstName + ' ' + userCredential.user.lastName : userCredential.user.displayName,
-          photoUrl: emailAndPassword ? '../assets/default-profile-photo.jpg' : userCredential.user.photoURL,
-          recipes: userRecipes || [],
+          displayName: emailAndPassword
+            ? userCredential.user.firstName + ' ' + userCredential.user.lastName
+            : userCredential.user.displayName,
+          photoUrl: emailAndPassword
+            ? '../assets/default-profile-photo.jpg'
+            : userCredential.user.photoURL,
           isPremium: false,
           uid: userCredential.user.uid,
         };
@@ -104,29 +106,33 @@ export class LoginComponent implements OnInit {
       }
 
       userMeta.lastLogin = new Date();
-      userMeta.recipes = userRecipes || [];
-      console.log('user names:', userCredential.user.firstName, userCredential.user.lastName);
-      if (userMeta.displayName == null || userMeta.displayName == '') userMeta.displayName = userCredential.user.firstName + ' ' + userCredential.user.lastName;
-      if (userMeta.photoUrl == null || userMeta.photoUrl == '') userMeta.photoUrl = emailAndPassword ? 'https://ionicframework.com/docs/img/demos/avatar.svg' : userCredential.user.photoURL;
+      console.log(
+        'user names:',
+        userCredential.user.firstName,
+        userCredential.user.lastName
+      );
+      if (userMeta.displayName == null || userMeta.displayName == '')
+        userMeta.displayName =
+          userCredential.user.firstName + ' ' + userCredential.user.lastName;
+      if (userMeta.photoUrl == null || userMeta.photoUrl == '')
+        userMeta.photoUrl = emailAndPassword
+          ? 'https://ionicframework.com/docs/img/demos/avatar.svg'
+          : userCredential.user.photoURL;
       if (userMeta.isPremium == null) userMeta.isPremium = false;
-      if (userMeta.uid == null || userMeta.uid == '') userMeta.uid = userCredential.user.uid;
-
-      console.log(userMeta.photoUrl)
-
+      if (userMeta.uid == null || userMeta.uid == '')
+        userMeta.uid = userCredential.user.uid;
       await this.firestore.upsert('users', userCredential.user.uid, userMeta);
       this.authService.updateUser(userCredential.user);
       this.authService.updateMeta(userMeta);
       loading.dismiss();
       this.router.navigate(['/profile']);
-    }
-    else {
+    } else {
       if (emailAndPassword) {
         this.presentLoginErrorAlert(
           'Error',
           'Invalid email or password. Please try again or register for a new account below.'
         );
-      }
-      else {
+      } else {
         this.presentLoginErrorAlert(
           'Error',
           'An error occurred while logging in with Google. Please try again.'

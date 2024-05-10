@@ -10,7 +10,6 @@ export class UserMeta {
   displayName: string = '';
   photoUrl: string = '';
   isPremium: boolean = false;
-  recipes: Recipe[] = [];
   uid: string = '';
 
   constructor(firstName:string, lastName: string, email: string, displayName: string, photoUrl: string, recipes: Recipe[], uid: string) {
@@ -19,7 +18,6 @@ export class UserMeta {
     this.email = email;
     this.displayName = displayName;
     this.photoUrl = photoUrl;
-    this.recipes = recipes;
     this.uid = uid;
   }
 }

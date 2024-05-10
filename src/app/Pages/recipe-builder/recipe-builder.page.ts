@@ -1,19 +1,10 @@
-import {
-  Component,
-  Inject,
-  ViewChild,
-  ViewChildren,
-  QueryList,
-  OnInit,
-  ChangeDetectorRef
-} from '@angular/core';
+import { Component, Inject, ViewChild } from '@angular/core';
 import { Ingredient } from 'src/app/Models/ingredientModel';
 import { Recipe } from 'src/app/Models/recipeModel';
 import { AuthService } from 'src/app/Services/auth.service';
 import { IngredientTypesService } from 'src/app/Services/ingredient-types.service';
 import { v4 as uuidv4 } from 'uuid';
 import { DialogueService } from 'src/app/Services/dialogue-service.service';
-import { IngredientComponent } from 'src/app/Components/ingredient/ingredient.component';
 import {
   AlertController,
   AnimationController,
@@ -21,11 +12,11 @@ import {
   LoadingController,
 } from '@ionic/angular';
 import { RecipesService } from 'src/app/Services/recipes.service';
-import { GeminiService } from 'src/app/Services/gemini.service';
-import { IonicSelectableComponent } from 'ionic-selectable';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { Router } from '@angular/router';
 import { OpenAiService } from 'src/app/Services/open-ai.service';
+import { FiringDetailsService } from 'src/app/Services/firing-details.service';
+import { Status } from 'src/app/Models/status';
 
 @Component({
   selector: 'app-recipe-builder',
@@ -38,43 +29,23 @@ import { OpenAiService } from 'src/app/Services/open-ai.service';
 export class RecipeBuilderPage {
   cone: string = '06';
   notes: string = '';
-  firingTypes: string[] = [
-    'Oxidation',
-    'Reduction',
-    'Salt',
-    'Wood',
-    'Soda',
-    'Raku',
-    'Pit',
-    'Other',
-  ];
+  firingTypes: string[] = this.firingDetailsService.firingTypes;
   firingType: string = 'Oxidation';
-  cones: string[] = [
-    '06',
-    '5',
-    '5/6',
-    '6',
-    '7',
-    '8',
-    '9',
-    '10',
-    '11',
-    '12',
-    '13',
-    '14',
-    '15',
-  ];
+  cones: string[] = this.firingDetailsService.cones;
   remainingPercentageOver: boolean = false;
   coneRegex: RegExp = /^(0[1-9]|1[0-2]|[1-9])([-/](0[1-9]|1[0-2]|[1-9]))?$/;
+  isEditing: boolean;
   //get all app-ingredient components
   @ViewChild('inputCone', { static: true }) inputCone!: IonInput;
 
   totalPercentage: number = 0;
   remainingPercentage: number = 100;
 
-  allMaterials: Ingredient[] = [...this.ingredientService.allMaterials.sort((a, b) =>
-    a.name.localeCompare(b.name)
-  )];
+  allMaterials: Ingredient[] = [
+    ...this.ingredientService.allMaterials.sort((a, b) =>
+      a.name.localeCompare(b.name)
+    ),
+  ];
 
   name: string = '';
   description: string = '';
@@ -87,18 +58,14 @@ export class RecipeBuilderPage {
     private dialogueService: DialogueService,
     private animationCtrl: AnimationController,
     private alertController: AlertController,
-    private geminiService: GeminiService,
     private openAiService: OpenAiService,
     private loadingController: LoadingController,
     private firestoreService: FirestoreService,
     private router: Router,
-    private cdr: ChangeDetectorRef
+    private firingDetailsService: FiringDetailsService
   ) {
     this.calculateTotalPercentage();
-    this.recipeService.recipeInProgess.revisions[0].ingredients.push(this.allMaterials[0]);
-    this.recipeService.recipeInProgess.name = 'matt\'s red';
-    this.recipeService.recipeInProgess.description = 'a red glaze';
-    this.recipeService.recipeInProgess.cone = '6';
+    this.isEditing = this.recipeService.isEditing;
   }
 
   searchIngredients(event: any) {
@@ -111,9 +78,14 @@ export class RecipeBuilderPage {
   setIngredientValue(event: any, index: number) {
     this.recipeService.recipeInProgess.revisions[0].ingredients[index].name =
       event.value.name;
-    this.recipeService.recipeInProgess.revisions[0].ingredients[index].type = event.value.type;
-    this.recipeService.recipeInProgess.revisions[0].ingredients[index].composition.composition = event.value.composition.composition;
-    this.recipeService.recipeInProgess.revisions[0].ingredients[index].composition.colorClass = event.value.composition.colorClass;
+    this.recipeService.recipeInProgess.revisions[0].ingredients[index].type =
+      event.value.type;
+    this.recipeService.recipeInProgess.revisions[0].ingredients[
+      index
+    ].composition.composition = event.value.composition.composition;
+    this.recipeService.recipeInProgess.revisions[0].ingredients[
+      index
+    ].composition.colorClass = event.value.composition.colorClass;
     this.updateMaterialsList();
   }
 
@@ -132,17 +104,19 @@ export class RecipeBuilderPage {
 
   recipeComplete(): boolean {
     return (
-      this.recipeService.recipeInProgess.name !== '' &&
-      this.recipeService.recipeInProgess.description !== '' &&
+      this.recipeService.recipeInProgess.name.trim() !== '' &&
+      this.recipeService.recipeInProgess.description.trim() !== '' &&
       this.recipeService.recipeInProgess.cone !== '' &&
       this.recipeService.recipeInProgess.revisions[0].ingredients.length > 0
     );
   }
 
   async saveRecipeToFirestore() {
+    this.name = this.name.trim();
+    this.description = this.description.trim();
     let cancel = false;
     if (
-      this.recipeService.recipes.find((recipe) => recipe.name === this.name)
+      this.recipeService.userRecipes.find((recipe) => recipe.name === this.name)
     ) {
       await this.dialogueService
         .presentConfirmationDialog(
@@ -156,9 +130,10 @@ export class RecipeBuilderPage {
             cancel = true;
           } else {
             this.recipeService.recipeInProgess.id =
-              this.recipeService.recipes.find(
+              this.recipeService.userRecipes.find(
                 (recipe) => recipe.name === this.name
               )?.id || uuidv4();
+            this.recipeService.recipeInProgess.revisions[0].status = Status.New;
             this.firestoreService.saveRecipe(
               this.recipeService.recipeInProgess
             );
@@ -169,7 +144,9 @@ export class RecipeBuilderPage {
     this.recipeService.recipeInProgess.creator =
       this.auth.user?.displayName || '';
     this.recipeService.recipeInProgess.uid = this.auth.user?.uid || '';
+    this.recipeService.recipeInProgess.revisions[0].status = Status.New;
     await this.firestoreService.saveRecipe(this.recipeService.recipeInProgess);
+    this.recipeService.userRecipes.push(this.recipeService.recipeInProgess);
     this.alertController
       .create({
         header: 'Recipe Saved',
@@ -184,7 +161,6 @@ export class RecipeBuilderPage {
           {
             text: 'No',
             handler: () => {
-              this.recipeService.recipes.push(this.recipeService.recipeInProgess);
               return;
             },
           },
@@ -288,13 +264,7 @@ export class RecipeBuilderPage {
     if (cancel) return;
 
     this.recipeService.recipeInProgess.revisions[0].ingredients.push(
-      new Ingredient(
-        '',
-        { composition: '', colorClass: '' },
-        '',
-        0,
-        1
-      )
+      new Ingredient('', { composition: '', colorClass: '' }, '', 0, 1)
     );
 
     //Do animation stuff
@@ -385,7 +355,6 @@ export class RecipeBuilderPage {
   }
 
   async aiGenerateRecipe() {
-
     let ingredients: Ingredient[] = [];
 
     if (
@@ -432,31 +401,42 @@ export class RecipeBuilderPage {
       let recipeLines = newRecipeResponse.split('\n\n');
 
       recipeLines.forEach((line) => {
-          if (line.includes('Notes:')) {
-            this.recipeService.recipeInProgess.notes = line.replace('Notes: ', '');
-          }
-          else {
-            let name: string = line.split('\n')[0].replace('IngredientName: ', '');
-            let type: string = line.split('\n')[1].replace('IngredientType: ', '');
-            let percentage: number = parseFloat(line.split('\n')[2].replace('Percentage: ', ''));
-            let matchingIngredient = this.ingredientService.allMaterials.find((material) => material.name.toLowerCase() === name.toLowerCase());
-            let newIngredient = new Ingredient(
-              matchingIngredient?.name || name,
-              { composition: matchingIngredient?.composition.composition || '', colorClass: '' },
-              type.toLowerCase(),
-              0,
-              percentage
-            );
+        if (line.includes('Notes:')) {
+          this.recipeService.recipeInProgess.revisions[0].notes = line.replace(
+            'Notes: ',
+            ''
+          );
+        } else {
+          let name: string = line
+            .split('\n')[0]
+            .replace('IngredientName: ', '');
+          let type: string = line
+            .split('\n')[1]
+            .replace('IngredientType: ', '');
+          let percentage: number = parseFloat(
+            line.split('\n')[2].replace('Percentage: ', '')
+          );
+          let matchingIngredient = this.ingredientService.allMaterials.find(
+            (material) => material.name.toLowerCase() === name.toLowerCase()
+          );
+          let newIngredient = new Ingredient(
+            matchingIngredient?.name || name,
+            {
+              composition: matchingIngredient?.composition.composition || '',
+              colorClass: '',
+            },
+            type.toLowerCase(),
+            0,
+            percentage
+          );
 
-            ingredients.push(newIngredient);
-          }
+          ingredients.push(newIngredient);
         }
-      );
+      });
       ingredients.sort((a, b) => b.percentage - a.percentage);
       this.recipeService.recipeInProgess.revisions[0].ingredients = ingredients;
       this.calculateTotalPercentage();
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Error in aiGenerateRecipe:', error);
     }
     loading.dismiss();

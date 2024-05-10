@@ -9,6 +9,27 @@ ion-menu.md ion-content {
   --padding-bottom: 20px;
 }
 
+position-relative {
+  position: relative;
+}
+
+bottom-aligned {
+  position: absolute;
+  bottom: 0;
+}
+
+mt-3 {
+  margin-top: 1rem;
+}
+
+mb-3 {
+  margin-bottom: 1rem;
+}
+
+h-100 {
+  height: 100%;
+}
+
 ion-menu.md ion-list {
   padding: 20px 0;
 }

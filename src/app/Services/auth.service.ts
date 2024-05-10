@@ -116,6 +116,7 @@ export class AuthService {
   }
 
   get userIsAuthenticated() {
+
     if (!this.userSubject) {
       return of(false);
     }

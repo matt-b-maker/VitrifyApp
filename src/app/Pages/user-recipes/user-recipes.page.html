@@ -3,9 +3,6 @@
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-avatar slot="end" class="ion-margin">
-        <img alt="Silhouette of a person's head" src="https://ionicframework.com/docs/img/demos/avatar.svg" />
-      </ion-avatar>
       <ion-label class="ion-margin" slot="start" size="medium">{{title}}</ion-label>
     </ion-toolbar>
   </ion-header>
@@ -13,12 +10,22 @@
   <ion-card>
     <ion-card-content>
       <ion-list *ngIf="loaded">
-        <ion-item *ngIf="userRecipes.length === 0">
+        <ion-item *ngIf="recipeService.userRecipes.length === 0">
           <ion-label>No recipes found</ion-label>
-          <ion-button (click)="goToRecipeBuilder()">Create one</ion-button>
+          <ion-button routerLink="/recipe-builder">Create one</ion-button>
         </ion-item>
-        <ion-item *ngFor="let recipe of userRecipes" [routerLink]="['./', recipe.id]" >
-          <ion-label *ngIf="userRecipes.length > 0">{{recipe.name}}</ion-label>
+        <ion-item *ngFor="let recipe of recipeService.userRecipes" [routerLink]="['./', recipe.id]" >
+          <div *ngIf="recipeService.userRecipes.length > 0">
+            <ion-label>{{recipe.name}}</ion-label>
+            <div>
+              <ion-chip [color]="getChipColor(recipe.revisions[recipe.revisions.length-1].status)">{{recipe.revisions[recipe.revisions.length-1].status}}</ion-chip>
+              <ion-chip color="tertiary">
+                <ion-icon name="triangle-outline"></ion-icon>
+                <ion-label>{{recipe.cone}}</ion-label>
+              </ion-chip>
+              <ion-chip color="dark">{{recipe.firingType}}</ion-chip>
+            </div>
+          </div>
         </ion-item>
       </ion-list>
       <ion-list *ngIf="!loaded">
@@ -56,4 +63,9 @@
       </ion-list>
     </ion-card-content>
   </ion-card>
+  <ion-fab class="ion-margin" vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button>
+      <ion-icon name="add" routerLink="/recipe-builder"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

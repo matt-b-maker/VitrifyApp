@@ -4,6 +4,7 @@ import { LoginComponent } from './Components/login/login.component';
 import { RegisterComponent } from './Components/register/register.component';
 import { AuthGuard } from './Services/auth.guard';
 import { AuthRedirectGuard } from './Services/auth-redirect.guard';
+import { LoginGuard } from './Services/login-guard.guard';
 
 const routes: Routes = [
   {
@@ -98,6 +99,35 @@ const routes: Routes = [
     path: 'profile-editor',
     loadChildren: () => import('./Pages/profile-editor/profile-editor.module').then( m => m.ProfileEditorPageModule),
     canActivate: [AuthGuard]
+  },
+  {
+    path: 'home',
+    loadChildren: () => import('./Pages/home/home.module').then( m => m.HomePageModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'explore',
+    loadChildren: () => import('./Pages/explore/explore.module').then( m => m.ExplorePageModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'learn',
+    loadChildren: () => import('./Pages/learn/learn.module').then( m => m.LearnPageModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'materials',
+    loadChildren: () => import('./Pages/materials/materials.module').then( m => m.MaterialsPageModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'firing-schedule-builder',
+    loadChildren: () => import('./Pages/firing-schedule-builder/firing-schedule-builder.module').then( m => m.FiringScheduleBuilderPageModule),
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'image-modal',
+    loadChildren: () => import('./Pages/image-modal/image-modal.module').then( m => m.ImageModalPageModule)
   },
 ];
 
