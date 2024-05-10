@@ -72,8 +72,14 @@ export class LoginComponent implements OnInit {
       console.log('user logged in with email and password:', userCredential);
     } else {
       loading.present();
-      userCredential = await this.authService.loginWithGoogle();
-      console.log('user logged in with google:', userCredential);
+      try {
+        userCredential = await this.authService.loginWithGoogle();
+      }
+      catch (error) {
+        console.error('Error logging in with Google:', error);
+        loading.dismiss();
+        return;
+      }
     }
     if (userCredential) {
       let userMeta: UserMeta | undefined = await this.firestore.getUser(

@@ -17,7 +17,7 @@ const routes: Routes = [
     loadChildren: () => import('./folder/folder.module').then( m => m.FolderPageModule),
     canActivate: [AuthGuard]
   },
-  { path: 'login', component: LoginComponent },
+  { path: 'login', component: LoginComponent, canActivate: [LoginGuard]},
   { path: 'register', component: RegisterComponent },
   {
     path: 'recipe',
@@ -128,6 +128,11 @@ const routes: Routes = [
   {
     path: 'image-modal',
     loadChildren: () => import('./Pages/image-modal/image-modal.module').then( m => m.ImageModalPageModule)
+  },
+  {
+    path: 'recipe-editor',
+    loadChildren: () => import('./Pages/recipe-editor/recipe-editor.module').then( m => m.RecipeEditorPageModule),
+    canActivate: [AuthGuard]
   },
 ];
 

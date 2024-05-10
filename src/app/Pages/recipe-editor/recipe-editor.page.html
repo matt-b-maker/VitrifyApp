@@ -19,24 +19,27 @@
   <ion-card>
     <ion-card-header>
       <ion-toolbar>
-        <ion-card-title>Recipe Builder</ion-card-title>
-        <ion-card-subtitle>Create Your Vision</ion-card-subtitle>
-        <div slot="end">
-          <ion-button slot="end" (click)="aiGenerateRecipe()">Generate</ion-button>
-        </div>
+        <ion-card-title>Recipe Editor</ion-card-title>
+        <ion-card-subtitle>Tweak, fine tune, and perfect</ion-card-subtitle>
       </ion-toolbar>
     </ion-card-header>
     <ion-card-content>
       <ion-grid>
+        <ion-row>
+          <ion-col size="auto">
+            <ion-select [value]="recipeService.recipeEditInProgess.revisions[revision].status" (ionChange)="setStatus($event)"  interface="popover">
+              <ion-select-option *ngFor="let status of statuses; let i = index" [value]="status">{{status}}</ion-select-option>
+            </ion-select>
+          </ion-col>
+        </ion-row>
         <ion-row class="">
           <ion-col size="9">
             <ion-input
               fill="outline"
               label="Recipe Name"
               labelPlacement="stacked"
-              [value]="recipeService.recipeBuildInProgess.name"
+              [(ngModel)]="recipeService.recipeEditInProgess.name"
               (ionBlur)="trimName()"
-              (input)="setName($event)"
             ></ion-input>
           </ion-col>
         </ion-row>
@@ -46,11 +49,10 @@
               label="Cone"
               labelPlacement="stacked"
               fill="outline"
-              [value]="recipeService.recipeBuildInProgess.cone"
+              [(ngModel)]="recipeService.recipeEditInProgess.cone"
               [clearOnEdit]="true"
               type="number"
               #coneInput
-              (input)="setCone($event)"
             ></ion-input>
             <!-- <ion-select interface="action-sheet" label="Cone" labelPlacement="stacked" fill="outline" [value]="cone" (ionChange)="setCone($event)">
               <ion-select-option *ngFor="let coneSelection of cones" [value]="coneSelection">{{coneSelection}}</ion-select-option>
@@ -58,7 +60,7 @@
           </ion-col>
           <ion-col size="6">
             <ion-select
-              [(ngModel)]="recipeService.recipeBuildInProgess.firingType"
+              [(ngModel)]="recipeService.recipeEditInProgess.firingType"
               label="Firing Type"
               labelPlacement="stacked"
               fill="outline"
@@ -75,9 +77,8 @@
               fill="outline"
               label="Description"
               labelPlacement="stacked"
-              [value]="recipeService.recipeBuildInProgess.description"
+              [(ngModel)]="recipeService.recipeEditInProgess.description"
               [autoGrow]="true"
-              (input)="setDescription($event)"
               (ionBlur)="trimDescription()"
             ></ion-textarea>
           </ion-col>
@@ -95,14 +96,14 @@
     </ion-card-header>
     <ion-card-content>
       <ion-list lines="none">
-        <ion-item-sliding *ngFor="let ingredient of recipeService.recipeBuildInProgess.revisions[0].ingredients; let i = index" #itemSliding class="slide-in-animation">
+        <ion-item-sliding *ngFor="let ingredient of recipeService.recipeEditInProgess.revisions[revision].ingredients; let i = index" #itemSliding class="slide-in-animation">
           <ion-item>
             <ion-grid class="ingredient-row">
               <ion-row class="ion-align-items-center">
                 <ion-col size="9">
                   <ionic-selectable
                     item-content
-                    [(ngModel)]="recipeService.recipeBuildInProgess.revisions[0].ingredients[i].name"
+                    [(ngModel)]="recipeService.recipeEditInProgess.revisions[revision].ingredients[i].name"
                     fill="outline"
                     class="item-content"
                     [(items)]="allMaterials"
@@ -149,9 +150,8 @@
       <ion-textarea
         fill="outline"
         [maxlength]="300"
-        [value]="recipeService.recipeBuildInProgess.revisions[0].notes"
+        [(ngModel)]="recipeService.recipeEditInProgess.revisions[revision].notes"
         [autoGrow]="true"
-        (input)="setNotes($event)"
       ></ion-textarea>
     </ion-card-content>
   </ion-card>

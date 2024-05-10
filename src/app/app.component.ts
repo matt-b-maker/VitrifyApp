@@ -34,7 +34,7 @@ export class AppComponent implements OnInit, OnDestroy {
   profileImageUrl: string = '';
   private subscription: Subscription | undefined;
   public appPages = [
-    { title: 'Home', url: '/folder/inbox', icon: 'home' },
+    { title: 'Home', url: '/home', icon: 'home' },
     { title: 'My Recipes', url: '/user-recipes', icon: 'book' },
     { title: 'Recipe Maker', url: '/recipe-builder', icon: 'construct' },
     { title: 'My Firing Schedules', url: '/user-firing-schedules', icon: 'flame'},

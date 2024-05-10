@@ -1,7 +1,7 @@
-import { Router } from '@angular/router';
+import { Route, Router, UrlSegment } from '@angular/router';
 import { AuthService } from './auth.service';
 import { Injectable } from '@angular/core';
-import { Observable, take, tap, switchMap, of } from 'rxjs';
+import { Observable, map, take, tap, switchMap, of } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -21,7 +21,6 @@ export class AuthGuard {
         }
       }),
       tap(isAuthenticated => {
-        console.log('isAuthenticated:', isAuthenticated)
         if (!isAuthenticated) {
           this.router.navigateByUrl('/login');
         }

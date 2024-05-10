@@ -5,6 +5,8 @@ import { Recipe } from 'src/app/Models/recipeModel';
 import { RecipesService } from 'src/app/Services/recipes.service';
 import { ImageModalPage } from '../../image-modal/image-modal.page';
 import { FirestoreService } from 'src/app/Services/firestore.service';
+import { AuthService } from 'src/app/Services/auth.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -21,8 +23,10 @@ export class UserRecipeDetailPage implements OnInit {
     private firestoreService: FirestoreService,
     private route: Router,
     private modalController: ModalController,
-    private alertController: AlertController
-  ) {}
+    private alertController: AlertController,
+    private auth: AuthService
+  ) {
+  }
 
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe((paramMap) => {
@@ -34,7 +38,6 @@ export class UserRecipeDetailPage implements OnInit {
       if (recipeId !== null) {
         this.loadedRecipe = this.recipeService.getRecipeById(recipeId);
         this.revision = this.loadedRecipe.revisions.length - 1;
-        console.log(this.loadedRecipe)
       } else {
         //route somewhere else
         return;
@@ -69,9 +72,40 @@ export class UserRecipeDetailPage implements OnInit {
     const modal = await this.modalController.create({
       component: ImageModalPage,
       componentProps: {
-        imageUrl: "https://encrypted-tbn1.gstatic.com/shopping?q=tbn:ANd9GcQFT0S0HD66YJrrl0wG4enGubrzaOJ6zlvkEtj-0tkuFztLPfnFYhk57sO1oA1RpofabeyLielFi-S17byojQryzuOpZds0WyK1s5i_QKh6qT1MgRjVLC711s7g4FjKnzVfKJDaxgM&usqp=CAc"
+        imageUrl: this.loadedRecipe.revisions[this.revision].imageUrl,
       }
     });
     return await modal.present();
+  }
+
+  goToRecipeEditor() {
+    this.recipeService.isEditing = true;
+    if (this.loadedRecipe.uid !== this.auth.userMeta?.uid) {
+      this.alertController.create({
+        header: 'Hold up..',
+        message: 'You are about to edit a recipe that is not yours, essentially making it your own. Are you sure you want to continue?',
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel'
+          },
+          {
+            text: 'Let\'s go',
+            handler: () => {
+              this.recipeService.recipeEditInProgess = this.loadedRecipe;
+              this.recipeService.editingRevision = this.revision;
+              this.recipeService.recipeEditInProgess.id = uuidv4();
+              this.recipeService.recipeEditInProgess.uid = this.auth.userMeta?.uid || ''
+              this.route.navigate(['/recipe-editor']);
+            }
+          }
+        ]
+      }).then(alertEl => {
+        alertEl.present();
+      });
+    }
+    this.recipeService.recipeEditInProgess = this.loadedRecipe;
+    this.recipeService.editingRevision = this.revision;
+    this.route.navigate(['/recipe-editor']);
   }
 }

@@ -11,8 +11,6 @@ import { SideMenuHeaderComponent } from 'src/app/Components/side-menu-header/sid
 import { IngredientComponent } from 'src/app/Components/ingredient/ingredient.component';
 import { FilterSilicaPipe } from "../../Pipes/filter-silica.pipe";
 import { FilterFluxPipe } from "../../Pipes/filter-flux.pipe";
-import { FilterStabilizerPipe } from 'src/app/Pipes/filter-stabilizer.pipe';
-import { FilterColorantPipe } from 'src/app/Pipes/filter-colorant.pipe';
 import { IonicSelectableComponent, IonicSelectableItemEndTemplateDirective, IonicSelectableItemTemplateDirective, IonicSelectableTitleTemplateDirective, IonicSelectableValueTemplateDirective } from 'ionic-selectable';
 
 @NgModule({
