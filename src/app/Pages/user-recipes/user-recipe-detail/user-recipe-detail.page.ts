@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertController, ModalController } from '@ionic/angular';
 import { Recipe } from 'src/app/Models/recipeModel';
@@ -7,6 +7,7 @@ import { ImageModalPage } from '../../image-modal/image-modal.page';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { AuthService } from 'src/app/Services/auth.service';
 import { v4 as uuidv4 } from 'uuid';
+import { Status } from 'src/app/Models/status';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -24,7 +25,8 @@ export class UserRecipeDetailPage implements OnInit {
     private route: Router,
     private modalController: ModalController,
     private alertController: AlertController,
-    private auth: AuthService
+    private auth: AuthService,
+    private changeDetector: ChangeDetectorRef
   ) {
   }
 
@@ -107,5 +109,34 @@ export class UserRecipeDetailPage implements OnInit {
     this.recipeService.recipeEditInProgess = this.loadedRecipe;
     this.recipeService.editingRevision = this.revision;
     this.route.navigate(['/recipe-editor']);
+  }
+
+  isUserRecipe() {
+    return this.loadedRecipe.uid === this.auth.userMeta?.uid;
+  }
+
+  getChipColor(status: Status) {
+    if (status === Status.New) {
+      return 'success';
+    } else if (status === Status.InProgress) {
+      return 'warning';
+    } else if (status === Status.Tested) {
+      return 'danger';
+    } else {
+      return 'medium';
+    }
+  }
+
+  addRevision() {
+    this.recipeService.recipeEditInProgess = this.loadedRecipe;
+    this.recipeService.recipeEditInProgess.revisions.push(this.recipeService.recipeEditInProgess.revisions[this.revision]);
+    this.recipeService.editingRevision = this.recipeService.recipeEditInProgess.revisions.length - 1;
+    this.route.navigate(['/recipe-editor']);
+  }
+
+  setRevision(event: any) {
+    console.log(event.detail.value);
+    this.revision = event.detail.value - 1;
+    this.changeDetector.detectChanges();
   }
 }

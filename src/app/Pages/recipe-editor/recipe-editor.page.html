@@ -27,9 +27,14 @@
       <ion-grid>
         <ion-row>
           <ion-col size="auto">
-            <ion-select [value]="recipeService.recipeEditInProgess.revisions[revision].status" (ionChange)="setStatus($event)"  interface="popover">
-              <ion-select-option *ngFor="let status of statuses; let i = index" [value]="status">{{status}}</ion-select-option>
-            </ion-select>
+            <ion-item lines="none">
+              <ion-label>
+                Status:
+              </ion-label>
+              <ion-select [value]="recipeService.recipeEditInProgess.revisions[revision].status" (ionChange)="setStatus($event)"  interface="popover">
+                <ion-select-option *ngFor="let status of statuses; let i = index" [value]="status">{{status}}</ion-select-option>
+              </ion-select>
+            </ion-item>
           </ion-col>
         </ion-row>
         <ion-row class="">
@@ -41,6 +46,9 @@
               [(ngModel)]="recipeService.recipeEditInProgess.name"
               (ionBlur)="trimName()"
             ></ion-input>
+          </ion-col>
+          <ion-col size="3">
+            <ion-label>Revision: {{recipeService.editingRevision + 1}}</ion-label>
           </ion-col>
         </ion-row>
         <ion-row>
@@ -165,7 +173,8 @@
       slot="end"
       [ngClass]="remainingPercentageOver ? 'red' : 'black'"
       class="ion-margin"
-      >Remaining: {{remainingPercentage}}%</ion-label
+      >
+      Additional: {{remainingPercentage}}%</ion-label
     >
   </ion-toolbar>
 </ion-footer>

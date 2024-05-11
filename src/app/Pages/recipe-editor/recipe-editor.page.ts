@@ -64,16 +64,6 @@ export class RecipeEditorPage {
     this.calculateTotalPercentage();
     this.isEditing = this.recipeService.isEditing;
     this.revision = this.recipeService.editingRevision;
-
-    //create new variables for materials descending and ascending
-    let materialsDescending = [...this.allMaterials].sort((a, b) =>
-      a.name.localeCompare(b.name)
-    );
-    let materialsAscending = [...this.allMaterials].sort((a, b) =>
-      b.name.localeCompare(a.name)
-    );
-    console.log(materialsDescending);
-    console.log(materialsAscending);
   }
 
   searchIngredients(event: any) {
@@ -88,14 +78,14 @@ export class RecipeEditorPage {
   }
 
   setIngredientValue(event: any, index: number) {
-    this.recipeService.recipeEditInProgess.revisions[0].ingredients[index].name =
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[index].name =
       event.value.name;
-    this.recipeService.recipeEditInProgess.revisions[0].ingredients[index].type =
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[index].type =
       event.value.type;
-    this.recipeService.recipeEditInProgess.revisions[0].ingredients[
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
       index
     ].composition.composition = event.value.composition.composition;
-    this.recipeService.recipeEditInProgess.revisions[0].ingredients[
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
       index
     ].composition.colorClass = event.value.composition.colorClass;
     this.updateMaterialsList();
@@ -105,13 +95,13 @@ export class RecipeEditorPage {
     //remove any materials that are already in the recipe
     this.allMaterials = this.ingredientService.allMaterials.filter(
       (material) =>
-        !this.recipeService.recipeEditInProgess.revisions[0].ingredients.find(
+        !this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.find(
           (ingredient) => ingredient.name === material.name
         )
     );
 
     console.log(this.allMaterials);
-    console.log(this.recipeService.recipeEditInProgess.revisions[0].ingredients);
+    console.log(this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients);
   }
 
   recipeComplete(): boolean {
@@ -119,12 +109,14 @@ export class RecipeEditorPage {
       this.recipeService.recipeEditInProgess.name.trim() !== '' &&
       this.recipeService.recipeEditInProgess.description.trim() !== '' &&
       this.recipeService.recipeEditInProgess.cone !== '' &&
-      this.recipeService.recipeEditInProgess.revisions[0].ingredients.length > 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length > 0
     );
   }
 
   async saveRecipeToFirestore() {
     if (this.recipeService.recipeEditInProgess.uid !== this.auth.user?.uid) this.recipeService.recipeEditInProgess.uid = this.auth.user?.uid || '';
+    this.recipeService.recipeEditInProgess.dateModified = new Date();
+    console.log(this.recipeService.recipeEditInProgess);
     await this.firestoreService.saveRecipe(this.recipeService.recipeEditInProgess);
     this.alertController
       .create({
@@ -232,12 +224,12 @@ export class RecipeEditorPage {
   async addIngredient() {
     let cancel = false;
     if (
-      this.recipeService.recipeEditInProgess.revisions[0].ingredients.length >= 5
+      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length >= 5
     ) {
       await this.dialogueService
         .presentConfirmationDialog(
           'Wait a sec',
-          `You really want more than ${this.recipeService.recipeEditInProgess.revisions[0].ingredients.length} ingredients?`,
+          `You really want more than ${this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length} ingredients?`,
           'Yeah',
           'No'
         )
@@ -250,13 +242,13 @@ export class RecipeEditorPage {
 
     if (cancel) return;
 
-    this.recipeService.recipeEditInProgess.revisions[0].ingredients.push(
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.push(
       new Ingredient('', { composition: '', colorClass: '' }, '', 0, 1)
     );
 
     //Do animation stuff
     const newIngredientIndex =
-      this.recipeService.recipeEditInProgess.revisions[0].ingredients.length - 1;
+      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length - 1;
 
     // Get the last ingredient's HTML element and slide it in
     const ingredientElements = document.querySelectorAll('.w-fill-available');
@@ -272,13 +264,13 @@ export class RecipeEditorPage {
 
   anyIngredients() {
     return (
-      this.recipeService.recipeEditInProgess.revisions[0].ingredients.length > 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length > 0
     );
   }
 
   setPercentage(event: any, index: number) {
     if (event.target.value === '') {
-      this.recipeService.recipeEditInProgess.revisions[0].ingredients[
+      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
         index
       ].percentage = 0;
       this.calculateTotalPercentage();
@@ -289,7 +281,7 @@ export class RecipeEditorPage {
       event.target.value = event.target.value.slice(0, 5);
       return;
     }
-    this.recipeService.recipeEditInProgess.revisions[0].ingredients[
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
       index
     ].percentage = parseFloat(event.target.value);
     this.calculateTotalPercentage();
@@ -305,7 +297,7 @@ export class RecipeEditorPage {
 
     // Slide out the ingredient first, then remove it
     await this.slideOutIngredient(ingredientElementToRemove);
-    this.recipeService.recipeEditInProgess.revisions[0].ingredients.splice(
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.splice(
       index,
       1
     );
@@ -315,7 +307,7 @@ export class RecipeEditorPage {
 
   calculateTotalPercentage() {
     if (
-      this.recipeService.recipeEditInProgess.revisions[0].ingredients.length === 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length === 0
     ) {
       this.totalPercentage = 0;
       this.remainingPercentage = 100;
@@ -323,7 +315,7 @@ export class RecipeEditorPage {
     }
     this.totalPercentage =
       Math.round(
-        this.recipeService.recipeEditInProgess.revisions[0].ingredients.reduce(
+        this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.reduce(
           (acc, ingredient) => acc + ingredient.percentage,
           0
         ) * 100

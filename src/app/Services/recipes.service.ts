@@ -16,6 +16,6 @@ export class RecipesService {
   editingRevision: number = 0;
 
   getRecipeById(id: string): Recipe {
-    return this.userRecipes.find(recipe => recipe.id === id)!;
+    return {...this.userRecipes.find(recipe => recipe.id === id)!};
   }
 }
