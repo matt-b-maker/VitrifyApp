@@ -81,6 +81,7 @@ export class ProfileEditorPage implements OnInit{
       console.error('Error accessing camera or gallery:', error);
     }
   }
+
   async uploadAndSetProfilePicture(event: any) {
     const loading = await this.loadingCtrl.create({
       message: 'Uploading image...',

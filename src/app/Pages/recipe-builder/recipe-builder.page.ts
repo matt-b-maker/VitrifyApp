@@ -369,7 +369,10 @@ export class RecipeBuilderPage {
       return;
     }
 
-    this.recipeService.recipeBuildInProgess.revisions[0].clear();
+    this.recipeService.recipeBuildInProgess.revisions[0].ingredients = [];
+    this.recipeService.recipeBuildInProgess.revisions[0].notes = '';
+    this.recipeService.recipeBuildInProgess.revisions[0].imageUrl = '';
+    this.recipeService.recipeBuildInProgess.revisions[0].status = Status.New;
 
     const loading = await this.loadingController.create({
       message: 'Getting you that recipe...',

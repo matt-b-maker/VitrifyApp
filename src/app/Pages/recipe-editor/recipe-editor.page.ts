@@ -3,12 +3,20 @@ import { Ingredient } from 'src/app/Models/ingredientModel';
 import { AuthService } from 'src/app/Services/auth.service';
 import { IngredientTypesService } from 'src/app/Services/ingredient-types.service';
 import { DialogueService } from 'src/app/Services/dialogue-service.service';
-import { AlertController, AnimationController, IonInput, LoadingController } from '@ionic/angular';
+import {
+  AlertController,
+  AnimationController,
+  IonInput,
+  LoadingController,
+  isPlatform,
+} from '@ionic/angular';
 import { RecipesService } from 'src/app/Services/recipes.service';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { Router } from '@angular/router';
 import { FiringDetailsService } from 'src/app/Services/firing-details.service';
 import { Status } from 'src/app/Models/status';
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
+import { FirebaseStorageService } from 'src/app/Services/firebase-storage.service';
 
 @Component({
   selector: 'app-recipe-editor',
@@ -18,12 +26,9 @@ import { Status } from 'src/app/Models/status';
     '../../../ionic-selectable.component.scss',
   ],
 })
-
 export class RecipeEditorPage {
-  cone: string = '06';
   notes: string = '';
   firingTypes: string[] = this.firingDetailsService.firingTypes;
-  firingType: string = 'Oxidation';
   cones: string[] = this.firingDetailsService.cones;
   remainingPercentageOver: boolean = false;
   coneRegex: RegExp = /^(0[1-9]|1[0-2]|[1-9])([-/](0[1-9]|1[0-2]|[1-9]))?$/;
@@ -39,15 +44,12 @@ export class RecipeEditorPage {
     ),
   ];
 
-  name: string = '';
-  description: string = '';
   revision: number = 0;
-  statuses: string[] = [
-    Status.New,
-    Status.InProgress,
-    Status.Tested,
-    Status.Archived,
-  ];
+  statuses: string[] = [Status.New, Status.InProgress, Status.Tested];
+
+  isMobile: boolean = false;
+  cameraSource: CameraSource = CameraSource.Camera;
+  photosSource: CameraSource = CameraSource.Photos;
 
   constructor(
     @Inject(IngredientTypesService)
@@ -59,11 +61,108 @@ export class RecipeEditorPage {
     private alertController: AlertController,
     private firestoreService: FirestoreService,
     private router: Router,
-    private firingDetailsService: FiringDetailsService
+    private firingDetailsService: FiringDetailsService,
+    private loadingCtrl: LoadingController,
+    private firebaseStorage: FirebaseStorageService
   ) {
     this.calculateTotalPercentage();
     this.isEditing = this.recipeService.isEditing;
     this.revision = this.recipeService.editingRevision;
+    this.isMobile = isPlatform('cordova');
+    console.log(this.recipeService.recipeEditInProgess.revisions.length, recipeService.isRevision);
+  }
+
+  updateImage() {
+    //ask user if they want to take a photo or choose from gallery
+    this.dialogueService
+      .presentConfirmationDialog(
+        'Select Image',
+        'Would you like to take a photo or choose from gallery?',
+        'Take Photo',
+        'Choose from Gallery'
+      )
+      .then((result) => {
+        if (result === true) {
+          this.selectImage(this.cameraSource);
+        } else {
+          this.selectImage(this.photosSource);
+        }
+      });
+  }
+
+  async selectImage(source: CameraSource) {
+    const loading = await this.loadingCtrl.create({
+      message: 'Uploading image...',
+      spinner: 'bubbles',
+      translucent: true,
+    });
+
+    try {
+      const image = await Camera.getPhoto({
+        quality: 90,
+        allowEditing: true,
+        resultType: CameraResultType.Uri,
+        source: source,
+      });
+
+      if (image) {
+        loading.present();
+        const response = await fetch(image.webPath!);
+        const blob = await response.blob();
+        const filePath = `glaze_photos/${new Date().getTime()}_${
+          image.format
+        }/${this.recipeService.recipeEditInProgess.id}`;
+        const resultUrl = await this.firebaseStorage.uploadFile(
+          filePath,
+          blob as File
+        );
+        this.recipeService.recipeEditInProgess.revisions[
+          this.revision
+        ].imageUrl = resultUrl;
+      } else {
+        this.alertController
+          .create({
+            header: 'Error',
+            message: 'Error with image',
+            buttons: ['OK'],
+          })
+          .then((alert) => alert.present());
+      }
+
+      loading.dismiss();
+    } catch (error) {
+      loading.dismiss();
+      console.error('Error accessing camera or gallery:', error);
+    }
+  }
+
+  async uploadAndSetProfilePicture(event: any) {
+    const loading = await this.loadingCtrl.create({
+      message: 'Uploading image...',
+      spinner: 'bubbles',
+      translucent: true,
+    });
+    const file = event.target.files[0];
+    if (!this.auth.user) return;
+    const filePath = `glaze_photos/${new Date().getTime()}/${
+      this.recipeService.recipeEditInProgess.id
+    }`;
+    try {
+      loading.present();
+      const resultUrl = await this.firebaseStorage.uploadFile(filePath, file);
+      this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrl =
+        resultUrl;
+      loading.dismiss();
+    } catch (error) {
+      loading.dismiss();
+      console.error('Error uploading file:', error);
+    }
+  }
+
+  setRevision(event: any) {
+    this.revision = event.detail.value - 1;
+    this.updateMaterialsList();
+    this.calculateTotalPercentage();
   }
 
   searchIngredients(event: any) {
@@ -74,34 +173,24 @@ export class RecipeEditorPage {
   }
 
   setStatus(event: any) {
-    this.recipeService.recipeEditInProgess.revisions[this.revision].status = event.detail.value;
-  }
-
-  setIngredientValue(event: any, index: number) {
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[index].name =
-      event.value.name;
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[index].type =
-      event.value.type;
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
-      index
-    ].composition.composition = event.value.composition.composition;
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
-      index
-    ].composition.colorClass = event.value.composition.colorClass;
-    this.updateMaterialsList();
+    this.recipeService.recipeEditInProgess.revisions[this.revision].status =
+      event.detail.value;
   }
 
   updateMaterialsList() {
     //remove any materials that are already in the recipe
     this.allMaterials = this.ingredientService.allMaterials.filter(
       (material) =>
-        !this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.find(
-          (ingredient) => ingredient.name === material.name
-        )
+        !this.recipeService.recipeEditInProgess.revisions[
+          this.revision
+        ].ingredients.find((ingredient) => ingredient.name === material.name)
     );
 
     console.log(this.allMaterials);
-    console.log(this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients);
+    console.log(
+      this.recipeService.recipeEditInProgess.revisions[this.revision]
+        .ingredients
+    );
   }
 
   recipeComplete(): boolean {
@@ -109,15 +198,104 @@ export class RecipeEditorPage {
       this.recipeService.recipeEditInProgess.name.trim() !== '' &&
       this.recipeService.recipeEditInProgess.description.trim() !== '' &&
       this.recipeService.recipeEditInProgess.cone !== '' &&
-      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length > 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision]
+        .ingredients.length > 0
     );
   }
 
+  deleteRevision() {
+    this.dialogueService
+      .presentConfirmationDialog(
+        'Delete Revision',
+        'Are you sure you want to delete this revision?',
+        'Yes',
+        'No'
+      )
+      .then((result) => {
+        if (result === true) {
+          this.recipeService.recipeEditInProgess.revisions.splice(
+            this.revision,
+            1
+          );
+          this.revision = 0;
+          this.recipeService.editingRevision = 0;
+          this.calculateTotalPercentage();
+        }
+      });
+  }
+
   async saveRecipeToFirestore() {
-    if (this.recipeService.recipeEditInProgess.uid !== this.auth.user?.uid) this.recipeService.recipeEditInProgess.uid = this.auth.user?.uid || '';
+    if (this.recipeService.isRevision) {
+      //check if the recipe is the same as any of the previous revisions, minus status property
+      let same = false;
+      let indexOfSame = -1;
+      for (
+        let i = 0;
+        i < this.recipeService.recipeEditInProgess.revisions.length - 1;
+        i++
+      ) {
+        //check if the revisions are the same, minus the status property
+        if (
+          JSON.stringify(
+            this.recipeService.recipeEditInProgess.revisions[i].ingredients
+          ) ===
+          JSON.stringify(
+            this.recipeService.recipeEditInProgess.revisions[this.revision]
+              .ingredients
+          )
+        ) {
+          same = true;
+          indexOfSame = i;
+          break;
+        }
+      }
+      if (same) {
+        this.alertController
+          .create({
+            header: 'No Changes',
+            message:
+              'This revision is the same as revision ' +
+              (indexOfSame + 1) +
+              '. Would you like to continue editing?',
+            buttons: [
+              {
+                text: 'Yes',
+                handler: () => {
+                  return;
+                },
+              },
+              {
+                text: 'No, take me away',
+                handler: () => {
+                  this.recipeService.isRevision = false;
+                  this.recipeService.allowExit = true;
+                  this.router.navigate(['/user-recipes']);
+                  this.recipeService.allowExit = false;
+                },
+              },
+            ],
+          })
+          .then((alert) => alert.present());
+        return;
+      }
+    }
+    const loading = await this.loadingCtrl.create({
+      message: 'Saving Recipe...',
+      spinner: 'bubbles',
+      translucent: true,
+    });
+    await loading.present();
+    if (this.recipeService.recipeEditInProgess.uid !== this.auth.user?.uid)
+      this.recipeService.recipeEditInProgess.uid = this.auth.user?.uid || '';
     this.recipeService.recipeEditInProgess.dateModified = new Date();
-    console.log(this.recipeService.recipeEditInProgess);
-    await this.firestoreService.saveRecipe(this.recipeService.recipeEditInProgess);
+    await this.firestoreService.updateRecipe(
+      this.recipeService.recipeEditInProgess
+    );
+    this.recipeService.userRecipes = await this.firestoreService.getUserRecipes(
+      this.auth.user?.uid || ''
+    );
+    if (this.recipeService.isRevision) this.recipeService.isRevision = false;
+    await loading.dismiss();
     this.alertController
       .create({
         header: 'Recipe Saved',
@@ -126,6 +304,7 @@ export class RecipeEditorPage {
           {
             text: 'Yes',
             handler: () => {
+              this.recipeService.allowExit = true;
               this.router.navigate(['/user-recipes']);
             },
           },
@@ -193,43 +372,45 @@ export class RecipeEditorPage {
   }
 
   trimName() {
-    this.recipeService.recipeEditInProgess.name = this.recipeService.recipeEditInProgess.name.trim();
+    this.recipeService.recipeEditInProgess.name =
+      this.recipeService.recipeEditInProgess.name.trim();
   }
 
   //property methods
   setName(event: any) {
-    this.name = event.target.value;
     this.recipeService.recipeEditInProgess.name = event.target.value;
   }
 
   setCone(event: any) {
-    this.cone = event.target.value;
     this.recipeService.recipeEditInProgess.cone = event.target.value;
   }
 
   trimDescription() {
-    this.recipeService.recipeEditInProgess.description = this.recipeService.recipeEditInProgess.description.trim();
+    this.recipeService.recipeEditInProgess.description =
+      this.recipeService.recipeEditInProgess.description.trim();
   }
 
   setDescription(event: any) {
-    this.description = event.target.value;
     this.recipeService.recipeEditInProgess.description = event.target.value;
   }
 
   setNotes(event: any) {
-    this.notes = event.target.value;
     this.recipeService.recipeEditInProgess.notes = event.target.value;
   }
 
   async addIngredient() {
     let cancel = false;
     if (
-      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length >= 5
+      this.recipeService.recipeEditInProgess.revisions[this.revision]
+        .ingredients.length >= 5
     ) {
       await this.dialogueService
         .presentConfirmationDialog(
           'Wait a sec',
-          `You really want more than ${this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length} ingredients?`,
+          `You really want more than ${
+            this.recipeService.recipeEditInProgess.revisions[this.revision]
+              .ingredients.length
+          } ingredients?`,
           'Yeah',
           'No'
         )
@@ -242,13 +423,16 @@ export class RecipeEditorPage {
 
     if (cancel) return;
 
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.push(
+    this.recipeService.recipeEditInProgess.revisions[
+      this.revision
+    ].ingredients.push(
       new Ingredient('', { composition: '', colorClass: '' }, '', 0, 1)
     );
 
     //Do animation stuff
     const newIngredientIndex =
-      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length - 1;
+      this.recipeService.recipeEditInProgess.revisions[this.revision]
+        .ingredients.length - 1;
 
     // Get the last ingredient's HTML element and slide it in
     const ingredientElements = document.querySelectorAll('.w-fill-available');
@@ -264,15 +448,33 @@ export class RecipeEditorPage {
 
   anyIngredients() {
     return (
-      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length > 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision]
+        .ingredients.length > 0
     );
   }
 
+  setIngredientValue(event: any, index: number) {
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
+      index
+    ].name = event.value.name;
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
+      index
+    ].type = event.value.type;
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
+      index
+    ].composition.composition = event.value.composition.composition;
+    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
+      index
+    ].composition.colorClass = event.value.composition.colorClass;
+    this.updateMaterialsList();
+  }
+
   setPercentage(event: any, index: number) {
-    if (event.target.value === '') {
-      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
-        index
-      ].percentage = 0;
+    if (event.target.value === '' || parseFloat(event.target.value) < 1) {
+      this.recipeService.recipeEditInProgess.revisions[
+        this.revision
+      ].ingredients[index].percentage = 1;
+      event.target.value = '1'; // Set the value of the input to 1
       this.calculateTotalPercentage();
       return;
     }
@@ -297,17 +499,17 @@ export class RecipeEditorPage {
 
     // Slide out the ingredient first, then remove it
     await this.slideOutIngredient(ingredientElementToRemove);
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.splice(
-      index,
-      1
-    );
+    this.recipeService.recipeEditInProgess.revisions[
+      this.revision
+    ].ingredients.splice(index, 1);
     this.updateMaterialsList();
     this.calculateTotalPercentage();
   }
 
   calculateTotalPercentage() {
     if (
-      this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.length === 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision]
+        .ingredients.length === 0
     ) {
       this.totalPercentage = 0;
       this.remainingPercentage = 100;
@@ -315,13 +517,15 @@ export class RecipeEditorPage {
     }
     this.totalPercentage =
       Math.round(
-        this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients.reduce(
+        this.recipeService.recipeEditInProgess.revisions[
+          this.revision
+        ].ingredients.reduce(
           (acc, ingredient) => acc + ingredient.percentage,
           0
         ) * 100
       ) / 100;
     this.remainingPercentage = Number.isNaN(100 - this.totalPercentage)
       ? 100
-      : Math.round((100 - this.totalPercentage) * 100) / 100;
+      : Math.abs(Math.round((100 - this.totalPercentage) * 100) / 100);
   }
 }

@@ -5,6 +5,7 @@ import { RegisterComponent } from './Components/register/register.component';
 import { AuthGuard } from './Services/auth.guard';
 import { AuthRedirectGuard } from './Services/auth-redirect.guard';
 import { LoginGuard } from './Services/login-guard.guard';
+import { CanDeactivateGuard } from './Services/can-deactivate.guard';
 
 const routes: Routes = [
   {
@@ -96,6 +97,12 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
+    path: 'recipe-editor',
+    loadChildren: () => import('./Pages/recipe-editor/recipe-editor.module').then( m => m.RecipeEditorPageModule),
+    canActivate: [AuthGuard],
+    canDeactivate: [CanDeactivateGuard]
+  },
+  {
     path: 'profile-editor',
     loadChildren: () => import('./Pages/profile-editor/profile-editor.module').then( m => m.ProfileEditorPageModule),
     canActivate: [AuthGuard]
@@ -130,8 +137,8 @@ const routes: Routes = [
     loadChildren: () => import('./Pages/image-modal/image-modal.module').then( m => m.ImageModalPageModule)
   },
   {
-    path: 'recipe-editor',
-    loadChildren: () => import('./Pages/recipe-editor/recipe-editor.module').then( m => m.RecipeEditorPageModule),
+    path: 'inventory',
+    loadChildren: () => import('./Pages/inventory/inventory.module').then( m => m.InventoryPageModule),
     canActivate: [AuthGuard]
   },
 ];

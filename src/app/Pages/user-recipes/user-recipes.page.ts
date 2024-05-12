@@ -1,3 +1,4 @@
+import { LowerCasePipe } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Recipe } from 'src/app/Models/recipeModel';
@@ -24,13 +25,13 @@ export class UserRecipesPage implements OnInit {
     private router: Router,
     public recipeService: RecipesService
   ) {
+    console.log('UserRecipesPage constructor')
   }
 
   async ngOnInit() {
+    console.log('UserRecipesPage ngOnInit')
     this.loaded = false;
     this.recipeService.userRecipes = await this.firestore.getUserRecipes(this.auth.user?.uid || '');
-    this.userRecipes = this.recipeService.userRecipes;
-    console.log(this.userRecipes);
     this.loaded = true;
   }
 
@@ -41,6 +42,26 @@ export class UserRecipesPage implements OnInit {
   editRecipe() {
     this.recipeService.isEditing = true;
     this.router.navigate(['/recipe-builder']);
+  }
+
+  getLowestStatusName(recipe: Recipe): Status {
+    let lowestStatus: string = Status.Tested;
+    let lowestStatusFound: boolean = false;
+    recipe.revisions.forEach((revision) => {
+      if (lowestStatusFound) {
+        return;
+      }
+      if (revision.status === Status.InProgress && lowestStatus !== Status.New) {
+        lowestStatus = Status.InProgress;
+        return;
+      }
+      if (revision.status === Status.New) {
+        lowestStatus = Status.New;
+        lowestStatusFound = true;
+        return;
+      }
+    });
+    return lowestStatus as Status;
   }
 
   getChipColor(status: Status) {

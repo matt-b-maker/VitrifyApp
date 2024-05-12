@@ -14,11 +14,4 @@ export class RecipeRevision {
     this.revision = revision;
     this.ingredients = ingredients;
   }
-
-  clear() {
-    this.ingredients = [];
-    this.notes = "";
-    this.imageUrl = "";
-    this.status = Status.New;
-  }
 }

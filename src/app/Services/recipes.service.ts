@@ -8,6 +8,8 @@ import { RecipeRevision } from '../Models/recipeRevision';
 
 export class RecipesService {
   isEditing: boolean = true;
+  isRevision: boolean = false;
+  allowExit: boolean = false;
 
   userRecipes: Recipe[] = [];
 

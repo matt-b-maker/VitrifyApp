@@ -118,9 +118,12 @@ export class FirestoreService {
       notes: recipe.notes,
       dateCreated: recipe.dateCreated,
       dateModified: new Date(),
-      revisions: recipe.revisions.map((revision) => ({
-        revision: revision.revision,
-        ingredients: revision.ingredients.map((ingredient) => ({
+      revisions: recipe.revisions.map((r) => ({
+        revision: r.revision,
+        status: r.status,
+        notes: r.notes,
+        imageUrl: r.imageUrl || '', // Include imageUrl if needed
+        ingredients: r.ingredients.map((ingredient) => ({
           name: ingredient.name,
           composition: {
             composition: ingredient.composition.composition,
@@ -133,8 +136,7 @@ export class FirestoreService {
           listName: ingredient.listName,
         })),
       })),
-      public: recipe.public,
-      tested: recipe.tested,
+      public: recipe.public || false,
     };
     await this.upsert('recipes', recipe.id, data);
   }

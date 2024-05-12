@@ -36,9 +36,10 @@ export class AppComponent implements OnInit, OnDestroy {
   public appPages = [
     { title: 'Home', url: '/home', icon: 'home' },
     { title: 'My Recipes', url: '/user-recipes', icon: 'book' },
-    { title: 'Recipe Maker', url: '/recipe-builder', icon: 'construct' },
+    { title: 'Recipe Builder', url: '/recipe-builder', icon: 'construct' },
     { title: 'My Firing Schedules', url: '/user-firing-schedules', icon: 'flame'},
     { title: 'Firing Schedule Builder', url: '/firing-schedule-builder', icon: 'bar-chart' },
+    { title: 'My Inventory', url: "/inventory", icon: 'file-tray-stacked'},
     { title: 'Materials', url: '/materials', icon: 'flask' },
     { title: 'Explore', url: '/explore', icon: 'globe' },
     { title: 'Learn', url: '/learn', icon: 'library' },

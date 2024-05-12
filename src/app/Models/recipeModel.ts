@@ -17,7 +17,6 @@ export class Recipe {
     new RecipeRevision(1, [])
   ];
   public: boolean = true;
-  tested: boolean = false;
 
   constructor(id: string, name: string, description: string, creator: string, cone: string, revisions: RecipeRevision[]) {
     this.id = id;

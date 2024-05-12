@@ -18,7 +18,7 @@
           <div *ngIf="recipeService.userRecipes.length > 0">
             <ion-label>{{recipe.name}}</ion-label>
             <div>
-              <ion-chip [color]="getChipColor(recipe.revisions[recipe.revisions.length-1].status)">{{recipe.revisions[recipe.revisions.length-1].status}}</ion-chip>
+              <ion-chip [color]="getChipColor(getLowestStatusName(recipe))">{{getLowestStatusName(recipe)}}</ion-chip>
               <ion-chip color="tertiary">
                 <ion-icon name="triangle-outline"></ion-icon>
                 <ion-label>{{recipe.cone}}</ion-label>

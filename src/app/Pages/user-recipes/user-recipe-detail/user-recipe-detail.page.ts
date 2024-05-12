@@ -8,6 +8,7 @@ import { FirestoreService } from 'src/app/Services/firestore.service';
 import { AuthService } from 'src/app/Services/auth.service';
 import { v4 as uuidv4 } from 'uuid';
 import { Status } from 'src/app/Models/status';
+import { RecipeRevision } from 'src/app/Models/recipeRevision';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -17,6 +18,7 @@ import { Status } from 'src/app/Models/status';
 export class UserRecipeDetailPage implements OnInit {
   loadedRecipe!: Recipe;
   revision: number = 0;
+  status = Status;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -27,8 +29,7 @@ export class UserRecipeDetailPage implements OnInit {
     private alertController: AlertController,
     private auth: AuthService,
     private changeDetector: ChangeDetectorRef
-  ) {
-  }
+  ) {}
 
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe((paramMap) => {
@@ -39,6 +40,7 @@ export class UserRecipeDetailPage implements OnInit {
       const recipeId = paramMap.get('recipeId');
       if (recipeId !== null) {
         this.loadedRecipe = this.recipeService.getRecipeById(recipeId);
+        console.log(this.loadedRecipe);
         this.revision = this.loadedRecipe.revisions.length - 1;
       } else {
         //route somewhere else
@@ -48,26 +50,31 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   deleteRecipe() {
-    this.alertController.create({
-      header: 'Delete Recipe',
-      message: 'Are you sure you want to delete this recipe?',
-      buttons: [
-        {
-          text: 'Cancel',
-          role: 'cancel'
-        },
-        {
-          text: 'Delete',
-          handler: () => {
-            this.recipeService.userRecipes = this.recipeService.userRecipes.filter(recipe => recipe.id !== this.loadedRecipe.id);
-            this.firestoreService.delete('recipes', this.loadedRecipe.id);
-            this.route.navigate(['/user-recipes']);
-          }
-        }
-      ]
-    }).then(alertEl => {
-      alertEl.present();
-    });
+    this.alertController
+      .create({
+        header: 'Delete Recipe',
+        message: 'Are you sure you want to delete this recipe?',
+        buttons: [
+          {
+            text: 'Cancel',
+            role: 'cancel',
+          },
+          {
+            text: 'Delete',
+            handler: () => {
+              this.recipeService.userRecipes =
+                this.recipeService.userRecipes.filter(
+                  (recipe) => recipe.id !== this.loadedRecipe.id
+                );
+              this.firestoreService.delete('recipes', this.loadedRecipe.id);
+              this.route.navigate(['/user-recipes']);
+            },
+          },
+        ],
+      })
+      .then((alertEl) => {
+        alertEl.present();
+      });
   }
 
   async enlargeImage() {
@@ -75,36 +82,67 @@ export class UserRecipeDetailPage implements OnInit {
       component: ImageModalPage,
       componentProps: {
         imageUrl: this.loadedRecipe.revisions[this.revision].imageUrl,
-      }
+      },
     });
     return await modal.present();
   }
 
-  goToRecipeEditor() {
-    this.recipeService.isEditing = true;
-    if (this.loadedRecipe.uid !== this.auth.userMeta?.uid) {
-      this.alertController.create({
-        header: 'Hold up..',
-        message: 'You are about to edit a recipe that is not yours, essentially making it your own. Are you sure you want to continue?',
+  moveRevisionToTested() {
+    //make sure the user knows what they are doing
+    this.alertController
+      .create({
+        header: 'Move to Tested',
+        message:
+          'Are you sure you want to move this revision to tested? This will cement you in the halls of glaze lore forever.',
         buttons: [
           {
             text: 'Cancel',
-            role: 'cancel'
+            role: 'cancel',
           },
           {
-            text: 'Let\'s go',
+            text: 'Move',
             handler: () => {
-              this.recipeService.recipeEditInProgess = this.loadedRecipe;
-              this.recipeService.editingRevision = this.revision;
-              this.recipeService.recipeEditInProgess.id = uuidv4();
-              this.recipeService.recipeEditInProgess.uid = this.auth.userMeta?.uid || ''
-              this.route.navigate(['/recipe-editor']);
-            }
-          }
-        ]
-      }).then(alertEl => {
+              this.loadedRecipe.revisions[this.revision].status = Status.Tested;
+              this.firestoreService.updateRecipe(this.loadedRecipe);
+            },
+          },
+        ],
+      })
+      .then((alertEl) => {
         alertEl.present();
       });
+  }
+
+  goToRecipeEditor() {
+    this.recipeService.isEditing = true;
+    this.recipeService.isRevision = false;
+    if (this.loadedRecipe.uid !== this.auth.userMeta?.uid) {
+      this.alertController
+        .create({
+          header: 'Hold up..',
+          message:
+            'You are about to edit a recipe that is not yours, essentially making it your own. Are you sure you want to continue?',
+          buttons: [
+            {
+              text: 'Cancel',
+              role: 'cancel',
+            },
+            {
+              text: "Let's go",
+              handler: () => {
+                this.recipeService.recipeEditInProgess = this.loadedRecipe;
+                this.recipeService.editingRevision = this.revision;
+                this.recipeService.recipeEditInProgess.id = uuidv4();
+                this.recipeService.recipeEditInProgess.uid =
+                  this.auth.userMeta?.uid || '';
+                this.route.navigate(['/recipe-editor']);
+              },
+            },
+          ],
+        })
+        .then((alertEl) => {
+          alertEl.present();
+        });
     }
     this.recipeService.recipeEditInProgess = this.loadedRecipe;
     this.recipeService.editingRevision = this.revision;
@@ -128,15 +166,28 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   addRevision() {
-    this.recipeService.recipeEditInProgess = this.loadedRecipe;
-    this.recipeService.recipeEditInProgess.revisions.push(this.recipeService.recipeEditInProgess.revisions[this.revision]);
-    this.recipeService.editingRevision = this.recipeService.recipeEditInProgess.revisions.length - 1;
+    const lastRevision =
+      this.loadedRecipe.revisions[this.loadedRecipe.revisions.length - 1];
+    let newRevision: RecipeRevision = {
+      ...lastRevision,
+      revision: this.loadedRecipe.revisions.length + 1,
+      status: Status.New,
+      imageUrl: '',
+      ingredients: lastRevision.ingredients.map((ing) => ({ ...ing })),
+    };
+
+    this.recipeService.recipeEditInProgess = {
+      ...this.loadedRecipe,
+      revisions: [...this.loadedRecipe.revisions, newRevision],
+    };
+
+    this.recipeService.editingRevision =
+      this.recipeService.recipeEditInProgess.revisions.length - 1;
+    this.recipeService.isRevision = true;
     this.route.navigate(['/recipe-editor']);
   }
 
   setRevision(event: any) {
-    console.log(event.detail.value);
     this.revision = event.detail.value - 1;
-    this.changeDetector.detectChanges();
   }
 }

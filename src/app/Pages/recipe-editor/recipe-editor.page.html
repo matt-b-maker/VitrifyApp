@@ -4,18 +4,20 @@
       <ion-menu-button></ion-menu-button>
     </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button fill="outline" size="small" *ngIf="recipeComplete()" (click)="saveRecipeToFirestore()">Save</ion-button>
+      <ion-button
+        fill="outline"
+        size="small"
+        *ngIf="recipeComplete()"
+        (click)="saveRecipeToFirestore()"
+        >Save</ion-button
+      >
     </ion-buttons>
     <ion-title></ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content [fullscreen]="true">
-  <!-- <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Recipe</ion-title>
-    </ion-toolbar>
-  </ion-header> -->
+  <!--title stuff-->
   <ion-card>
     <ion-card-header>
       <ion-toolbar>
@@ -25,21 +27,10 @@
     </ion-card-header>
     <ion-card-content>
       <ion-grid>
-        <ion-row>
-          <ion-col size="auto">
-            <ion-item lines="none">
-              <ion-label>
-                Status:
-              </ion-label>
-              <ion-select [value]="recipeService.recipeEditInProgess.revisions[revision].status" (ionChange)="setStatus($event)"  interface="popover">
-                <ion-select-option *ngFor="let status of statuses; let i = index" [value]="status">{{status}}</ion-select-option>
-              </ion-select>
-            </ion-item>
-          </ion-col>
-        </ion-row>
         <ion-row class="">
-          <ion-col size="9">
+          <ion-col size="8">
             <ion-input
+              [disabled]="recipeService.isRevision || recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
               fill="outline"
               label="Recipe Name"
               labelPlacement="stacked"
@@ -47,13 +38,56 @@
               (ionBlur)="trimName()"
             ></ion-input>
           </ion-col>
-          <ion-col size="3">
-            <ion-label>Revision: {{recipeService.editingRevision + 1}}</ion-label>
+          <ion-col size="4" *ngIf="recipeService.isEditing">
+            <ion-label
+              *ngIf="recipeService.recipeEditInProgess.revisions.length === 1 || recipeService.isRevision"
+              >Revision: {{recipeService.editingRevision + 1}}</ion-label
+            >
+            <ion-item
+              lines="none"
+              *ngIf="recipeService.recipeEditInProgess.revisions.length > 1 && !recipeService.isRevision"
+            >
+              <ion-select
+                justify="end"
+                [value]="revision  +  1"
+                (ionChange)="setRevision($event)"
+                interface="popover"
+              >
+                <ion-select-option
+                  *ngFor="let revision of recipeService.recipeEditInProgess.revisions; let i = index"
+                  [value]="i + 1"
+                  >{{i + 1}}</ion-select-option
+                >
+              </ion-select>
+              <ion-label class="w-auto ml-5">
+                of
+                {{recipeService.recipeEditInProgess.revisions.length}}</ion-label
+              >
+            </ion-item>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col size="auto">
+            <ion-item lines="none">
+              <ion-label> Status: </ion-label>
+              <ion-select
+                [value]="recipeService.recipeEditInProgess.revisions[revision].status"
+                (ionChange)="setStatus($event)"
+                interface="popover"
+              >
+                <ion-select-option
+                  *ngFor="let status of statuses; let i = index"
+                  [value]="status"
+                  >{{status}}</ion-select-option
+                >
+              </ion-select>
+            </ion-item>
           </ion-col>
         </ion-row>
         <ion-row>
           <ion-col size="3">
             <ion-input
+              [disabled]="recipeService.isRevision || recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
               label="Cone"
               labelPlacement="stacked"
               fill="outline"
@@ -62,12 +96,10 @@
               type="number"
               #coneInput
             ></ion-input>
-            <!-- <ion-select interface="action-sheet" label="Cone" labelPlacement="stacked" fill="outline" [value]="cone" (ionChange)="setCone($event)">
-              <ion-select-option *ngFor="let coneSelection of cones" [value]="coneSelection">{{coneSelection}}</ion-select-option>
-            </ion-select> -->
           </ion-col>
           <ion-col size="6">
             <ion-select
+              [disabled]="recipeService.isRevision || recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
               [(ngModel)]="recipeService.recipeEditInProgess.firingType"
               label="Firing Type"
               labelPlacement="stacked"
@@ -82,6 +114,7 @@
         <ion-row>
           <ion-col>
             <ion-textarea
+              [disabled]="recipeService.isRevision || recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
               fill="outline"
               label="Description"
               labelPlacement="stacked"
@@ -95,7 +128,45 @@
     </ion-card-content>
   </ion-card>
 
+  <!--image stuff-->
   <ion-card>
+    <ion-card-header>
+      <ion-toolbar>
+        <ion-item lines="none" *ngIf="!isMobile">
+          <input
+            type="file"
+            accept="image/*"
+            (change)="uploadAndSetProfilePicture($event)"
+            hidden
+            #fileInput
+          />
+          <ion-button (click)="fileInput.click()"
+            >Update Image</ion-button
+          >
+        </ion-item>
+        <ion-item lines="none">
+          <ion-button *ngIf="isMobile" (click)="updateImage()"
+            >Update Image</ion-button
+          >
+        </ion-item>
+      </ion-toolbar>
+    </ion-card-header>
+    <ion-card-content class="ion-justify-content-center">
+      <ion-avatar class="ion-margin w-50 horizontal-center" *ngIf="!recipeService.recipeEditInProgess.revisions[revision].imageUrl">
+        <ion-img src="../../../../assets/images/placeholder-image.png"></ion-img>
+      </ion-avatar>
+      <ion-img
+        *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrl"
+        class="ion-margin w-50 horizontal-center"
+        [src]="recipeService.recipeEditInProgess.revisions[revision].imageUrl"
+      ></ion-img>
+    </ion-card-content>
+  </ion-card>
+
+  <!--ingredients stuff-->
+  <ion-card
+    [disabled]="recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
+  >
     <ion-card-header>
       <ion-toolbar>
         <ion-card-title>Ingredients</ion-card-title>
@@ -104,7 +175,11 @@
     </ion-card-header>
     <ion-card-content>
       <ion-list lines="none">
-        <ion-item-sliding *ngFor="let ingredient of recipeService.recipeEditInProgess.revisions[revision].ingredients; let i = index" #itemSliding class="slide-in-animation">
+        <ion-item-sliding
+          *ngFor="let ingredient of recipeService.recipeEditInProgess.revisions[revision].ingredients; let i = index"
+          #itemSliding
+          class="slide-in-animation"
+        >
           <ion-item>
             <ion-grid class="ingredient-row">
               <ion-row class="ion-align-items-center">
@@ -117,11 +192,19 @@
                     [(items)]="allMaterials"
                     [canSearch]="true"
                     (onSearch)="searchIngredients($event)"
-                    (onChange)="setIngredientValue($event, i)">
-                    <ng-template ionicSelectableItemTemplate let-ingredient="item">
+                    (onChange)="setIngredientValue($event, i)"
+                  >
+                    <ng-template
+                      ionicSelectableItemTemplate
+                      let-ingredient="item"
+                    >
                       <div class="vertical-stack">
                         <label>{{ingredient.name}}</label>
-                        <label class="text-small" [ngClass]="ingredient.type + '-color'">{{ingredient.composition.composition}}</label>
+                        <label
+                          class="text-small"
+                          [ngClass]="ingredient.type + '-color'"
+                          >{{ingredient.composition.composition}}</label
+                        >
                       </div>
                     </ng-template>
                   </ionic-selectable>
@@ -132,9 +215,10 @@
                     type="number"
                     label="%"
                     labelPlacement="floating"
-                    [(ngModel)]="ingredient.percentage"
-                    [clearOnEdit]="true"
-                    (ionChange)="setPercentage($event, i)"></ion-input>
+                    min="1"
+                    [value]="ingredient.percentage"
+                    (input)="setPercentage($event, i)"
+                  ></ion-input>
                 </ion-col>
               </ion-row>
             </ion-grid>
@@ -147,10 +231,12 @@
         </ion-item-sliding>
       </ion-list>
     </ion-card-content>
-
   </ion-card>
 
-  <ion-card>
+  <!--notes stuff-->
+  <ion-card
+    [disabled]="recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
+  >
     <ion-card-header>
       <ion-card-title>Notes</ion-card-title>
     </ion-card-header>
@@ -163,6 +249,11 @@
       ></ion-textarea>
     </ion-card-content>
   </ion-card>
+
+  <!--Revision Deletion Stuff-->
+  <ion-item class="ion-justify-content-center" *ngIf="!recipeService.isRevision && recipeService.recipeEditInProgess.revisions.length > 1" lines="none">
+    <ion-button class="ion-justify-content-center" (click)="deleteRevision()">Delete this revision</ion-button>
+  </ion-item>
 </ion-content>
 <ion-footer>
   <ion-toolbar>
@@ -173,7 +264,7 @@
       slot="end"
       [ngClass]="remainingPercentageOver ? 'red' : 'black'"
       class="ion-margin"
-      >
+    >
       Additional: {{remainingPercentage}}%</ion-label
     >
   </ion-toolbar>
