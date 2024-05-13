@@ -35,7 +35,26 @@ ion-content.locked-scroll {
 .section {
   height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: start;
   justify-content: center;
   font-size: 2rem;
+}
+
+.horizontal-div{
+  display: flex;
+  flex-direction: row;
+}
+
+.horizontal-center {
+  display: flex;
+  justify-content: center;
+}
+
+.vertical-center {
+  display: flex;
+  align-items: center;
+}
+
+.w-fill-available {
+  width: fill-available;
 }

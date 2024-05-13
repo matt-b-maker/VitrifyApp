@@ -20,6 +20,7 @@ import { IonicSelectableComponent } from 'ionic-selectable';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule, HttpHandler } from '@angular/common/http';
 import { Status } from './Models/status';
+import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 const platform = Capacitor.getPlatform();
 
@@ -44,7 +45,7 @@ const platform = Capacitor.getPlatform();
             }),
             provideAuth(() => getAuth()),
             provideFirestore(() => getFirestore())],
-  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, GooglePlus, HttpClient],
+  providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, GooglePlus, HttpClient, provideCharts(withDefaultRegisterables())],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

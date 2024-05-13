@@ -22,7 +22,7 @@ export class CommunityRecipeDetailPage implements OnInit {
       }
       var recipeId = params.get('recipeId');
       if (recipeId !== null) {
-        this.loadedRecipe = this.recipesService.getRecipeById(recipeId) as Recipe;
+        this.loadedRecipe = this.recipesService.getUserRecipeById(recipeId) as Recipe;
       }
     });
   }

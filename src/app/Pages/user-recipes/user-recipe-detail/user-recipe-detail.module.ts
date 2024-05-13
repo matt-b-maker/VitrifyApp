@@ -7,13 +7,15 @@ import { IonicModule } from '@ionic/angular';
 import { UserRecipeDetailPageRoutingModule } from './user-recipe-detail-routing.module';
 
 import { UserRecipeDetailPage } from './user-recipe-detail.page';
+import { BaseChartDirective } from 'ng2-charts';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    UserRecipeDetailPageRoutingModule
+    UserRecipeDetailPageRoutingModule,
+    BaseChartDirective
   ],
   declarations: [UserRecipeDetailPage]
 })

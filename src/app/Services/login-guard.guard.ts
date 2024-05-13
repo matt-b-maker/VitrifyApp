@@ -11,7 +11,6 @@ export class LoginGuard {
   constructor(private authService: AuthService, private router: Router) {}
 
   canActivate() {
-    console.log(this.authService.userAuthenticated())
     // if the user is logged in, redirect to the profile page
     if (this.authService.userAuthenticated()) {
       this.router.navigate(['/profile']);

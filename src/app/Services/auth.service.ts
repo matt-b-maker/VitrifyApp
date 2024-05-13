@@ -149,9 +149,10 @@ export class AuthService {
 
   userAuthenticated(): boolean {
     if (this.user) {
-      // Cast this.user to any temporarily to bypass the type checking
       const tokenManager = (this.user as any).stsTokenManager;
-      return !!tokenManager.refreshToken;
+      const expirationTime = tokenManager.expirationTime;
+      const currentTime = new Date().getTime();
+      return !!tokenManager.refreshToken && currentTime < expirationTime;
     } else {
       return false;
     }

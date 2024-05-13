@@ -27,7 +27,7 @@
         <ion-item slot="end" lines="none">
           <ion-button
             color="danger"
-            *ngIf="loadedRecipe.revisions[revision].status !== status.Tested"
+            *ngIf="loadedRecipe.revisions[revision].status !== status.Tested && recipeIsUsers()"
             (click)="moveRevisionToTested()"
             >Mark as Tested</ion-button
           >
@@ -125,11 +125,16 @@
         <ion-toolbar>
           <ion-buttons slot="start">
             <ion-button (click)="cancel()">Cancel</ion-button>
+            <ion-button *ngIf="currentSectionIndex !== 0" (click)="prevSection()">Previous {{prevSectionName}}</ion-button>
           </ion-buttons>
-          <ion-title>Welcome</ion-title>
           <ion-buttons slot="end">
-            <ion-button (click)="nextSection()">Next</ion-button>
-            <ion-button [strong]="true" (click)="confirm()">Confirm</ion-button>
+            <ion-button *ngIf="currentSectionIndex !== 3" (click)="nextSection()">Next: {{nextSectionName}}</ion-button>
+            <ion-button
+              *ngIf="currentSectionIndex === 3"
+              [strong]="true"
+              (click)="confirm()"
+              >Confirm</ion-button
+            >
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
@@ -141,15 +146,112 @@
               <ion-card-subtitle>Setup with some questions</ion-card-subtitle>
             </ion-card-header>
             <ion-card-content class="ion-justify-content-center">
-              <ion-item>
-                <ion-label>How much in total do you want to make?</ion-label>
-                <ion-input type="number" [(ngModel)]="totalAmount"></ion-input>
-              </ion-item>
+              <ion-card>
+                <ion-card-content class="ion-justify-content-center">
+                  <ion-label class="horizontal-center">Water Quantity</ion-label>
+                  <ion-radio-group [(ngModel)]="waterPreference">
+                    <ion-radio class="ion-margin" value="Proportion">Proportional</ion-radio>
+                    <ion-radio class="ion-margin" value="Specific Gravity">Specific Gravity</ion-radio>
+                  </ion-radio-group>
+                  <div class="ion-justify-content-center" *ngIf="waterPreference === 'Proportion'">
+                    <ion-label>Water to Dry Material Ratio</ion-label>
+                    <div class="horizontal-div">
+                      <ion-input
+                      (ionBlur)="scrollToSection()"
+                      type="number"
+                      [(ngModel)]="waterToDryMaterialRatio"
+                    ></ion-input>
+                    <ion-label>:10</ion-label>
+                    </div>
+                  </div>
+                  <ion-item *ngIf="waterPreference === 'Specific Gravity'">
+                    <ion-label>Specific Gravity</ion-label>
+                    <ion-input
+                      (ionBlur)="scrollToSection()"
+                      type="number"
+                      [(ngModel)]="specificGravity"
+                    ></ion-input>
+                  </ion-item>
+                </ion-card-content>
+              </ion-card>
+              <ion-card>
+                <ion-card-content>
+                  <ion-label>Batch Size</ion-label>
+                  <ion-radio-group
+                    value="100"
+                    (ionChange)="setBatchSize($event)"
+                  >
+                    <ion-radio
+                      class="ion-margin"
+                      labelPlacement="start"
+                      value="100"
+                    >
+                      Test Batch (100g)
+                    </ion-radio>
+                    <ion-radio
+                      class="ion-margin"
+                      labelPlacement="start"
+                      value="500"
+                    >
+                      Medium Batch (500g)
+                    </ion-radio>
+                    <ion-radio
+                      class="ion-margin"
+                      labelPlacement="start"
+                      value="1000"
+                    >
+                      Large Batch (1000g)
+                    </ion-radio>
+                    <ion-radio
+                      class="ion-margin"
+                      labelPlacement="start"
+                      value="custom"
+                    >
+                      Custom
+                    </ion-radio>
+                  </ion-radio-group>
+                </ion-card-content>
+              </ion-card>
             </ion-card-content>
           </ion-card>
         </div>
-        <div id="section-1" class="section">Section 2</div>
-        <div id="section-2" class="section">Section 3</div>
+        <div id="section-1" class="section w-fill-available">
+          <!-- <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'"> </canvas> -->
+          <div class="w-fill-available">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-subtitle>Weigh 'em Out</ion-card-subtitle>
+                <ion-card-title>Materials</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <ion-list>
+                  <ion-item *ngFor="let ingredient of loadedRecipe.revisions[revision].ingredients">
+                    <ion-checkbox>{{ingredient.name}}: {{ingredient.quantity}}g</ion-checkbox>
+                  </ion-item>
+                </ion-list>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
+        <div id="section-2" class="section vertical-center">
+          <div class="w-fill-available">
+            <ion-card>
+              <ion-card-header>
+                <ion-card-title>Water</ion-card-title>
+              </ion-card-header>
+              <ion-card-content>
+                <ion-list>
+                  <ion-item *ngIf="waterPreference === 'Proportion'">
+                    <ion-label>Your ratio is {{waterToDryMaterialRatio}}:10, so the amount of water you need is {{this.totalAmount * (this.waterToDryMaterialRatio / 10)}}g</ion-label>
+                  </ion-item>
+                  <ion-item *ngIf="waterPreference === 'Specific Gravity'">
+                    <ion-label>Start with a 1:1 ratio of water, so in this case, {{totalAmount}}g of water. Add more little by little until you reach your desired specific gravity</ion-label>
+                  </ion-item>
+                </ion-list>
+              </ion-card-content>
+            </ion-card>
+          </div>
+        </div>
         <div id="section-3" class="section">Section 4</div>
       </ion-content>
     </ng-template>

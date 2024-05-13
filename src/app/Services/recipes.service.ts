@@ -12,12 +12,17 @@ export class RecipesService {
   allowExit: boolean = false;
 
   userRecipes: Recipe[] = [];
+  allRecipes: Recipe[] = [];
 
   recipeBuildInProgess: Recipe = new Recipe("", "", "", "", '06', [new RecipeRevision(1, [])]);
   recipeEditInProgess: Recipe = new Recipe("", "", "", "", '06', [new RecipeRevision(1, [])]);
   editingRevision: number = 0;
 
-  getRecipeById(id: string): Recipe {
+  getUserRecipeById(id: string): Recipe {
     return {...this.userRecipes.find(recipe => recipe.id === id)!};
+  }
+
+  getRecipeById(id: string): Recipe {
+    return {...this.allRecipes.find(recipe => recipe.id === id)!};
   }
 }

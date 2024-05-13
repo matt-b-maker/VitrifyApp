@@ -157,8 +157,9 @@ export class FirestoreService {
   async getPublicRecipes(): Promise<any> {
     const q = query(
       collection(this.firestore, 'recipes'),
-      where('public', '==', true),
-      where('tested', '==', true)
+      where('uid', '!=', this.auth.userMeta?.uid),
+      // where('public', '==', true),
+      // where('tested', '==', true)
     );
     return await firstValueFrom(collectionData(q));
   }
