@@ -15,6 +15,7 @@ dependencies {
     implementation project(':capacitor-camera')
     implementation project(':capacitor-filesystem')
     implementation project(':capacitor-push-notifications')
+    implementation project(':capacitor-splash-screen')
     implementation project(':codetrix-studio-capacitor-google-auth')
     implementation "com.google.android.gms:play-services-auth:15.0.1"
     implementation "com.google.android.gms:play-services-identity:15.0.1"

@@ -1,8 +1,8 @@
-import { Component, OnDestroy, OnInit, getPlatform } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewChild, getPlatform } from '@angular/core';
 import { AuthService } from './Services/auth.service';
 import { Subscription } from 'rxjs';
 import { User } from 'firebase/auth';
-import { Router } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
 import { App as CapacitorApp } from '@capacitor/app';
 import { UserMeta } from './Models/userMetaModel';
@@ -13,6 +13,7 @@ import { UserMeta } from './Models/userMetaModel';
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
+
   constructor(
     public auth: AuthService,
     private router: Router,

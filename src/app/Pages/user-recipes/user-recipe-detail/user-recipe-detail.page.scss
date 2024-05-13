@@ -26,3 +26,16 @@ border-black {
 ml-5 {
   margin-left: 5px;
 }
+
+/* modal.component.scss */
+ion-content.locked-scroll {
+  --overflow-y: hidden;
+}
+
+.section {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+}

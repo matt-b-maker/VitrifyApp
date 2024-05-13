@@ -1,0 +1,12 @@
+{
+  "icon": {
+    "sources": ["./assets/icon.png"],
+    "outputDir": "android/app/src/main/res",
+    "webp": true
+  },
+  "splash": {
+    "sources": ["path/to/splash.png"],
+    "outputDir": "android/app/src/main/res",
+    "webp": true
+  }
+}

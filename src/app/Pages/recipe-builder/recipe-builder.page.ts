@@ -385,55 +385,72 @@ export class RecipeBuilderPage {
     try {
       const newRecipeResponse: string = await this.openAiService.getCompletion(
         `Glaze recipe, cone: ${this.recipeService.recipeBuildInProgess.cone}, firing type: ${this.recipeService.recipeBuildInProgess.firingType} and description: ${this.recipeService.recipeBuildInProgess.description}.
-        Your response should be formatted as follows:
-        IngredientName: [Ingredient Name Here][newline]IngredientType(Silica, Flux, Stabilizer, or Colorant): [Ingredient Type Here][newline]Percentage: [Percentage Here][newline][newline]
-        Put any notes you have at the end of the response.
-        Like this: [Notes: any notes you want to add.]
+        Your response should be formatted as json with the list of ingredients and notes. Here's an example response:
+        {
+          "ingredients": [
+            {
+              "IngredientName": "Nepheline Syenite",
+              "IngredientType": "Flux",
+              "Percentage": 55.4
+            },
+            {
+              "IngredientName": "Silica",
+              "IngredientType": "Silica",
+              "Percentage": 25.6
+            },
+            {
+              "IngredientName": "EPK Kaolin",
+              "IngredientType": "Stabilizer",
+              "Percentage": 15.1
+            },
+            {
+              "IngredientName": "Copper Carbonate",
+              "IngredientType": "Colorant",
+              "Percentage": 5.9
+            }
+          ],
+          "notes": "This glaze formula creates a glossy finish suitable for cone 6 oxidation firing environments. Adjust the amount of Copper Carbonate to vary the color intensity."
+        }
         Also, feel free to play with the percentages as floats and be as creative as you want!
-        Ingredients should be ordered from most to least percentage. And please don't include any non alpha numeric characters anywhere in the response.
-        This is for an automation, so it's extremely important that the response is formatted correctly. Thanks!`
+        If you cannot make a glaze with the given information, please respond with "I cannot make a glaze with this information.".`
       );
 
+      const responseJson = JSON.parse(newRecipeResponse); // Assuming the API response is in JSON string format
+
       console.log(newRecipeResponse);
+      console.log(responseJson);
 
-      let recipeLines = newRecipeResponse.split('\n\n');
+      if (responseJson.ingredients.length === 0) {
+        await this.alertController
+          .create({
+            header: 'No Recipe Found',
+            message: 'Sorry, I couldn\'t generate a recipe with the information you provided.',
+            buttons: ['OK'],
+          })
+          .then((alert) => {
+            alert.present();
+          });
+        loading.dismiss();
+        return;
+      }
 
-      recipeLines.forEach((line) => {
-        if (line.includes('Notes:')) {
-          this.recipeService.recipeBuildInProgess.revisions[0].notes = line.replace(
-            'Notes: ',
-            ''
-          );
-        } else {
-          let name: string = line
-            .split('\n')[0]
-            .replace('IngredientName: ', '');
-          let type: string = line
-            .split('\n')[1]
-            .replace('IngredientType: ', '');
-          let percentage: number = parseFloat(
-            line.split('\n')[2].replace('Percentage: ', '')
-          );
-          let matchingIngredient = this.ingredientService.allMaterials.find(
-            (material) => material.name.toLowerCase() === name.toLowerCase()
-          );
-          let newIngredient = new Ingredient(
-            matchingIngredient?.name || name,
-            {
-              composition: matchingIngredient?.composition.composition || '',
-              colorClass: '',
-            },
-            type.toLowerCase(),
-            0,
-            percentage
-          );
-
-          ingredients.push(newIngredient);
-        }
+      responseJson.ingredients.forEach((ingredient: { IngredientName: string; IngredientType: string; Percentage: number; }) => {
+        let newIngredient = new Ingredient(
+          ingredient.IngredientName,
+          {
+            composition: '',
+            colorClass: '',
+          },
+          ingredient.IngredientType.toLowerCase(),
+          0,
+          ingredient.Percentage
+        );
+        this.recipeService.recipeBuildInProgess.revisions[0].ingredients.push(newIngredient);
       });
-      ingredients.sort((a, b) => b.percentage - a.percentage);
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients = ingredients;
-      this.calculateTotalPercentage();
+
+      this.recipeService.recipeBuildInProgess.revisions[0].notes = responseJson.notes;
+
+      this.calculateTotalPercentage(); // Update the total percentage if needed
     } catch (error) {
       console.error('Error in aiGenerateRecipe:', error);
     }

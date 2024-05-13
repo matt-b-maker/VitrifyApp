@@ -7,9 +7,7 @@
         </ion-button>
       </ion-buttons>
       <ion-buttons slot="end">
-        <ion-button (click)="deleteRecipe()">
-          Delete Recipe
-        </ion-button>
+        <ion-button (click)="deleteRecipe()"> Delete Recipe </ion-button>
         <ion-button (click)="goToRecipeEditor()">
           <ion-icon slot="icon-only" name="create"></ion-icon>
         </ion-button>
@@ -21,15 +19,28 @@
     <ion-card-header>
       <ion-item lines="none">
         <ion-item lines="none" slot="start">
-          <ion-chip [color]="getChipColor(loadedRecipe.revisions[revision].status)">{{loadedRecipe.revisions[revision].status}}</ion-chip>
+          <ion-chip
+            [color]="getChipColor(loadedRecipe.revisions[revision].status)"
+            >{{loadedRecipe.revisions[revision].status}}</ion-chip
+          >
         </ion-item>
         <ion-item slot="end" lines="none">
-          <ion-button color="danger" *ngIf="loadedRecipe.revisions[revision].status !== status.Tested" (click)="moveRevisionToTested()">Mark as Tested</ion-button>
+          <ion-button
+            color="danger"
+            *ngIf="loadedRecipe.revisions[revision].status !== status.Tested"
+            (click)="moveRevisionToTested()"
+            >Mark as Tested</ion-button
+          >
         </ion-item>
       </ion-item>
-      <ion-avatar class="ion-margin w-50 horizontal-center" *ngIf="!loadedRecipe.revisions[revision].imageUrl">
+      <ion-avatar
+        class="ion-margin w-50 horizontal-center"
+        *ngIf="!loadedRecipe.revisions[revision].imageUrl"
+      >
         <!-- <ion-icon size="large" [ios]="'image' + '-outline'" [md]="'image' + '-sharp'"></ion-icon> -->
-        <ion-img src="../../../../assets/images/placeholder-image.png"></ion-img>
+        <ion-img
+          src="../../../../assets/images/placeholder-image.png"
+        ></ion-img>
       </ion-avatar>
       <ion-img
         *ngIf="loadedRecipe.revisions[revision].imageUrl"
@@ -37,7 +48,9 @@
         [src]="loadedRecipe.revisions[revision].imageUrl"
         (click)="enlargeImage()"
       ></ion-img>
-      <ion-card-title class="ion-margin horizontal-center">{{loadedRecipe.name}}</ion-card-title>
+      <ion-card-title class="ion-margin horizontal-center"
+        >{{loadedRecipe.name}}</ion-card-title
+      >
     </ion-card-header>
     <ion-card-content>
       <ion-card>
@@ -46,12 +59,29 @@
             <ion-label slot="start">
               Cone {{loadedRecipe.cone}}, {{loadedRecipe.firingType}}
             </ion-label>
-            <ion-label *ngIf="loadedRecipe.revisions.length === 1" slot="end">{{revision + 1}} of {{loadedRecipe.revisions.length}}</ion-label>
-            <ion-item lines="none" slot="end" *ngIf="loadedRecipe.revisions.length > 1">
-              <ion-select justify="end" [value]="revision  +  1" (ionChange)="setRevision($event)" interface="popover">
-                <ion-select-option *ngFor="let revision of loadedRecipe.revisions; let i = index" [value]="i + 1">{{i + 1}}</ion-select-option>
+            <ion-label *ngIf="loadedRecipe.revisions.length === 1" slot="end"
+              >{{revision + 1}} of {{loadedRecipe.revisions.length}}</ion-label
+            >
+            <ion-item
+              lines="none"
+              slot="end"
+              *ngIf="loadedRecipe.revisions.length > 1"
+            >
+              <ion-select
+                justify="end"
+                [value]="revision  +  1"
+                (ionChange)="setRevision($event)"
+                interface="popover"
+              >
+                <ion-select-option
+                  *ngFor="let revision of loadedRecipe.revisions; let i = index"
+                  [value]="i + 1"
+                  >{{i + 1}}</ion-select-option
+                >
               </ion-select>
-              <ion-label class="w-auto ml-5"> of {{loadedRecipe.revisions.length}}</ion-label>
+              <ion-label class="w-auto ml-5">
+                of {{loadedRecipe.revisions.length}}</ion-label
+              >
             </ion-item>
           </ion-item>
         </ion-card-content>
@@ -89,7 +119,43 @@
     </ion-card-content>
   </ion-card>
 
+  <ion-modal trigger="make-recipe">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="cancel()">Cancel</ion-button>
+          </ion-buttons>
+          <ion-title>Welcome</ion-title>
+          <ion-buttons slot="end">
+            <ion-button (click)="nextSection()">Next</ion-button>
+            <ion-button [strong]="true" (click)="confirm()">Confirm</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding" scroll-y="false">
+        <div id="section-0" class="section">
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Let's make {{loadedRecipe.name}}</ion-card-title>
+              <ion-card-subtitle>Setup with some questions</ion-card-subtitle>
+            </ion-card-header>
+            <ion-card-content class="ion-justify-content-center">
+              <ion-item>
+                <ion-label>How much in total do you want to make?</ion-label>
+                <ion-input type="number" [(ngModel)]="totalAmount"></ion-input>
+              </ion-item>
+            </ion-card-content>
+          </ion-card>
+        </div>
+        <div id="section-1" class="section">Section 2</div>
+        <div id="section-2" class="section">Section 3</div>
+        <div id="section-3" class="section">Section 4</div>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
   <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-    <ion-button>Make this glaze</ion-button>
+    <ion-button id="make-recipe">Make this glaze</ion-button>
   </ion-fab>
 </ion-content>

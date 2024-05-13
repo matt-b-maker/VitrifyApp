@@ -129,4 +129,57 @@ text-black {
   color: #FF69B4;
 }
 
-/* Customize other text elements as needed */
+/* Animations */
+/* slide-up animation */
+.slide-up-enter {
+  animation: slide-up-enter-animation 0.5s forwards;
+}
+
+.slide-up-leave {
+  animation: slide-up-leave-animation 0.5s forwards;
+}
+
+@keyframes slide-up-enter-animation {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up-leave-animation {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+/* bottom-to-top animation */
+.bottom-to-top-enter {
+  animation: bottom-to-top-enter-animation 0.5s forwards;
+}
+
+.bottom-to-top-leave {
+  animation: bottom-to-top-leave-animation 0.5s forwards;
+}
+
+@keyframes bottom-to-top-enter-animation {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes bottom-to-top-leave-animation {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}

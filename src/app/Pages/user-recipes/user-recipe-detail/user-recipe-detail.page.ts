@@ -1,6 +1,6 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AlertController, ModalController } from '@ionic/angular';
+import { AlertController, AnimationBuilder, IonModal, ModalController } from '@ionic/angular';
 import { Recipe } from 'src/app/Models/recipeModel';
 import { RecipesService } from 'src/app/Services/recipes.service';
 import { ImageModalPage } from '../../image-modal/image-modal.page';
@@ -16,9 +16,17 @@ import { RecipeRevision } from 'src/app/Models/recipeRevision';
   styleUrls: ['./user-recipe-detail.page.scss'],
 })
 export class UserRecipeDetailPage implements OnInit {
+
+  @ViewChild(IonModal) modal!: IonModal;
+
   loadedRecipe!: Recipe;
   revision: number = 0;
   status = Status;
+  transitionDirection: string = 'slide-up';
+
+  allowScroll:boolean = true;
+  currentSectionIndex = 0;
+  totalAmount: number = 0;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -40,7 +48,6 @@ export class UserRecipeDetailPage implements OnInit {
       const recipeId = paramMap.get('recipeId');
       if (recipeId !== null) {
         this.loadedRecipe = this.recipeService.getRecipeById(recipeId);
-        console.log(this.loadedRecipe);
         this.revision = this.loadedRecipe.revisions.length - 1;
       } else {
         //route somewhere else
@@ -189,5 +196,50 @@ export class UserRecipeDetailPage implements OnInit {
 
   setRevision(event: any) {
     this.revision = event.detail.value - 1;
+  }
+
+  navigateToRecipeMaker() {
+    this.route.navigate(['/recipe-maker'], { state: { animation: 'slide-up' } });
+  }
+
+  //all modal stuff
+  cancel() {
+    this.currentSectionIndex = 0;
+    this.modal.dismiss(null, 'cancel');
+  }
+
+  confirm() {
+    this.currentSectionIndex = 0;
+    this.modal.dismiss('confirm');
+  }
+
+  onWillDismiss(event: Event) {
+    console.log(this.currentSectionIndex);
+    this.currentSectionIndex = 0;
+  }
+
+  nextSection() {
+    if (this.currentSectionIndex < 3) {
+      this.currentSectionIndex++;
+      this.scrollToSection();
+    }
+  }
+
+  prevSection() {
+    if (this.currentSectionIndex > 0) {
+      this.currentSectionIndex--;
+      this.scrollToSection();
+    }
+  }
+
+  scrollToSection() {
+    const sectionElement = document.getElementById('section-' + this.currentSectionIndex);
+    if (sectionElement) {
+      sectionElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+        inline: 'nearest',
+      });
+    }
   }
 }

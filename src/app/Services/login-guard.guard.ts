@@ -10,13 +10,13 @@ import { Observable } from 'rxjs';
 export class LoginGuard {
   constructor(private authService: AuthService, private router: Router) {}
 
-  canActivate(): Observable<boolean> | Promise<boolean> | boolean {
-    const authenticated = this.authService.userAuthenticated();
-    if (!authenticated) {
-      console.log('User not authenticated. Allowing access to login page.');
-      return true;
+  canActivate() {
+    console.log(this.authService.userAuthenticated())
+    // if the user is logged in, redirect to the profile page
+    if (this.authService.userAuthenticated()) {
+      this.router.navigate(['/profile']);
+      return false;
     }
-    console.log('User authenticated. Redirecting to profile page.');
-    return this.router.navigate(['/profile']);
+    return true;
   }
 }

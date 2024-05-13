@@ -1,5 +1,14 @@
 import { Injectable } from '@angular/core';
-import { Auth, User, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail, signOut, signInWithPopup, GoogleAuthProvider} from '@angular/fire/auth';
+import {
+  Auth,
+  User,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  signOut,
+  signInWithPopup,
+  GoogleAuthProvider,
+} from '@angular/fire/auth';
 import { AngularFireModule } from '@angular/fire/compat';
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
 import { AlertController, Platform } from '@ionic/angular';
@@ -8,25 +17,33 @@ import { BehaviorSubject, Observable, map, of } from 'rxjs';
 import { UserMeta } from '../Models/userMetaModel';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
-  public userSubject: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
+  public userSubject: BehaviorSubject<User | null> =
+    new BehaviorSubject<User | null>(null);
   user$: Observable<User | null> = this.userSubject.asObservable();
-  public userMetaSubject: BehaviorSubject<UserMeta | null> = new BehaviorSubject<UserMeta | null>(null);
+  public userMetaSubject: BehaviorSubject<UserMeta | null> =
+    new BehaviorSubject<UserMeta | null>(null);
   userMeta$: Observable<UserMeta | null> = this.userMetaSubject.asObservable();
   public loggedIn: boolean = false;
   errorMessage: string = '';
   public user: User | null = null;
   public userMeta: UserMeta | null = null;
 
-  constructor(private auth: Auth, private gPlus: GooglePlus, private afAuth: AngularFireModule, private platform: Platform, private alertController: AlertController) {
+  constructor(
+    private auth: Auth,
+    private gPlus: GooglePlus,
+    private afAuth: AngularFireModule,
+    private platform: Platform,
+    private alertController: AlertController
+  ) {
     let user = localStorage.getItem('user');
     if (user) {
       this.user = JSON.parse(user);
       this.userSubject.next(this.user);
     }
-    this.auth.onAuthStateChanged(user => {
+    this.auth.onAuthStateChanged((user) => {
       this.userSubject.next(user);
     });
 
@@ -68,20 +85,20 @@ export class AuthService {
   async nativeGoogleLogin() {
     try {
       const gPlusUser = await this.gPlus.login({
-        'webClientId': '478684273334-cupehva2rmu8ce5h0ibti3fmrjgr659j.apps.googleusercontent.com',
-        'offline': true,
-        'scopes': 'profile email'
+        webClientId:
+          '478684273334-cupehva2rmu8ce5h0ibti3fmrjgr659j.apps.googleusercontent.com',
+        offline: true,
+        scopes: 'profile email',
       });
       const googleCredential = GoogleAuthProvider.credential(gPlusUser.idToken);
       return await signInWithCredential(this.auth, googleCredential);
-    }
-    catch (error: any) {
+    } catch (error: any) {
       this.errorMessage = error.message;
       return null;
     }
   }
 
-  async webGoogleLogin(){
+  async webGoogleLogin() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(this.auth, provider);
@@ -91,37 +108,36 @@ export class AuthService {
     }
   }
 
-  getUser(){
+  getUser() {
     return this.auth.currentUser;
   }
 
-  updateUser(user: User){
+  updateUser(user: User) {
     this.userSubject.next(user);
     this.user = user;
     localStorage.setItem('user', JSON.stringify(user));
   }
 
-  updateMeta(userMeta: UserMeta){
+  updateMeta(userMeta: UserMeta) {
     this.userMetaSubject.next(userMeta);
     this.userMeta = userMeta;
     localStorage.setItem('userMeta', JSON.stringify(userMeta));
   }
 
-  isLoggedIn(){
+  isLoggedIn() {
     return this.user != null;
   }
 
-  resetPassword(email: string){
+  resetPassword(email: string) {
     return sendPasswordResetEmail(this.auth, email);
   }
 
   get userIsAuthenticated() {
-
     if (!this.userSubject) {
       return of(false);
     }
     return this.userSubject.asObservable().pipe(
-      map(user => {
+      map((user) => {
         if (user) {
           return !!user.refreshToken;
         } else {
@@ -133,19 +149,21 @@ export class AuthService {
 
   userAuthenticated(): boolean {
     if (this.user) {
-      return !!this.user.refreshToken;
+      // Cast this.user to any temporarily to bypass the type checking
+      const tokenManager = (this.user as any).stsTokenManager;
+      return !!tokenManager.refreshToken;
     } else {
       return false;
     }
   }
 
-  storeAuthData(user: User, userMeta: UserMeta | null){
+  storeAuthData(user: User, userMeta: UserMeta | null) {
     //store based on platform
     localStorage.setItem('user', JSON.stringify(user));
     localStorage.setItem('userMeta', JSON.stringify(userMeta));
   }
 
-  removeAuthData(){
+  removeAuthData() {
     localStorage.removeItem('user');
     localStorage.removeItem('userMeta');
   }
@@ -158,7 +176,10 @@ export class AuthService {
 
     const userData = JSON.parse(userDataString);
     // Check if token is still valid
-    if (userData.stsTokenManager && userData.stsTokenManager.expirationTime >= new Date().getTime()) {
+    if (
+      userData.stsTokenManager &&
+      userData.stsTokenManager.expirationTime >= new Date().getTime()
+    ) {
       const userMetaString = localStorage.getItem('userMeta');
       if (userMetaString) {
         this.userMeta = JSON.parse(userMetaString);
