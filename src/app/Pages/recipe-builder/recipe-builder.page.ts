@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { OpenAiService } from 'src/app/Services/open-ai.service';
 import { FiringDetailsService } from 'src/app/Services/firing-details.service';
 import { Status } from 'src/app/Models/status';
+import { MaterialsService } from 'src/app/Services/materials.service';
 
 @Component({
   selector: 'app-recipe-builder',
@@ -36,11 +37,13 @@ export class RecipeBuilderPage {
   totalPercentage: number = 0;
   remainingPercentage: number = 100;
 
-  allMaterials: Ingredient[] = [
-    ...this.ingredientService.allMaterials.sort((a, b) =>
-      a.name.localeCompare(b.name)
-    ),
-  ];
+  // allMaterials: Ingredient[] = [
+  //   ...this.ingredientService.allMaterials.sort((a, b) =>
+  //     a.name.localeCompare(b.name)
+  //   ),
+  // ];
+
+  allMaterials: any[] = this.materialsService.getMaterialsProperties();
 
   name: string = '';
   description: string = '';
@@ -57,30 +60,29 @@ export class RecipeBuilderPage {
     private loadingController: LoadingController,
     private firestoreService: FirestoreService,
     private router: Router,
-    private firingDetailsService: FiringDetailsService
+    private firingDetailsService: FiringDetailsService,
+    private materialsService: MaterialsService
   ) {
     this.calculateTotalPercentage();
     this.isEditing = this.recipeService.isEditing;
+    this.allMaterials = this.allMaterials.sort((a, b) => a.name.localeCompare(b.name));
   }
 
   searchIngredients(event: any) {
     let search = event.text.toLowerCase();
-    this.allMaterials = this.ingredientService.allMaterials.filter((material) =>
-      material.name.toLowerCase().includes(search)
+    this.allMaterials = this.materialsService.getMaterialsProperties().filter(
+      (material) =>
+        material.name.toLowerCase().includes(search) ||
+        material.chemicalComposition.toLowerCase().includes(search)
     );
   }
 
   setIngredientValue(event: any, index: number) {
     this.recipeService.recipeBuildInProgess.revisions[0].ingredients[index].name =
       event.value.name;
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients[index].type =
-      event.value.type;
     this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
       index
-    ].composition.composition = event.value.composition.composition;
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
-      index
-    ].composition.colorClass = event.value.composition.colorClass;
+    ].composition.composition = event.value.chemicalComposition;
     this.updateMaterialsList();
   }
 

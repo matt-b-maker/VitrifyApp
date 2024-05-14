@@ -11,6 +11,7 @@ import { UserMeta } from 'src/app/Models/userMetaModel';
 import { Recipe } from 'src/app/Models/recipeModel';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileSystemService } from 'src/app/Services/file-system.service';
+import { MaterialsService } from 'src/app/Services/materials.service';
 
 interface Glaze {
   imageUrl: string;
@@ -37,7 +38,8 @@ export class LoginComponent implements OnInit {
     private alertController: AlertController,
     private firestore: FirestoreService,
     private glazeGetter: GlazeLogoGetterService,
-    private loadingCtrl: LoadingController
+    private loadingCtrl: LoadingController,
+    private materialsService: MaterialsService
   ) {
     this.authService.userSubject.subscribe((user) => {
       this.userFromStorage = user;
@@ -45,6 +47,8 @@ export class LoginComponent implements OnInit {
     this.authService.userMetaSubject.subscribe((userMeta) => {
       this.userMeta = userMeta;
     });
+    let materials = this.materialsService.getMaterialsProperties();
+    console.log(materials[0]);
   }
 
   ngOnInit(): void {

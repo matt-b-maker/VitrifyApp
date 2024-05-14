@@ -112,7 +112,7 @@
                     <ng-template ionicSelectableItemTemplate let-ingredient="item">
                       <div class="vertical-stack">
                         <label>{{ingredient.name}}</label>
-                        <label class="text-small" [ngClass]="ingredient.type + '-color'">{{ingredient.composition.composition}}</label>
+                        <label class="text-small">{{ingredient.chemicalComposition}}</label>
                       </div>
                     </ng-template>
                   </ionic-selectable>
