@@ -109,11 +109,9 @@ export class RecipeBuilderPage {
   }
 
   async saveRecipeToFirestore() {
-    this.name = this.name.trim();
-    this.description = this.description.trim();
     let cancel = false;
     if (
-      this.recipeService.userRecipes.find((recipe) => recipe.name.trim() === this.name.trim())
+      this.recipeService.userRecipes.find((recipe) => recipe.name.trim() === this.recipeService.recipeBuildInProgess.name.trim())
     ) {
       await this.dialogueService
         .presentConfirmationDialog(
@@ -128,8 +126,12 @@ export class RecipeBuilderPage {
           } else {
             this.recipeService.recipeBuildInProgess.id =
               this.recipeService.userRecipes.find(
-                (recipe) => recipe.name === this.name
+                (recipe) => recipe.name === this.recipeService.recipeBuildInProgess.name
               )?.id || uuidv4();
+            //remove any ingredients that don't have a name
+            this.recipeService.recipeBuildInProgess.revisions[0].ingredients = this.recipeService.recipeBuildInProgess.revisions[0].ingredients.filter(
+              (ingredient) => ingredient.name !== ''
+            );
             this.recipeService.recipeBuildInProgess.revisions[0].status = Status.New;
             this.firestoreService.saveRecipe(
               this.recipeService.recipeBuildInProgess
@@ -142,6 +144,9 @@ export class RecipeBuilderPage {
       this.auth.user?.displayName || '';
     this.recipeService.recipeBuildInProgess.uid = this.auth.user?.uid || '';
     this.recipeService.recipeBuildInProgess.revisions[0].status = Status.New;
+    this.recipeService.recipeBuildInProgess.revisions[0].ingredients = this.recipeService.recipeBuildInProgess.revisions[0].ingredients.filter(
+      (ingredient) => ingredient.name !== ''
+    );
     await this.firestoreService.saveRecipe(this.recipeService.recipeBuildInProgess);
     this.recipeService.userRecipes.push(this.recipeService.recipeBuildInProgess);
     this.alertController

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Type } from '@angular/core';
 
 interface MolesOfEachElement {
   Aluminum?: number;
@@ -6,6 +6,11 @@ interface MolesOfEachElement {
   Oxygen?: number;
   Silicon?: number;
   Potassium?: number;
+}
+
+enum MaterialType {
+  Base = 'Base',
+  Additive = 'Additive',
 }
 
 interface Material {
@@ -18,6 +23,7 @@ interface Material {
   "Health and Safety": string;
   "Potential Substitutions": string;
   "Toxic": boolean;
+  "Type": MaterialType;
 }
 
 interface MaterialsJson {
@@ -46,7 +52,8 @@ export class MaterialsService {
         considerations: materialProperties['Considerations'],
         healthAndSafety: materialProperties['Health and Safety'],
         potentialSubstitutions: materialProperties['Potential Substitutions'],
-        toxic: materialProperties['Toxic']
+        toxic: materialProperties['Toxic'],
+        type: materialProperties['Type']
       };
     });
   }
@@ -68,7 +75,8 @@ export class MaterialsService {
       "Considerations": "Care needed with application amount and firing temperature.",
       "Health and Safety": "Generally considered safe for ceramic applications.",
       "Potential Substitutions": "Alumina Oxide can be used where higher temperature stability is needed.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Alumina Oxide": {
       "Chemical Composition": "Al₂O₃",
@@ -82,7 +90,8 @@ export class MaterialsService {
       "Considerations": "High melting point, requires high firing temperatures.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Alumina Hydrate for lower temperature applications.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Albany Slip Substitute": {
       "Chemical Composition": "Varies, generally a mixture of clay minerals",
@@ -98,7 +107,8 @@ export class MaterialsService {
       "Considerations": "Formulations can vary, affecting final results.",
       "Health and Safety": "Generally considered safe for ceramic applications.",
       "Potential Substitutions": "Alberta Slip.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Alberta Slip (Albany Slip Substitute)": {
       "Chemical Composition": "Varies, generally a mixture of clay minerals",
@@ -114,7 +124,8 @@ export class MaterialsService {
       "Considerations": "Formulations can vary, affecting final results.",
       "Health and Safety": "Generally considered safe for ceramic applications.",
       "Potential Substitutions": "Albany Slip Substitute.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "APG Missouri (Fire Clay)": {
       "Chemical Composition": "Varies, generally a mixture of silica and alumina",
@@ -129,7 +140,8 @@ export class MaterialsService {
       "Considerations": "High alumina content provides excellent refractory properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other fire clays.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Barium Carbonate": {
       "Chemical Composition": "BaCO₃",
@@ -144,7 +156,8 @@ export class MaterialsService {
       "Considerations": "Can be toxic if not handled properly.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Strontium carbonate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Base
     },
     "Bentonite - Western": {
       "Chemical Composition": "Varies, primarily montmorillonite",
@@ -160,7 +173,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other bentonites.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Bone Ash- Synthetic": {
       "Chemical Composition": "Ca₃(PO₄)₂",
@@ -175,7 +189,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze texture and melting properties.",
       "Health and Safety": "Generally safe, but dust can cause respiratory issues.",
       "Potential Substitutions": "Natural bone ash.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Borax- Powdered": {
       "Chemical Composition": "Na₂B₄O₇·10H₂O",
@@ -191,7 +206,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting behavior.",
       "Health and Safety": "Generally safe, but can cause skin irritation.",
       "Potential Substitutions": "Colemanite.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Burnt Umber": {
       "Chemical Composition": "Fe₂O₃ + MnO₂ + SiO₂",
@@ -207,7 +223,8 @@ export class MaterialsService {
       "Considerations": "Can vary in color intensity based on source.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Raw umber.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "C M C Powdered Gum": {
       "Chemical Composition": "Carboxymethyl cellulose",
@@ -222,7 +239,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze application properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other cellulose derivatives.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Calcium Carbonate (Domestic Whiting)": {
       "Chemical Composition": "CaCO₃",
@@ -237,7 +255,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Dolomite.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Calcium Carbonate (English Whiting)": {
       "Chemical Composition": "CaCO₃",
@@ -252,7 +271,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Dolomite.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Cedar Heights Goldart": {
       "Chemical Composition": "Varies, primarily silica and alumina",
@@ -267,7 +287,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and drying properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other stoneware clays.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "Cedar Heights Redart": {
       "Chemical Composition": "Varies, primarily silica and alumina",
@@ -282,7 +303,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and drying properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other red clays.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "Chrome Oxide": {
       "Chemical Composition": "Cr₂O₃",
@@ -296,7 +318,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Copper carbonate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Cobalt Carbonate": {
       "Chemical Composition": "CoCO₃",
@@ -311,7 +334,8 @@ export class MaterialsService {
       "Considerations": "High amounts can produce black or purple hues.",
       "Health and Safety": "Can be toxic if inhaled or ingested, handle with care.",
       "Potential Substitutions": "Cobalt Oxide.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Cobalt Oxide": {
       "Chemical Composition": "Co₃O₄",
@@ -325,7 +349,8 @@ export class MaterialsService {
       "Considerations": "High amounts can produce black hues.",
       "Health and Safety": "Can be toxic if inhaled or ingested, handle with care.",
       "Potential Substitutions": "Cobalt Carbonate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Copper Carbonate": {
       "Chemical Composition": "CuCO₃",
@@ -340,7 +365,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Copper Oxide.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Copper Oxide- Black": {
       "Chemical Composition": "CuO",
@@ -354,7 +380,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Copper Carbonate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Cornwall Stone Substitute": {
       "Chemical Composition": "Varies, generally a mixture of feldspar, silica, and alumina",
@@ -370,7 +397,8 @@ export class MaterialsService {
       "Considerations": "Formulations can vary, affecting final results.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other feldspar substitutes.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Dolomite (Limestone)": {
       "Chemical Composition": "CaMg(CO₃)₂",
@@ -386,7 +414,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Calcium carbonate.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "EPK (Kaolin)": {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -402,7 +431,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Epsom Salts": {
       "Chemical Composition": "MgSO₄·7H₂O",
@@ -418,7 +448,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting behavior.",
       "Health and Safety": "Generally safe, but can cause skin irritation.",
       "Potential Substitutions": "Magnesium carbonate.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3110": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -434,8 +465,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
-
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3124": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -451,8 +482,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
-
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3134": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -468,7 +499,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3195": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -484,7 +516,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3249": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -500,7 +533,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3269": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -516,7 +550,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3278": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -532,7 +567,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3289": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -548,7 +584,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3292": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -564,7 +601,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 3303": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -580,7 +618,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferro Frit 5301": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -596,7 +635,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other frits.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Feldspar-Minspar 200":{
       "Chemical Composition": "Varies, generally a mixture of feldspar, silica, and alumina",
@@ -612,7 +652,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other feldspars.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ferric Oxide - Red Iron Oxide": {
       "Chemical Composition": "Fe₂O₃",
@@ -626,7 +667,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Red iron oxide.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "G200 EU Feldspar": {
       "Chemical Composition": "Varies, generally a mixture of feldspar, silica, and alumina",
@@ -642,7 +684,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other feldspars.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Georgia Diamond (Kaolin)": {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -658,7 +701,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Gerstley Borate Blend": {
       "Chemical Composition": "Varies, generally a mixture of boron, silica, and alumina",
@@ -674,7 +718,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other boron sources.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "GloMax (Calcined Kaolin)":{
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -690,7 +735,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Granular Rutile" : {
       "Chemical Composition": "TiO₂",
@@ -704,7 +750,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze texture and melting properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Rutile.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "Grog- Coarse (10 -20 Mesh)" : {
       "Chemical Composition": "Varies, generally a mixture of silica, alumina, and other minerals",
@@ -719,7 +766,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other grog sizes.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Grog- Fine (35 - 100 Mesh)" : {
       "Chemical Composition": "Varies, generally a mixture of silica, alumina, and other minerals",
@@ -734,7 +782,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other grog sizes.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Grog- Medium (20 - 48 Mesh)": {
       "Chemical Composition": "Varies, generally a mixture of silica, alumina, and other minerals",
@@ -749,7 +798,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other grog sizes.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Grolleg (English Kaolin / China Clay)": {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -765,7 +815,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Hawthorn (Fire Clay) 40M" : {
       "Chemical Composition": "Varies, generally a mixture of silica and alumina",
@@ -780,7 +831,8 @@ export class MaterialsService {
       "Considerations": "High alumina content provides excellent refractory properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other fire clays.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Illmenite- Granular": {
       "Chemical Composition": "FeTiO₃",
@@ -795,7 +847,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Rutile.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "Iron Chromite" : {
       "Chemical Composition": "FeCr₂O₄",
@@ -810,7 +863,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Chrome oxide.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Iron Oxide- Black" : {
       "Chemical Composition": "Fe₃O₄",
@@ -824,7 +878,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Black iron oxide.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Iron Oxide- Spanish Red" : {
       "Chemical Composition": "Fe₂O₃",
@@ -838,7 +893,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Red iron oxide.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "Kentucky OM4 (Ball Clay)": {
       "Chemical Composition": "Varies, generally a mixture of kaolinite, mica, and quartz",
@@ -853,7 +909,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other ball clays.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Magnesium Carbonate": {
       "Chemical Composition": "MgCO₃",
@@ -868,7 +925,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Epsom salts.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Manganese Dioxide": {
       "Chemical Composition": "MnO₂",
@@ -882,7 +940,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Black iron oxide.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Molochite (120 Mesh)": {
       "Chemical Composition": "Al₂SiO₅",
@@ -897,7 +956,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other grogs.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Molochite (200 Mesh)" : {
       "Chemical Composition": "Al₂SiO₅",
@@ -912,7 +972,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other grogs.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Molochite (30 Mesh)" : {
       "Chemical Composition": "Al₂SiO₅",
@@ -927,7 +988,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other grogs.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Molochite (50 - 80 Mesh)" : {
       "Chemical Composition": "Al₂SiO₅",
@@ -942,7 +1004,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other grogs.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Nepheline Syenite": {
       "Chemical Composition": "Varies, generally a mixture of feldspar, silica, and alumina",
@@ -958,7 +1021,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other feldspars.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Nickel Carbonate, Purified": {
       "Chemical Composition": "NiCO₃",
@@ -973,7 +1037,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Copper carbonate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Nickel Oxide- Black": {
       "Chemical Composition": "NiO",
@@ -987,7 +1052,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Nickel carbonate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Nickel Oxide- Green" : {
       "Chemical Composition": "NiO",
@@ -1001,7 +1067,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Nickel carbonate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Ochre, Yellow": {
       "Chemical Composition": "Varies, generally a mixture of iron oxides and clays",
@@ -1015,7 +1082,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Yellow iron oxide.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "Plaster- Hydrocal" : {
       "Chemical Composition": "CaSO₄·2H₂O",
@@ -1031,7 +1099,8 @@ export class MaterialsService {
       "Considerations": "High water absorption and setting time.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Pottery plaster.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Plastic Vitrox": {
       "Chemical Composition": "Varies, generally a mixture of feldspar, silica, and alumina",
@@ -1047,7 +1116,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other feldspars.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Potassium Carbonate (Pearl Ash)" : {
       "Chemical Composition": "K₂CO₃",
@@ -1062,7 +1132,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Potassium feldspar.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Pyrophyllite (Pyrax)": {
       "Chemical Composition": "Al₂Si₄O₁₀(OH)₂",
@@ -1078,7 +1149,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other pyrophyllites.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Albion Form 100": {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -1094,7 +1166,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Arcilla de Pontezuelo (Cuba)": {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -1110,7 +1183,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Ravenscrag Slip": {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -1126,7 +1200,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Rutile, Powdered- Light": {
       "Chemical Composition": "TiO₂",
@@ -1140,7 +1215,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze texture and melting properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Rutile.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "Silica (Flint) (200 Mesh)": {
       "Chemical Composition": "SiO₂",
@@ -1154,7 +1230,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Quartz.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Silica (Flint) (325 Mesh)" : {
       "Chemical Composition": "SiO₂",
@@ -1168,7 +1245,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Quartz.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Silica (Flint) (400 Mesh)" : {
       "Chemical Composition": "SiO₂",
@@ -1182,7 +1260,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Quartz.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Silica Sand": {
       "Chemical Composition": "SiO₂",
@@ -1196,7 +1275,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Quartz.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Silicon Carbide (250 Mesh)":{
       "Chemical Composition": "SiC",
@@ -1210,7 +1290,8 @@ export class MaterialsService {
       "Considerations": "High thermal conductivity and hardness.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other silicon carbide sizes.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Silicon Carbide- Ultrafine (1000 Mesh)": {
       "Chemical Composition": "SiC",
@@ -1224,7 +1305,8 @@ export class MaterialsService {
       "Considerations": "High thermal conductivity and hardness.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other silicon carbide sizes.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Soda Ash": {
       "Chemical Composition": "Na₂CO₃",
@@ -1239,7 +1321,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Sodium feldspar.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Spodumene": {
       "Chemical Composition": "LiAlSi₂O₆",
@@ -1255,7 +1338,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Lithium carbonate.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Strontium Carbonate": {
       "Chemical Composition": "SrCO₃",
@@ -1270,7 +1354,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Barium carbonate.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Talc, (BT2213 Fabi)": {
       "Chemical Composition": "Mg₃Si₄O₁₀(OH)₂",
@@ -1286,7 +1371,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other talcs.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Tennessee No. 1 (Ball Clay)": {
       "Chemical Composition": "Varies, generally a mixture of kaolinite, mica, and quartz",
@@ -1301,7 +1387,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other ball clays.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Tennessee No. 5 (Ball Clay)": {
       "Chemical Composition": "Varies, generally a mixture of kaolinite, mica, and quartz",
@@ -1316,7 +1403,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other ball clays.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Tile #6 (Kaolin)": {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -1332,7 +1420,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Tin Oxide": {
       "Chemical Composition": "SnO₂",
@@ -1346,7 +1435,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Zirconium silicate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Titanium Dioxide" : {
       "Chemical Composition": "TiO₂",
@@ -1360,7 +1450,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze texture and melting properties.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Rutile.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Additive
     },
     "Veegum CER": {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -1376,7 +1467,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Veegum T":  {
       "Chemical Composition": "Al₂Si₂O₅(OH)₄",
@@ -1392,7 +1484,8 @@ export class MaterialsService {
       "Considerations": "High shrinkage can affect drying and firing.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other kaolins.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Volcanic Ash (Pumice)": {
       "Chemical Composition": "Varies, generally a mixture of silica, alumina, and other minerals",
@@ -1407,7 +1500,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other volcanic ashes.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Wollastonite W-20": {
       "Chemical Composition": "CaSiO₃",
@@ -1422,7 +1516,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze color and texture.",
       "Health and Safety": "Generally safe, but inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Calcium carbonate.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "XX Sagger (Ball Clay)": {
       "Chemical Composition": "Varies, generally a mixture of kaolinite, mica, and quartz",
@@ -1437,7 +1532,8 @@ export class MaterialsService {
       "Considerations": "Can affect plasticity and shrinkage properties.",
       "Health and Safety": "Inhalation of dust can cause respiratory issues.",
       "Potential Substitutions": "Other ball clays.",
-      "Toxic": false
+      "Toxic": false,
+      "Type": MaterialType.Base
     },
     "Zinc Oxide (Not Calcined)": {
       "Chemical Composition": "ZnO",
@@ -1451,7 +1547,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Zinc oxide (calcined).",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     },
     "Zircopax Plus (Ultrox)": {
       "Chemical Composition": "ZrSiO₄",
@@ -1466,7 +1563,8 @@ export class MaterialsService {
       "Considerations": "Can affect glaze stability and melting properties.",
       "Health and Safety": "Toxic, handle with care and use protective equipment.",
       "Potential Substitutions": "Zirconium silicate.",
-      "Toxic": true
+      "Toxic": true,
+      "Type": MaterialType.Additive
     }
   }
 }

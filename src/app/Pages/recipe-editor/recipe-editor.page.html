@@ -68,7 +68,7 @@
         </ion-row>
         <ion-row>
           <ion-col size="auto">
-            <ion-item lines="none">
+            <ion-item lines="none" [disabled]="recipeService.isRevision">
               <ion-label> Status: </ion-label>
               <ion-select
                 [value]="recipeService.recipeEditInProgess.revisions[revision].status"
