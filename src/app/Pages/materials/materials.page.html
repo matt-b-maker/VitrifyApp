@@ -7,13 +7,16 @@
 
 <ion-content [fullscreen]="true">
   <ion-list>
-    <ion-item class="ion-margin" *ngFor="let material of allMaterials" (click)="setOpen(material)">
+    <ion-item class="ion-margin" *ngFor="let material of digitalFireMaterials" (click)="setOpen(material)">
       <div>
-        <ion-label>{{material.name}}</ion-label>
-        <p class="text-small">{{material.chemicalComposition}}</p>
+        <ion-label>{{material.Name}}</ion-label>
+        <p class="text-small">{{material.OxidesWeight}}</p>
       </div>
     </ion-item>
   </ion-list>
+  <ion-infinite-scroll (ionInfinite)="onIonInfinite($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
   <ion-modal [isOpen]="modalOpen">
     <ng-template>
       <ion-header>
@@ -25,12 +28,12 @@
       </ion-header>
       <ion-content class="ion-padding ion-justify-content-center">
         <div class="horizontal-center ion-margin"><ion-label>{{name}}</ion-label></div>
-        <div class="horizontal-center ion-margin"><ion-label>Chemical Composition: {{chemicalComposition}}</ion-label></div>
+        <div class="horizontal-center ion-margin"><ion-label>Oxides Weight: {{oxidesWeight}}</ion-label></div>
         <div class="horizontal-center ion-margin">
-          <ion-label>Health and Safety: {{healthAndSafety}}</ion-label>
+          <ion-label>Hazardous: {{hazardous}}</ion-label>
         </div>
         <div class="horizontal-center ion-margin">
-          <ion-label>Uses in Glazes: {{usesInGlazes}}</ion-label>
+          <ion-label>Description: {{description}}</ion-label>
         </div>
       </ion-content>
     </ng-template>

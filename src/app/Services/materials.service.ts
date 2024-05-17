@@ -1,4 +1,6 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, Type } from '@angular/core';
+import { firstValueFrom } from 'rxjs';
 
 interface MolesOfEachElement {
   Aluminum?: number;
@@ -24,6 +26,16 @@ interface Material {
   "Potential Substitutions": string;
   "Toxic": boolean;
   "Type": MaterialType;
+}
+
+interface DigitalFireMaterial {
+  "Name": string;
+  "Oxides": Array<{
+    "OxideName": string;
+    "Analysis": number;
+  }>;
+  "OxidesWeight": number;
+  "Description": string;
 }
 
 interface MaterialsJson {
@@ -58,7 +70,20 @@ export class MaterialsService {
     });
   }
 
-  constructor() {
+  async getDigitalFireMaterials(): Promise<DigitalFireMaterial[]> {
+    const digitalFireMaterialsJson = await firstValueFrom(this.http.get('../assets/json/materialInfoFull.json')).then((data: any) => {
+      return data;
+    });
+    return digitalFireMaterialsJson as DigitalFireMaterial[];
+  }
+
+  async setMaterials(): Promise<void> {
+    this.materialsArray = await firstValueFrom(this.http.get('../assets/json/materialInfoFull.json')).then((data: any) => {
+      return data as DigitalFireMaterial[];
+    });
+  }
+
+  constructor(private http: HttpClient) {
   }
 
   materialsJson: MaterialsJson = {

@@ -6,6 +6,7 @@ import { Router, RouterOutlet } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
 import { App as CapacitorApp } from '@capacitor/app';
 import { UserMeta } from './Models/userMetaModel';
+import { MaterialsService } from './Services/materials.service';
 
 @Component({
   selector: 'app-root',
@@ -18,7 +19,8 @@ export class AppComponent implements OnInit, OnDestroy {
     public auth: AuthService,
     private router: Router,
     private alertController: AlertController,
-    private platform: Platform
+    private platform: Platform,
+    private materialsService: MaterialsService
   ) {
     this.auth.user$.subscribe((user) => {
       this.user = user;
@@ -26,6 +28,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this.auth.userMeta$.subscribe((userMeta) => {
       this.userMeta = userMeta;
     });
+    this.materialsService.getMaterialsProperties();
     this.initializeApp();
   }
 
