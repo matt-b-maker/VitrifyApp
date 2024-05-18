@@ -4,11 +4,11 @@ import { Material } from 'src/app/Interfaces/material';
 import { MaterialsService } from 'src/app/Services/materials.service';
 
 @Component({
-  selector: 'app-materials',
-  templateUrl: './materials.page.html',
-  styleUrls: ['./materials.page.scss'],
+  selector: 'app-public-materials',
+  templateUrl: './public-materials.page.html',
+  styleUrls: ['./public-materials.page.scss'],
 })
-export class MaterialsPage implements OnInit {
+export class PublicMaterialsPage implements OnInit {
 
   allMaterials: Material[] = this.materialsService.materials;
   listMaterials: Material[] = [];
@@ -86,4 +86,5 @@ export class MaterialsPage implements OnInit {
       return material.Name.charAt(0) === this.chosenLetter && !material.Name.toLowerCase().includes("frit");
     });
   }
+
 }

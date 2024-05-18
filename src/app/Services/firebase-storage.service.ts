@@ -17,7 +17,7 @@ export class FirebaseStorageService {
   }
 
   // Retrieve file URL
-  async getFileUrl(filePath: string): Promise<string> {
+  async getFileUrlAsync(filePath: string): Promise<string> {
     return await this.storage.ref(filePath).getDownloadURL().toPromise();
   }
 

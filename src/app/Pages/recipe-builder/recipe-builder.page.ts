@@ -12,6 +12,7 @@ import { OpenAiService } from 'src/app/Services/open-ai.service';
 import { FiringDetailsService } from 'src/app/Services/firing-details.service';
 import { Status } from 'src/app/Models/status';
 import { MaterialsService } from 'src/app/Services/materials.service';
+import { Material } from 'src/app/Interfaces/material';
 
 @Component({
   selector: 'app-recipe-builder',
@@ -43,7 +44,7 @@ export class RecipeBuilderPage {
   //   ),
   // ];
 
-  allMaterials: any[] = this.materialsService.getMaterialsProperties();
+  allMaterials: Material[] = this.materialsService.materials;
 
   name: string = '';
   description: string = '';
@@ -65,16 +66,11 @@ export class RecipeBuilderPage {
   ) {
     this.calculateTotalPercentage();
     this.isEditing = this.recipeService.isEditing;
-    this.allMaterials = this.allMaterials.sort((a, b) => a.name.localeCompare(b.name));
+    this.allMaterials = this.allMaterials.sort((a, b) => a.Name.localeCompare(b.Name));
   }
 
   searchIngredients(event: any) {
     let search = event.text.toLowerCase();
-    this.allMaterials = this.materialsService.getMaterialsProperties().filter(
-      (material) =>
-        material.name.toLowerCase().includes(search) ||
-        material.chemicalComposition.toLowerCase().includes(search)
-    );
   }
 
   setIngredientValue(event: any, index: number) {
@@ -88,12 +84,12 @@ export class RecipeBuilderPage {
 
   updateMaterialsList() {
     //remove any materials that are already in the recipe
-    this.allMaterials = this.ingredientService.allMaterials.filter(
-      (material) =>
-        !this.recipeService.recipeBuildInProgess.revisions[0].ingredients.find(
-          (ingredient) => ingredient.name === material.name
-        )
-    );
+    // this.allMaterials = this.ingredientService.allMaterials.filter(
+    //   (material) =>
+    //     !this.recipeService.recipeBuildInProgess.revisions[0].ingredients.find(
+    //       (ingredient) => ingredient.name === material.name
+    //     )
+    // );
 
     console.log(this.allMaterials);
     console.log(this.recipeService.recipeBuildInProgess.revisions[0].ingredients);

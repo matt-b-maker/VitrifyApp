@@ -36,7 +36,7 @@
     "@google/generative-ai": "^0.8.0",
     "@ionic-native/core": "^5.36.0",
     "@ionic-native/google-plus": "^5.36.0",
-    "@ionic/angular": "^8.0.0",
+    "@ionic/angular": "^7.8.6",
     "angularfire2": "^5.4.2",
     "axios": "^1.6.8",
     "chart.js": "^4.4.2",
@@ -45,7 +45,7 @@
     "ionicons": "^7.0.0",
     "ng2-charts": "^6.0.1",
     "openai": "^4.0.0",
-    "rxjs": "~7.8.0",
+    "rxjs": "^7.8.1",
     "tslib": "^2.3.0",
     "uuid": "^9.0.1",
     "zone.js": "~0.14.2"

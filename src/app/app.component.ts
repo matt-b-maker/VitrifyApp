@@ -28,11 +28,27 @@ export class AppComponent implements OnInit, OnDestroy {
     this.auth.userMeta$.subscribe((userMeta) => {
       this.userMeta = userMeta;
     });
-    this.materialsService.getMaterialsProperties();
-    this.initializeApp();
-  }
+      (async () => {
+        await this.materialsService.setMaterials();
+        console.log(this.materialsService.materials.length);
+        //remove "LOI" from materials oxides
+        this.materialsService.materials.forEach((material) => {
+          material.Oxides.forEach((oxide) => {
+            if (oxide.OxideName === 'LOI') {
+              material.Oxides.splice(material.Oxides.indexOf(oxide), 1);
+            }
+            //sort oxides by analysis percentage
+            material.Oxides.sort((a, b) => {
+              return b.Analysis - a.Analysis;
+            });
+          });
+        });
+        console.log(this.materialsService.materials.slice(0,10));
+      })();
+      this.initializeApp();
+    }
 
-  isLoggedIn: boolean = false;
+    isLoggedIn: boolean = false;
   user: User | null = null || this.auth.user;
   userMeta: UserMeta | null = this.auth.userMeta;
   profileImageUrl: string = '';
@@ -44,13 +60,14 @@ export class AppComponent implements OnInit, OnDestroy {
     { title: 'My Firing Schedules', url: '/user-firing-schedules', icon: 'flame'},
     { title: 'Firing Schedule Builder', url: '/firing-schedule-builder', icon: 'bar-chart' },
     { title: 'My Inventory', url: "/inventory", icon: 'file-tray-stacked'},
-    { title: 'Materials', url: '/materials', icon: 'flask' },
+    { title: 'Materials', url: '/materials-tabs', icon: 'flask' },
     { title: 'Explore', url: '/explore', icon: 'globe' },
     { title: 'Learn', url: '/learn', icon: 'library' },
     { title: 'Profile', url: '/profile', icon: 'person' },
   ];
 
   initializeApp() {
+
     this.platform.ready().then(() => {
       CapacitorApp.addListener('backButton', async ({ canGoBack }) => {
         if (!canGoBack) {

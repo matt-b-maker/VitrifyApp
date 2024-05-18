@@ -164,6 +164,7 @@ export class FirestoreService {
     return await firstValueFrom(collectionData(q));
   }
 }
+
 function uuid4() {
   throw new Error('Function not implemented.');
 }

@@ -6,6 +6,7 @@ import { AuthGuard } from './Services/auth.guard';
 import { AuthRedirectGuard } from './Services/auth-redirect.guard';
 import { LoginGuard } from './Services/login-guard.guard';
 import { CanDeactivateGuard } from './Services/can-deactivate.guard';
+import { MaterialsTabsPage } from './Pages/materials-tabs/materials-tabs.page';
 
 const routes: Routes = [
   {
@@ -219,6 +220,12 @@ const routes: Routes = [
         canActivate: [AuthGuard],
       },
     ],
+  },
+  {
+    path: 'materials-tabs',
+    component: MaterialsTabsPage,
+    loadChildren: () => import('./Pages/materials-tabs/materials-tabs.module').then( m => m.MaterialsTabsPageModule),
+    canActivate: [AuthGuard],
   },
 ];
 

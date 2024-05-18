@@ -47,8 +47,6 @@ export class LoginComponent implements OnInit {
     this.authService.userMetaSubject.subscribe((userMeta) => {
       this.userMeta = userMeta;
     });
-    let materials = this.materialsService.getMaterialsProperties();
-    console.log(materials[0]);
   }
 
   ngOnInit(): void {
