@@ -27,9 +27,16 @@ import { FirebaseStorageService } from 'src/app/Services/firebase-storage.servic
   ],
 })
 export class RecipeEditorPage {
+  lowerCone: string = '6';
+  upperCone: string = '10';
+  isConeRange: boolean = false;
   notes: string = '';
   firingTypes: string[] = this.firingDetailsService.firingTypes;
-  cones: string[] = this.firingDetailsService.cones;
+  allCones: string[] = this.firingDetailsService.firingCones;
+  conesLowerRange: string[] = [...this.allCones];
+  conesUpperRange: string[] = [...this.allCones.slice(0, this.allCones.indexOf(this.lowerCone))];
+  lowerConeLabel: string = 'Cone';
+  upperConeLabel: string = 'Max Cone';
   remainingPercentageOver: boolean = false;
   coneRegex: RegExp = /^(0[1-9]|1[0-2]|[1-9])([-/](0[1-9]|1[0-2]|[1-9]))?$/;
   isEditing: boolean;
@@ -163,6 +170,7 @@ export class RecipeEditorPage {
     this.revision = event.detail.value - 1;
     this.updateMaterialsList();
     this.calculateTotalPercentage();
+    this.isConeRange = this.recipeService.recipeEditInProgess.cone.includes('-');
   }
 
   searchIngredients(event: any) {
@@ -382,7 +390,36 @@ export class RecipeEditorPage {
   }
 
   setCone(event: any) {
-    this.recipeService.recipeEditInProgess.cone = event.target.value;
+    this.lowerCone = event.target.value;
+    this.recipeService.recipeBuildInProgess.cone = event.target.value;
+  }
+
+  setLowerCone(event: any) {
+    this.lowerCone = event.target.value;
+    if (this.isConeRange) {
+      this.recipeService.recipeBuildInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
+      console.log(this.recipeService.recipeBuildInProgess.cone);
+      //modify the upper cone range to disinclude the lower cone and all cones below it
+      this.conesUpperRange = [...this.allCones.slice(0, this.allCones.indexOf(this.lowerCone))];
+
+    } else {
+      console.log(this.recipeService.recipeBuildInProgess.cone);
+      this.recipeService.recipeBuildInProgess.cone = event.target.value;
+    }
+  }
+
+  setUpperCone(event: any) {
+    this.upperCone = event.target.value;
+    this.recipeService.recipeBuildInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
+    console.log(this.recipeService.recipeBuildInProgess.cone);
+    this.conesLowerRange = [...this.allCones.slice(this.allCones.indexOf(this.upperCone) + 1, this.allCones.length)];
+  }
+
+  toggleConeRange() {
+    this.recipeService.recipeBuildInProgess.cone = this.isConeRange ? `${this.lowerCone}-${this.upperCone}` : this.lowerCone;
+    console.log(this.recipeService.recipeBuildInProgess.cone);
+    this.lowerConeLabel = this.isConeRange ? 'Min Cone' : 'Cone';
+    this.conesLowerRange = this.isConeRange ? [...this.allCones.slice(this.allCones.indexOf(this.upperCone) + 1, this.allCones.length)] : [...this.allCones];
   }
 
   trimDescription() {

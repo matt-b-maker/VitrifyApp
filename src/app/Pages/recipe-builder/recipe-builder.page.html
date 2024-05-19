@@ -10,7 +10,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
+<ion-content [fullscreen]="true" class="content">
   <!-- <ion-header collapse="condense">
     <ion-toolbar>
       <ion-title size="large">Recipe</ion-title>
@@ -42,20 +42,22 @@
         </ion-row>
         <ion-row>
           <ion-col size="3">
-            <ion-input
-              label="Cone"
-              labelPlacement="stacked"
-              fill="outline"
-              [value]="recipeService.recipeBuildInProgess.cone"
-              [clearOnEdit]="true"
-              type="number"
-              #coneInput
-              (input)="setCone($event)"
-            ></ion-input>
-            <!-- <ion-select interface="action-sheet" label="Cone" labelPlacement="stacked" fill="outline" [value]="cone" (ionChange)="setCone($event)">
-              <ion-select-option *ngFor="let coneSelection of cones" [value]="coneSelection">{{coneSelection}}</ion-select-option>
-            </ion-select> -->
+            <ion-toggle class="ion-margin" [value]="isConeRange" labelPlacement="stacked" (ionChange)="toggleConeRange($event)">
+              <ion-label style="height: 25px;">Cone Range</ion-label>
+            </ion-toggle>
           </ion-col>
+          <ion-col size="3">
+            <ion-select class="ion-margin" interface="action-sheet" [label]="lowerConeLabel" labelPlacement="stacked" fill="outline" [value]="lowerCone" (ionChange)="setLowerCone($event)">
+              <ion-select-option *ngFor="let coneSelection of conesLowerRange" [value]="coneSelection">{{coneSelection}}</ion-select-option>
+            </ion-select>
+          </ion-col>
+          <ion-col *ngIf="isConeRange" size="3">
+            <ion-select class="ion-margin" interface="action-sheet" [label]="upperConeLabel" labelPlacement="stacked" fill="outline" [value]="upperCone" (ionChange)="setUpperCone($event)">
+              <ion-select-option *ngFor="let coneSelection of conesUpperRange" [value]="coneSelection">{{coneSelection}}</ion-select-option>
+            </ion-select>
+          </ion-col>
+        </ion-row>
+        <ion-row>
           <ion-col size="6">
             <ion-select
               [(ngModel)]="recipeService.recipeBuildInProgess.firingType"
@@ -95,30 +97,37 @@
     </ion-card-header>
     <ion-card-content>
       <ion-list lines="none">
-        <ion-item-sliding *ngFor="let ingredient of recipeService.recipeBuildInProgess.revisions[0].ingredients; let i = index" #itemSliding class="slide-in-animation">
+        <ion-item-sliding *ngFor="let ingredient of recipeService.recipeBuildInProgess.revisions[0].ingredients; let i = index" #itemSliding class="slide-in-animation material-ingredient">
           <ion-item>
             <ion-grid class="ingredient-row">
               <ion-row class="ion-align-items-center">
                 <ion-col size="9">
                   <ionic-selectable
+                    #selectComponent
                     item-content
                     [(ngModel)]="recipeService.recipeBuildInProgess.revisions[0].ingredients[i].name"
                     fill="outline"
                     class="item-content"
                     [(items)]="allMaterials"
                     [canSearch]="true"
+
+                    (onClose)="onSelectableClose($event)"
                     (onSearch)="searchIngredients($event)"
-                    (onChange)="setIngredientValue($event, i)">
+                    (onChange)="setIngredientValue($event, i)"
+                    [hasInfiniteScroll]="true"
+                    (onInfiniteScroll)="getMoreIngredients($event)"
+                    (ionClear)="resetMaterials($event, i)">
                     <ng-template ionicSelectableItemTemplate let-ingredient="item">
                       <div class="vertical-stack">
-                        <label>{{ingredient.name}}</label>
-                        <label class="text-small">{{ingredient.chemicalComposition}}</label>
+                        <label>{{ingredient.Name}}</label>
+                        <label class="text-small">{{ingredient.Oxides.length}}</label>
                       </div>
                     </ng-template>
                   </ionic-selectable>
                 </ion-col>
                 <ion-col size="3" class="ion-text-center">
                   <ion-input
+                    [disabled]="ingredient.name === ''"
                     fill="outline"
                     type="number"
                     label="%"

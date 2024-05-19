@@ -8,6 +8,10 @@
   justify-self: end; /* Pushes icon to the right */
 }
 
+ion-toggle {
+  --handle-height: 20px; /* Adjusts toggle handle height */
+}
+
 .text-center {
   text-align: center;
 }

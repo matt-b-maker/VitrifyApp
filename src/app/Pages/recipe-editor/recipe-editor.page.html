@@ -27,7 +27,7 @@
     </ion-card-header>
     <ion-card-content>
       <ion-grid>
-        <ion-row class="">
+        <ion-row>
           <ion-col size="8">
             <ion-input
               [disabled]="recipeService.isRevision || recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
@@ -67,9 +67,9 @@
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col size="auto">
+          <ion-col size="8">
             <ion-item lines="none" [disabled]="recipeService.isRevision">
-              <ion-label> Status: </ion-label>
+              <ion-label>Status:</ion-label>
               <ion-select
                 [value]="recipeService.recipeEditInProgess.revisions[revision].status"
                 (ionChange)="setStatus($event)"
@@ -86,17 +86,51 @@
         </ion-row>
         <ion-row>
           <ion-col size="3">
-            <ion-input
-              [disabled]="recipeService.isRevision || recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
-              label="Cone"
+            <ion-toggle
+              class="ion-margin"
+              [(ngModel)]="isConeRange"
+              labelPlacement="stacked"
+              (ionChange)="toggleConeRange()"
+            >
+              <ion-label style="height: 25px">Cone Range</ion-label>
+            </ion-toggle>
+          </ion-col>
+          <ion-col size="3">
+            <ion-select
+              class="ion-margin"
+              interface="action-sheet"
+              [label]="lowerConeLabel"
               labelPlacement="stacked"
               fill="outline"
-              [(ngModel)]="recipeService.recipeEditInProgess.cone"
-              [clearOnEdit]="true"
-              type="number"
-              #coneInput
-            ></ion-input>
+              [value]="lowerCone"
+              (ionChange)="setLowerCone($event)"
+            >
+              <ion-select-option
+                *ngFor="let coneSelection of conesLowerRange"
+                [value]="coneSelection"
+                >{{coneSelection}}</ion-select-option
+              >
+            </ion-select>
           </ion-col>
+          <ion-col *ngIf="isConeRange" size="3">
+            <ion-select
+              class="ion-margin"
+              interface="action-sheet"
+              [label]="upperConeLabel"
+              labelPlacement="stacked"
+              fill="outline"
+              [value]="upperCone"
+              (ionChange)="setUpperCone($event)"
+            >
+              <ion-select-option
+                *ngFor="let coneSelection of conesUpperRange"
+                [value]="coneSelection"
+                >{{coneSelection}}</ion-select-option
+              >
+            </ion-select>
+          </ion-col>
+        </ion-row>
+        <ion-row>
           <ion-col size="6">
             <ion-select
               [disabled]="recipeService.isRevision || recipeService.recipeEditInProgess.revisions[revision].status === 'Tested'"
@@ -140,9 +174,7 @@
             hidden
             #fileInput
           />
-          <ion-button (click)="fileInput.click()"
-            >Update Image</ion-button
-          >
+          <ion-button (click)="fileInput.click()">Update Image</ion-button>
         </ion-item>
         <ion-item lines="none">
           <ion-button *ngIf="isMobile" (click)="updateImage()"
@@ -152,8 +184,13 @@
       </ion-toolbar>
     </ion-card-header>
     <ion-card-content class="ion-justify-content-center">
-      <ion-avatar class="ion-margin w-50 horizontal-center" *ngIf="!recipeService.recipeEditInProgess.revisions[revision].imageUrl">
-        <ion-img src="../../../../assets/images/placeholder-image.png"></ion-img>
+      <ion-avatar
+        class="ion-margin w-50 horizontal-center"
+        *ngIf="!recipeService.recipeEditInProgess.revisions[revision].imageUrl"
+      >
+        <ion-img
+          src="../../../../assets/images/placeholder-image.png"
+        ></ion-img>
       </ion-avatar>
       <ion-img
         *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrl"
@@ -251,8 +288,14 @@
   </ion-card>
 
   <!--Revision Deletion Stuff-->
-  <ion-item class="ion-justify-content-center" *ngIf="!recipeService.isRevision && recipeService.recipeEditInProgess.revisions.length > 1" lines="none">
-    <ion-button class="ion-justify-content-center" (click)="deleteRevision()">Delete this revision</ion-button>
+  <ion-item
+    class="ion-justify-content-center"
+    *ngIf="!recipeService.isRevision && recipeService.recipeEditInProgess.revisions.length > 1"
+    lines="none"
+  >
+    <ion-button class="ion-justify-content-center" (click)="deleteRevision()"
+      >Delete this revision</ion-button
+    >
   </ion-item>
 </ion-content>
 <ion-footer>
