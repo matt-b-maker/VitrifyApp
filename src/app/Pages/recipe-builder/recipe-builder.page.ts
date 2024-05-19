@@ -106,9 +106,20 @@ export class RecipeBuilderPage {
       return;
     }
 
-    event.component.items = this.materialsService.materials.filter((material) =>
-      material.Name.toLowerCase().includes(search)
-    );
+    let searchResults: Material[] = [];
+
+    if (search.length < 2) {
+      searchResults = this.materialsService.materials.filter((material) =>
+        material.Name.toLowerCase().startsWith(search)
+      );
+    }
+    else {
+      searchResults = this.materialsService.materials.filter((material) =>
+        material.Name.toLowerCase().includes(search)
+      );
+    }
+
+    event.component.items = searchResults.slice(0, 50);
     this.searching = true;
     event.component.endSearch();
   }
@@ -407,26 +418,26 @@ export class RecipeBuilderPage {
   }
 
   setPercentage(event: any, index: number) {
-    if (event.target.value === '0') {
+    if (
+      event.target.value === '0' ||
+      event.target.value === '' ||
+      !event.target.value
+    ) {
       this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
         index
       ].percentage = 1;
       this.calculateTotalPercentage();
       return;
     }
-    if (event.target.value === '') {
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
-        index
-      ].percentage = 0;
-      this.calculateTotalPercentage();
-      return;
-    }
+
     //check max length
     if (event.target.value.length > 5) {
       event.target.value = event.target.value.slice(0, 5);
       this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
         index
-      ].percentage = parseFloat(this.trimLeadingZeros(event.target.value).slice(0, 5));
+      ].percentage = parseFloat(
+        this.trimLeadingZeros(event.target.value).slice(0, 5)
+      );
       return;
     }
     this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
@@ -436,7 +447,10 @@ export class RecipeBuilderPage {
   }
 
   trimLeadingZeros(input: string): string {
-    return input.replace(/^0+/, '');
+    if (input) {
+      return input.replace(/^0+/, '');
+    }
+    return '';
   }
 
   async removeIngredient(index: number) {
@@ -483,13 +497,15 @@ export class RecipeBuilderPage {
     text: string;
   }) {
     if (this.searching) {
+      let items = this.materialsService.materials.filter((material) =>
+        material.Name.toLowerCase().includes(
+          event.component.searchText.toLowerCase()
+        )
+      );
+      event.component.items = items.slice(0, event.component.items.length + 50);
       event.component.endInfiniteScroll();
       return;
     }
-    console.log(
-      this.materialsService.materials.length,
-      this.allMaterials.length
-    );
     this.allMaterials = [
       ...this.materialsService.materials.slice(
         0,

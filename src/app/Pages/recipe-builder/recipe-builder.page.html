@@ -134,7 +134,7 @@
                     labelPlacement="floating"
                     [(ngModel)]="ingredient.percentage"
                     [clearOnEdit]="true"
-                    (input)="setPercentage($event, i)"></ion-input>
+                    (ionBlur)="setPercentage($event, i)"></ion-input>
                 </ion-col>
               </ion-row>
             </ion-grid>
