@@ -26,7 +26,7 @@
       (click)="setOpen(material)"
     >
       <div>
-        <ion-label style="font-weight: bold;">{{material.Name}}</ion-label>
+        <ion-label style="font-weight: bold;">{{material.Name}} <ion-icon color="danger" *ngIf="material.Hazardous" name="warning-outline"></ion-icon></ion-label>
         <div class="div-row-wrap">
           <p *ngFor="let oxide of material.Oxides; let i = index" class="text-small m-1">
             {{ oxide.OxideName }} : {{oxide.Analysis}}<span *ngIf="i < material.Oxides.length - 1"> ~ </span>

@@ -1,4 +1,11 @@
-import { Component, Inject, ViewChild } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  Inject,
+  ViewChild,
+} from '@angular/core';
 import { Ingredient } from 'src/app/Models/ingredientModel';
 import { AuthService } from 'src/app/Services/auth.service';
 import { IngredientTypesService } from 'src/app/Services/ingredient-types.service';
@@ -17,6 +24,8 @@ import { FiringDetailsService } from 'src/app/Services/firing-details.service';
 import { Status } from 'src/app/Models/status';
 import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { FirebaseStorageService } from 'src/app/Services/firebase-storage.service';
+import { SwiperContainer } from 'swiper/element';
+import { Swiper } from 'swiper/types';
 
 @Component({
   selector: 'app-recipe-editor',
@@ -26,7 +35,11 @@ import { FirebaseStorageService } from 'src/app/Services/firebase-storage.servic
     '../../../ionic-selectable.component.scss',
   ],
 })
-export class RecipeEditorPage {
+export class RecipeEditorPage implements AfterViewInit {
+  @ViewChild('swiper')
+  swiperRef: ElementRef | undefined;
+  swiper?: Swiper;
+
   lowerCone: string = '6';
   upperCone: string = '10';
   isConeRange: boolean = false;
@@ -34,7 +47,9 @@ export class RecipeEditorPage {
   firingTypes: string[] = this.firingDetailsService.firingTypes;
   allCones: string[] = this.firingDetailsService.firingCones;
   conesLowerRange: string[] = [...this.allCones];
-  conesUpperRange: string[] = [...this.allCones.slice(0, this.allCones.indexOf(this.lowerCone))];
+  conesUpperRange: string[] = [
+    ...this.allCones.slice(0, this.allCones.indexOf(this.lowerCone)),
+  ];
   lowerConeLabel: string = 'Cone';
   upperConeLabel: string = 'Max Cone';
   remainingPercentageOver: boolean = false;
@@ -57,6 +72,8 @@ export class RecipeEditorPage {
   isMobile: boolean = false;
   cameraSource: CameraSource = CameraSource.Camera;
   photosSource: CameraSource = CameraSource.Photos;
+  imagesAtMax: boolean = false;
+  imageMax: number = 3;
 
   constructor(
     @Inject(IngredientTypesService)
@@ -70,16 +87,34 @@ export class RecipeEditorPage {
     private router: Router,
     private firingDetailsService: FiringDetailsService,
     private loadingCtrl: LoadingController,
-    private firebaseStorage: FirebaseStorageService
+    private firebaseStorage: FirebaseStorageService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {
     this.calculateTotalPercentage();
     this.isEditing = this.recipeService.isEditing;
     this.revision = this.recipeService.editingRevision;
     this.isMobile = isPlatform('cordova');
-    console.log(this.recipeService.recipeEditInProgess.revisions.length, recipeService.isRevision);
   }
 
-  updateImage() {
+  ngAfterViewInit() {
+    this.isConeRange =
+      this.recipeService.recipeEditInProgess.cone.includes('-');
+    this.imagesAtMax =
+      this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrls
+        .length >= this.imageMax;
+    this.updateSwiper();
+  }
+
+  updateSwiper() {
+    this.swiper?.update();
+    this.swiper?.updateSlides();
+    this.swiperRef?.nativeElement.swiper.update();
+    this.swiperRef?.nativeElement.swiper.updateSlides();
+    this.changeDetectorRef.detectChanges();
+    console.log('updated swiper');
+  }
+
+  updateImage(index: number) {
     //ask user if they want to take a photo or choose from gallery
     this.dialogueService
       .presentConfirmationDialog(
@@ -90,14 +125,54 @@ export class RecipeEditorPage {
       )
       .then((result) => {
         if (result === true) {
-          this.selectImage(this.cameraSource);
+          this.selectImage(this.cameraSource, index);
         } else {
-          this.selectImage(this.photosSource);
+          this.selectImage(this.photosSource, index);
         }
       });
   }
 
-  async selectImage(source: CameraSource) {
+  addImage() {
+    this.recipeService.recipeEditInProgess.revisions[
+      this.revision
+    ].imageUrls.push('');
+    this.updateImage(
+      this.recipeService.recipeEditInProgess.revisions[
+        this.revision
+      ].imageUrls.indexOf('')
+    );
+    this.imagesAtMax =
+      this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrls
+        .length >= this.imageMax;
+    this.changeDetectorRef.detectChanges();
+    this.updateSwiper();
+  }
+
+  async deleteImage(index: number) {
+    await this.dialogueService
+      .presentConfirmationDialog(
+        'Delete Image',
+        'Are you sure you want to delete this image?',
+        'Yes',
+        'No'
+      )
+      .then(async (result) => {
+        if (result === true) {
+          await this.firebaseStorage.deleteFileWithUrl(this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrls[index]);
+          this.recipeService.recipeEditInProgess.revisions[
+            this.revision
+          ].imageUrls.splice(index, 1);
+          this.imagesAtMax =
+            this.recipeService.recipeEditInProgess.revisions[this.revision]
+              .imageUrls.length >= this.imageMax;
+        }
+      });
+    this.changeDetectorRef.detectChanges();
+    console.log('deleted');
+    this.updateSwiper();
+  }
+
+  async selectImage(source: CameraSource, index: number) {
     const loading = await this.loadingCtrl.create({
       message: 'Uploading image...',
       spinner: 'bubbles',
@@ -125,7 +200,7 @@ export class RecipeEditorPage {
         );
         this.recipeService.recipeEditInProgess.revisions[
           this.revision
-        ].imageUrl = resultUrl;
+        ].imageUrls[index] = resultUrl;
       } else {
         this.alertController
           .create({
@@ -143,7 +218,7 @@ export class RecipeEditorPage {
     }
   }
 
-  async uploadAndSetProfilePicture(event: any) {
+  async uploadRevisionImage(event: any, index: number) {
     const loading = await this.loadingCtrl.create({
       message: 'Uploading image...',
       spinner: 'bubbles',
@@ -157,8 +232,9 @@ export class RecipeEditorPage {
     try {
       loading.present();
       const resultUrl = await this.firebaseStorage.uploadFile(filePath, file);
-      this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrl =
-        resultUrl;
+      this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrls[
+        index
+      ] = resultUrl;
       loading.dismiss();
     } catch (error) {
       loading.dismiss();
@@ -170,14 +246,11 @@ export class RecipeEditorPage {
     this.revision = event.detail.value - 1;
     this.updateMaterialsList();
     this.calculateTotalPercentage();
-    this.isConeRange = this.recipeService.recipeEditInProgess.cone.includes('-');
-  }
-
-  searchIngredients(event: any) {
-    let search = event.text.toLowerCase();
-    this.allMaterials = this.ingredientService.allMaterials.filter((material) =>
-      material.name.toLowerCase().includes(search)
-    );
+    this.isConeRange =
+      this.recipeService.recipeEditInProgess.cone.includes('-');
+    this.imagesAtMax =
+      this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrls
+        .length >= this.imageMax;
   }
 
   setStatus(event: any) {
@@ -191,13 +264,7 @@ export class RecipeEditorPage {
       (material) =>
         !this.recipeService.recipeEditInProgess.revisions[
           this.revision
-        ].ingredients.find((ingredient) => ingredient.name === material.name)
-    );
-
-    console.log(this.allMaterials);
-    console.log(
-      this.recipeService.recipeEditInProgess.revisions[this.revision]
-        .ingredients
+        ].materials.find((material) => material.Name === material.Name)
     );
   }
 
@@ -206,8 +273,8 @@ export class RecipeEditorPage {
       this.recipeService.recipeEditInProgess.name.trim() !== '' &&
       this.recipeService.recipeEditInProgess.description.trim() !== '' &&
       this.recipeService.recipeEditInProgess.cone !== '' &&
-      this.recipeService.recipeEditInProgess.revisions[this.revision]
-        .ingredients.length > 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision].materials
+        .length > 0
     );
   }
 
@@ -245,11 +312,11 @@ export class RecipeEditorPage {
         //check if the revisions are the same, minus the status property
         if (
           JSON.stringify(
-            this.recipeService.recipeEditInProgess.revisions[i].ingredients
+            this.recipeService.recipeEditInProgess.revisions[i].materials
           ) ===
           JSON.stringify(
             this.recipeService.recipeEditInProgess.revisions[this.revision]
-              .ingredients
+              .materials
           )
         ) {
           same = true;
@@ -398,12 +465,11 @@ export class RecipeEditorPage {
     this.lowerCone = event.target.value;
     if (this.isConeRange) {
       this.recipeService.recipeBuildInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
-      console.log(this.recipeService.recipeBuildInProgess.cone);
       //modify the upper cone range to disinclude the lower cone and all cones below it
-      this.conesUpperRange = [...this.allCones.slice(0, this.allCones.indexOf(this.lowerCone))];
-
+      this.conesUpperRange = [
+        ...this.allCones.slice(0, this.allCones.indexOf(this.lowerCone)),
+      ];
     } else {
-      console.log(this.recipeService.recipeBuildInProgess.cone);
       this.recipeService.recipeBuildInProgess.cone = event.target.value;
     }
   }
@@ -411,15 +477,27 @@ export class RecipeEditorPage {
   setUpperCone(event: any) {
     this.upperCone = event.target.value;
     this.recipeService.recipeBuildInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
-    console.log(this.recipeService.recipeBuildInProgess.cone);
-    this.conesLowerRange = [...this.allCones.slice(this.allCones.indexOf(this.upperCone) + 1, this.allCones.length)];
+    this.conesLowerRange = [
+      ...this.allCones.slice(
+        this.allCones.indexOf(this.upperCone) + 1,
+        this.allCones.length
+      ),
+    ];
   }
 
   toggleConeRange() {
-    this.recipeService.recipeBuildInProgess.cone = this.isConeRange ? `${this.lowerCone}-${this.upperCone}` : this.lowerCone;
-    console.log(this.recipeService.recipeBuildInProgess.cone);
+    this.recipeService.recipeBuildInProgess.cone = this.isConeRange
+      ? `${this.lowerCone}-${this.upperCone}`
+      : this.lowerCone;
     this.lowerConeLabel = this.isConeRange ? 'Min Cone' : 'Cone';
-    this.conesLowerRange = this.isConeRange ? [...this.allCones.slice(this.allCones.indexOf(this.upperCone) + 1, this.allCones.length)] : [...this.allCones];
+    this.conesLowerRange = this.isConeRange
+      ? [
+          ...this.allCones.slice(
+            this.allCones.indexOf(this.upperCone) + 1,
+            this.allCones.length
+          ),
+        ]
+      : [...this.allCones];
   }
 
   trimDescription() {
@@ -438,15 +516,15 @@ export class RecipeEditorPage {
   async addIngredient() {
     let cancel = false;
     if (
-      this.recipeService.recipeEditInProgess.revisions[this.revision]
-        .ingredients.length >= 5
+      this.recipeService.recipeEditInProgess.revisions[this.revision].materials
+        .length >= 5
     ) {
       await this.dialogueService
         .presentConfirmationDialog(
           'Wait a sec',
           `You really want more than ${
             this.recipeService.recipeEditInProgess.revisions[this.revision]
-              .ingredients.length
+              .materials.length
           } ingredients?`,
           'Yeah',
           'No'
@@ -460,16 +538,22 @@ export class RecipeEditorPage {
 
     if (cancel) return;
 
-    this.recipeService.recipeEditInProgess.revisions[
+    this.recipeService.recipeBuildInProgess.revisions[
       this.revision
-    ].ingredients.push(
-      new Ingredient('', { composition: '', colorClass: '' }, '', 0, 1)
-    );
+    ].materials.push({
+      Name: '',
+      Oxides: [],
+      OxidesWeight: 0,
+      Description: '',
+      Percentage: 0,
+      Quantity: 0,
+      Hazardous: false,
+    });
 
     //Do animation stuff
     const newIngredientIndex =
-      this.recipeService.recipeEditInProgess.revisions[this.revision]
-        .ingredients.length - 1;
+      this.recipeService.recipeEditInProgess.revisions[this.revision].materials
+        .length - 1;
 
     // Get the last ingredient's HTML element and slide it in
     const ingredientElements = document.querySelectorAll('.w-fill-available');
@@ -485,32 +569,23 @@ export class RecipeEditorPage {
 
   anyIngredients() {
     return (
-      this.recipeService.recipeEditInProgess.revisions[this.revision]
-        .ingredients.length > 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision].materials
+        .length > 0
     );
   }
 
   setIngredientValue(event: any, index: number) {
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
+    this.recipeService.recipeBuildInProgess.revisions[this.revision].materials[
       index
-    ].name = event.value.name;
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
-      index
-    ].type = event.value.type;
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
-      index
-    ].composition.composition = event.value.composition.composition;
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
-      index
-    ].composition.colorClass = event.value.composition.colorClass;
+    ].Name = event.Name;
     this.updateMaterialsList();
   }
 
   setPercentage(event: any, index: number) {
     if (event.target.value === '' || parseFloat(event.target.value) < 1) {
-      this.recipeService.recipeEditInProgess.revisions[
-        this.revision
-      ].ingredients[index].percentage = 1;
+      this.recipeService.recipeEditInProgess.revisions[this.revision].materials[
+        index
+      ].Percentage = 1;
       event.target.value = '1'; // Set the value of the input to 1
       this.calculateTotalPercentage();
       return;
@@ -520,9 +595,9 @@ export class RecipeEditorPage {
       event.target.value = event.target.value.slice(0, 5);
       return;
     }
-    this.recipeService.recipeEditInProgess.revisions[this.revision].ingredients[
+    this.recipeService.recipeEditInProgess.revisions[this.revision].materials[
       index
-    ].percentage = parseFloat(event.target.value);
+    ].Percentage = parseFloat(event.target.value);
     this.calculateTotalPercentage();
   }
 
@@ -538,15 +613,15 @@ export class RecipeEditorPage {
     await this.slideOutIngredient(ingredientElementToRemove);
     this.recipeService.recipeEditInProgess.revisions[
       this.revision
-    ].ingredients.splice(index, 1);
+    ].materials.splice(index, 1);
     this.updateMaterialsList();
     this.calculateTotalPercentage();
   }
 
   calculateTotalPercentage() {
     if (
-      this.recipeService.recipeEditInProgess.revisions[this.revision]
-        .ingredients.length === 0
+      this.recipeService.recipeEditInProgess.revisions[this.revision].materials
+        .length === 0
     ) {
       this.totalPercentage = 0;
       this.remainingPercentage = 100;
@@ -556,10 +631,8 @@ export class RecipeEditorPage {
       Math.round(
         this.recipeService.recipeEditInProgess.revisions[
           this.revision
-        ].ingredients.reduce(
-          (acc, ingredient) => acc + ingredient.percentage,
-          0
-        ) * 100
+        ].materials.reduce((acc, material) => acc + material.Percentage, 0) *
+          100
       ) / 100;
     this.remainingPercentage = Number.isNaN(100 - this.totalPercentage)
       ? 100

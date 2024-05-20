@@ -9,7 +9,8 @@
                 <ion-avatar>
                   <img [src]="userMeta?.photoUrl">
                 </ion-avatar>
-                <ion-label class="ion-margin" size="large">{{userMeta?.displayName}}</ion-label>
+                <ion-label *ngIf="userMeta?.nickname === ''" class="ion-margin" size="large">{{userMeta?.displayName}}</ion-label>
+                <ion-label *ngIf="userMeta?.nickname !== ''" class="ion-margin" size="large">{{userMeta?.nickname}}</ion-label>
               </ion-list-header>
               <ion-note class="ion-margin">{{user?.email}}</ion-note>
             </div>

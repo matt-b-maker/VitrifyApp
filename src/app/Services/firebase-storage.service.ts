@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
+import { firstValueFrom } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -27,7 +28,12 @@ export class FirebaseStorageService {
   }
 
   // Delete file
-  async deleteFile(filePath: string): Promise<void> {
-    return await this.storage.ref(filePath).delete().toPromise();
+  async deleteFileWithUrl(fileUrl: string): Promise<void> {
+    console.log(fileUrl)
+    return await firstValueFrom(this.storage.refFromURL(fileUrl).delete());
+  }
+
+  async deleteFileWithFilePath(filePath: string): Promise<void> {
+    return await firstValueFrom(this.storage.ref(filePath).delete());
   }
 }

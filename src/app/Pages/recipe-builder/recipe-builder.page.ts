@@ -30,6 +30,7 @@ import { MaterialsService } from 'src/app/Services/materials.service';
 import { Material } from 'src/app/Interfaces/material';
 import { IonicSelectableComponent } from 'ionic-selectable';
 import { ignoreElements } from 'rxjs';
+import { MaterialsSelectComponent } from 'src/app/Components/materials-select/materials-select.component';
 
 @Component({
   selector: 'app-recipe-builder',
@@ -91,57 +92,20 @@ export class RecipeBuilderPage {
     );
   }
 
-  searchIngredients(event: {
-    component: IonicSelectableComponent;
-    text: string;
-  }) {
-    console.log(event.text);
-    let search = event.text.trim().toLowerCase();
-    event.component.startSearch();
-
-    if (!search) {
-      event.component.items = this.allMaterials;
-      event.component.endSearch();
-      this.searching = false;
-      return;
-    }
-
-    let searchResults: Material[] = [];
-
-    if (search.length < 2) {
-      searchResults = this.materialsService.materials.filter((material) =>
-        material.Name.toLowerCase().startsWith(search)
-      );
-    }
-    else {
-      searchResults = this.materialsService.materials.filter((material) =>
-        material.Name.toLowerCase().includes(search)
-      );
-    }
-
-    event.component.items = searchResults.slice(0, 50);
-    this.searching = true;
-    event.component.endSearch();
-  }
-
   onSelectableClose(event: any) {
     this.searching = false;
     this.allMaterials = this.materialsService.materials.slice(0, 50);
   }
 
   setIngredientValue(event: any, index: number) {
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
+    this.recipeService.recipeBuildInProgess.revisions[0].materials[
       index
-    ].name = event.value.Name;
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
-      index
-    ].composition.composition = event.value.chemicalComposition;
+    ].Name = event.Name;
     this.updateMaterialsList();
   }
 
-  resetMaterials(event: any, index: number) {
-    console.log('cleared');
-    console.log(event);
+  resetMaterials() {
+    this.recipeService.recipeBuildInProgess.revisions[0].materials = [];
   }
 
   updateMaterialsList() {
@@ -159,7 +123,7 @@ export class RecipeBuilderPage {
       this.recipeService.recipeBuildInProgess.name.trim() !== '' &&
       this.recipeService.recipeBuildInProgess.description.trim() !== '' &&
       this.recipeService.recipeBuildInProgess.cone !== '' &&
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients.length >
+      this.recipeService.recipeBuildInProgess.revisions[0].materials.length >
         0
     );
   }
@@ -190,9 +154,9 @@ export class RecipeBuilderPage {
                   recipe.name === this.recipeService.recipeBuildInProgess.name
               )?.id || uuidv4();
             //remove any ingredients that don't have a name
-            this.recipeService.recipeBuildInProgess.revisions[0].ingredients =
-              this.recipeService.recipeBuildInProgess.revisions[0].ingredients.filter(
-                (ingredient) => ingredient.name !== ''
+            this.recipeService.recipeBuildInProgess.revisions[0].materials =
+              this.recipeService.recipeBuildInProgess.revisions[0].materials.filter(
+                (ingredient) => ingredient.Name !== ''
               );
             this.recipeService.recipeBuildInProgess.revisions[0].status =
               Status.New;
@@ -207,10 +171,11 @@ export class RecipeBuilderPage {
       this.auth.user?.displayName || '';
     this.recipeService.recipeBuildInProgess.uid = this.auth.user?.uid || '';
     this.recipeService.recipeBuildInProgess.revisions[0].status = Status.New;
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients =
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients.filter(
-        (ingredient) => ingredient.name !== ''
+    this.recipeService.recipeBuildInProgess.revisions[0].materials =
+      this.recipeService.recipeBuildInProgess.revisions[0].materials.filter(
+        (material) => material.Name !== ''
       );
+    debugger;
     await this.firestoreService.saveRecipe(
       this.recipeService.recipeBuildInProgess
     );
@@ -309,13 +274,11 @@ export class RecipeBuilderPage {
     this.lowerCone = event.target.value;
     if (this.isConeRange) {
       this.recipeService.recipeBuildInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
-      console.log(this.recipeService.recipeBuildInProgess.cone);
       //modify the upper cone range to disinclude the lower cone and all cones below it
       this.conesUpperRange = [
         ...this.allCones.slice(0, this.allCones.indexOf(this.lowerCone)),
       ];
     } else {
-      console.log(this.recipeService.recipeBuildInProgess.cone);
       this.recipeService.recipeBuildInProgess.cone = event.target.value;
     }
   }
@@ -323,7 +286,6 @@ export class RecipeBuilderPage {
   setUpperCone(event: any) {
     this.upperCone = event.target.value;
     this.recipeService.recipeBuildInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
-    console.log(this.recipeService.recipeBuildInProgess.cone);
     this.conesLowerRange = [
       ...this.allCones.slice(
         this.allCones.indexOf(this.upperCone) + 1,
@@ -337,7 +299,6 @@ export class RecipeBuilderPage {
     this.recipeService.recipeBuildInProgess.cone = this.isConeRange
       ? `${this.lowerCone}-${this.upperCone}`
       : this.lowerCone;
-    console.log(this.recipeService.recipeBuildInProgess.cone);
     this.lowerConeLabel = this.isConeRange ? 'Min' : 'Cone';
     this.conesLowerRange = this.isConeRange
       ? [
@@ -367,13 +328,13 @@ export class RecipeBuilderPage {
   async addIngredient() {
     let cancel = false;
     if (
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients.length >=
+      this.recipeService.recipeBuildInProgess.revisions[0].materials.length >=
       5
     ) {
       await this.dialogueService
         .presentConfirmationDialog(
           'Wait a sec',
-          `You really want more than ${this.recipeService.recipeBuildInProgess.revisions[0].ingredients.length} ingredients?`,
+          `You really want more than ${this.recipeService.recipeBuildInProgess.revisions[0].materials.length} ingredients?`,
           'Yeah',
           'No'
         )
@@ -386,8 +347,8 @@ export class RecipeBuilderPage {
 
     if (cancel) return;
 
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients.push(
-      new Ingredient('', { composition: '', colorClass: '' }, '', 0, 1)
+    this.recipeService.recipeBuildInProgess.revisions[0].materials.push(
+      { Name: '', Oxides: [], OxidesWeight: 0, Description: '', Percentage: 0, Quantity: 0, Hazardous: false }
     );
 
     //update percentages
@@ -396,13 +357,12 @@ export class RecipeBuilderPage {
     //do the animation
     await this.slideInNewIngredient().then(() => {
       // Get the last ingredient's HTML element and slide it in
-      let ingredientElements = document.querySelectorAll(
+      let materialElements = document.querySelectorAll(
         '.material-ingredient'
       );
-      let lastIngredientElement = ingredientElements[
-        ingredientElements.length - 1
+      let lastIngredientElement = materialElements[
+        materialElements.length - 1
       ] as HTMLElement;
-      console.log(ingredientElements.length);
       lastIngredientElement?.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
@@ -412,7 +372,7 @@ export class RecipeBuilderPage {
 
   anyIngredients() {
     return (
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients.length >
+      this.recipeService.recipeBuildInProgess.revisions[0].materials.length >
       0
     );
   }
@@ -423,9 +383,9 @@ export class RecipeBuilderPage {
       event.target.value === '' ||
       !event.target.value
     ) {
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
+      this.recipeService.recipeBuildInProgess.revisions[0].materials[
         index
-      ].percentage = 1;
+      ].Percentage = 1;
       this.calculateTotalPercentage();
       return;
     }
@@ -433,16 +393,16 @@ export class RecipeBuilderPage {
     //check max length
     if (event.target.value.length > 5) {
       event.target.value = event.target.value.slice(0, 5);
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
+      this.recipeService.recipeBuildInProgess.revisions[0].materials[
         index
-      ].percentage = parseFloat(
+      ].Percentage = parseFloat(
         this.trimLeadingZeros(event.target.value).slice(0, 5)
       );
       return;
     }
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients[
+    this.recipeService.recipeBuildInProgess.revisions[0].materials[
       index
-    ].percentage = parseFloat(this.trimLeadingZeros(event.target.value));
+    ].Percentage = parseFloat(this.trimLeadingZeros(event.target.value));
     this.calculateTotalPercentage();
   }
 
@@ -463,7 +423,7 @@ export class RecipeBuilderPage {
 
     // Slide out the ingredient first, then remove it
     await this.slideOutIngredient(ingredientElementToRemove);
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients.splice(
+    this.recipeService.recipeBuildInProgess.revisions[0].materials.splice(
       index,
       1
     );
@@ -473,7 +433,7 @@ export class RecipeBuilderPage {
 
   calculateTotalPercentage() {
     if (
-      this.recipeService.recipeBuildInProgess.revisions[0].ingredients
+      this.recipeService.recipeBuildInProgess.revisions[0].materials
         .length === 0
     ) {
       this.totalPercentage = 0;
@@ -482,8 +442,8 @@ export class RecipeBuilderPage {
     }
     this.totalPercentage =
       Math.round(
-        this.recipeService.recipeBuildInProgess.revisions[0].ingredients.reduce(
-          (acc, ingredient) => acc + ingredient.percentage,
+        this.recipeService.recipeBuildInProgess.revisions[0].materials.reduce(
+          (acc, material) => acc + material.Percentage,
           0
         ) * 100
       ) / 100;
@@ -492,31 +452,8 @@ export class RecipeBuilderPage {
       : Math.round((100 - this.totalPercentage) * 100) / 100;
   }
 
-  getMoreIngredients(event: {
-    component: IonicSelectableComponent;
-    text: string;
-  }) {
-    if (this.searching) {
-      let items = this.materialsService.materials.filter((material) =>
-        material.Name.toLowerCase().includes(
-          event.component.searchText.toLowerCase()
-        )
-      );
-      event.component.items = items.slice(0, event.component.items.length + 50);
-      event.component.endInfiniteScroll();
-      return;
-    }
-    this.allMaterials = [
-      ...this.materialsService.materials.slice(
-        0,
-        this.allMaterials.length + 50
-      ),
-    ];
-    event.component.endInfiniteScroll();
-  }
-
   async aiGenerateRecipe() {
-    let ingredients: Ingredient[] = [];
+    let materials: Material[] = [];
 
     if (
       this.recipeService.recipeBuildInProgess.name === '' ||
@@ -535,9 +472,9 @@ export class RecipeBuilderPage {
       return;
     }
 
-    this.recipeService.recipeBuildInProgess.revisions[0].ingredients = [];
+    this.recipeService.recipeBuildInProgess.revisions[0].materials = [];
     this.recipeService.recipeBuildInProgess.revisions[0].notes = '';
-    this.recipeService.recipeBuildInProgess.revisions[0].imageUrl = '';
+    this.recipeService.recipeBuildInProgess.revisions[0].imageUrls = [];
     this.recipeService.recipeBuildInProgess.revisions[0].status = Status.New;
 
     const loading = await this.loadingController.create({
@@ -556,36 +493,30 @@ export class RecipeBuilderPage {
           "ingredients": [
             {
               "IngredientName": "Nepheline Syenite",
-              "IngredientType": "Flux",
               "Percentage": 55.4
             },
             {
               "IngredientName": "Silica",
-              "IngredientType": "Silica",
               "Percentage": 25.6
             },
             {
               "IngredientName": "EPK Kaolin",
-              "IngredientType": "Stabilizer",
               "Percentage": 15.1
             },
             {
               "IngredientName": "Copper Carbonate",
-              "IngredientType": "Colorant",
               "Percentage": 5.9
             }
           ],
           "notes": "This glaze formula creates a glossy finish suitable for cone 6 oxidation firing environments. Adjust the amount of Copper Carbonate to vary the color intensity."
         }
+        Please use any ingredients that are available on digitalfire.com, as that's where I get my data.
         Also, feel free to play with the percentages as floats and be as creative as you want!
         If you cannot make a glaze with the given information, please respond with "I cannot make a glaze with this information.".`
       );
 
-      const responseJson = JSON.parse(newRecipeResponse); // Assuming the API response is in JSON string format
-
-      console.log(newRecipeResponse);
+      const responseJson = JSON.parse(newRecipeResponse);
       console.log(responseJson);
-
       if (responseJson.ingredients.length === 0) {
         await this.alertController
           .create({
@@ -604,22 +535,18 @@ export class RecipeBuilderPage {
       responseJson.ingredients.forEach(
         (ingredient: {
           IngredientName: string;
-          IngredientType: string;
           Percentage: number;
         }) => {
-          let newIngredient = new Ingredient(
-            ingredient.IngredientName,
-            {
-              composition: '',
-              colorClass: '',
-            },
-            ingredient.IngredientType.toLowerCase(),
-            0,
-            ingredient.Percentage
+          let newMaterial: Material | undefined = this.materialsService.materials.find(
+            (material) => material.Name.includes(ingredient.IngredientName)
           );
-          this.recipeService.recipeBuildInProgess.revisions[0].ingredients.push(
-            newIngredient
-          );
+          if (newMaterial) {
+            newMaterial.Percentage = ingredient.Percentage;
+            newMaterial.Quantity = 0;
+            this.recipeService.recipeBuildInProgess.revisions[0].materials.push(
+              newMaterial
+            );
+          }
         }
       );
 

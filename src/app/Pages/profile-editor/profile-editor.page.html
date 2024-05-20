@@ -28,4 +28,15 @@
       >Select from Gallery</ion-button
     >
   </ion-item>
+  <ion-item>
+    <ion-input
+
+      label="Nickname"
+      labelPlacement="stacked"
+      type="text"
+      [value]="nickname"
+      (ionChange)="setNickname($event)"
+    ></ion-input>
+    <ion-button (click)="updateNickname()">Set Nickname</ion-button>
+  </ion-item>
 </ion-content>

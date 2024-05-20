@@ -12,6 +12,7 @@ import { Recipe } from 'src/app/Models/recipeModel';
 import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileSystemService } from 'src/app/Services/file-system.service';
 import { MaterialsService } from 'src/app/Services/materials.service';
+import { user } from '@angular/fire/auth';
 
 interface Glaze {
   imageUrl: string;
@@ -71,7 +72,6 @@ export class LoginComponent implements OnInit {
       }
       loading.present();
       userCredential = await this.authService.login(this.email, this.password);
-      console.log('user logged in with email and password:', userCredential);
     } else {
       loading.present();
       try {
@@ -88,10 +88,6 @@ export class LoginComponent implements OnInit {
         'users',
         userCredential.user.uid
       );
-      let userRecipes: Recipe[] | undefined =
-        await this.firestore.getUserRecipes(userCredential.user.uid);
-      console.log('user recipes:', userRecipes);
-      console.log('user meta:', userMeta);
       if (!userMeta) {
         userMeta = {
           firstName: userCredential.user.firstName,
@@ -106,6 +102,7 @@ export class LoginComponent implements OnInit {
             : userCredential.user.photoURL,
           isPremium: false,
           uid: userCredential.user.uid,
+          nickname: userCredential.displayName,
         };
         await this.firestore.upsert('users', userCredential.user.uid, userMeta);
         this.authService.updateUser(userCredential.user);
@@ -114,11 +111,6 @@ export class LoginComponent implements OnInit {
       }
 
       userMeta.lastLogin = new Date();
-      console.log(
-        'user names:',
-        userCredential.user.firstName,
-        userCredential.user.lastName
-      );
       if (userMeta.displayName == null || userMeta.displayName == '')
         userMeta.displayName =
           userCredential.user.firstName + ' ' + userCredential.user.lastName;
@@ -129,6 +121,8 @@ export class LoginComponent implements OnInit {
       if (userMeta.isPremium == null) userMeta.isPremium = false;
       if (userMeta.uid == null || userMeta.uid == '')
         userMeta.uid = userCredential.user.uid;
+      if (userMeta.nickname == null || userMeta.nickname == '')
+        userMeta.nickname = userCredential.user.displayName;
       await this.firestore.upsert('users', userCredential.user.uid, userMeta);
       this.authService.updateUser(userCredential.user);
       this.authService.updateMeta(userMeta);

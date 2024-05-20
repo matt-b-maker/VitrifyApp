@@ -25,11 +25,9 @@ export class UserRecipesPage implements OnInit {
     private router: Router,
     public recipeService: RecipesService
   ) {
-    console.log('UserRecipesPage constructor')
   }
 
   async ngOnInit() {
-    console.log('UserRecipesPage ngOnInit')
     this.loaded = false;
     this.recipeService.userRecipes = await this.firestore.getUserRecipes(this.auth.user?.uid || '');
     this.loaded = true;

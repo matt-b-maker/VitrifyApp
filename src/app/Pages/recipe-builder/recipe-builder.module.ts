@@ -12,6 +12,7 @@ import { IngredientComponent } from 'src/app/Components/ingredient/ingredient.co
 import { FilterSilicaPipe } from "../../Pipes/filter-silica.pipe";
 import { FilterFluxPipe } from "../../Pipes/filter-flux.pipe";
 import { IonicSelectableComponent, IonicSelectableItemEndTemplateDirective, IonicSelectableItemTemplateDirective, IonicSelectableTitleTemplateDirective, IonicSelectableValueTemplateDirective } from 'ionic-selectable';
+import { MaterialsSelectComponent } from 'src/app/Components/materials-select/materials-select.component';
 
 @NgModule({
     declarations: [RecipeBuilderPage],
@@ -27,7 +28,8 @@ import { IonicSelectableComponent, IonicSelectableItemEndTemplateDirective, Ioni
         IonicSelectableComponent,
         IonicSelectableItemTemplateDirective,
         IonicSelectableItemEndTemplateDirective,
-        IonicSelectableValueTemplateDirective
+        IonicSelectableValueTemplateDirective,
+        MaterialsSelectComponent
     ]
 })
 export class RecipeBuilderPageModule {}

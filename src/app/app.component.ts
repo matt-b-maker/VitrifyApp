@@ -7,6 +7,9 @@ import { AlertController, Platform } from '@ionic/angular';
 import { App as CapacitorApp } from '@capacitor/app';
 import { UserMeta } from './Models/userMetaModel';
 import { MaterialsService } from './Services/materials.service';
+import { register } from 'swiper/element/bundle';
+
+register();
 
 @Component({
   selector: 'app-root',
@@ -30,7 +33,6 @@ export class AppComponent implements OnInit, OnDestroy {
     });
       (async () => {
         await this.materialsService.setMaterials();
-        console.log(this.materialsService.materials.length);
         //remove "LOI" from materials oxides
         this.materialsService.materials.forEach((material) => {
           material.Oxides.forEach((oxide) => {
@@ -43,7 +45,6 @@ export class AppComponent implements OnInit, OnDestroy {
             });
           });
         });
-        console.log(this.materialsService.materials.slice(0,10));
       })();
       this.initializeApp();
     }

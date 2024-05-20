@@ -1,0 +1,23 @@
+.ionic-selectable {
+  min-width: fit-content;
+}
+
+//if small screen
+@media (max-width: 600px) {
+  .ionic-selectable {
+    min-width: -webkit-fill-available;
+  }
+}
+//if medium screen
+@media (min-width: 600px) and (max-width: 1024px) {
+  .ionic-selectable {
+    min-width: 50%;
+  }
+}
+//if large screen
+@media (min-width: 1024px) {
+  .ionic-selectable {
+    min-width: 30%;
+  }
+}
+

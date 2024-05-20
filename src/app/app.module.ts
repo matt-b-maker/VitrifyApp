@@ -1,4 +1,4 @@
-import { NgModule, getPlatform } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule, getPlatform } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 import { initializeApp, provideFirebaseApp } from '@angular/fire/app';
@@ -47,6 +47,7 @@ const platform = Capacitor.getPlatform();
             provideFirestore(() => getFirestore())],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }, GooglePlus, HttpClient, provideCharts(withDefaultRegisterables())],
   bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}
 

@@ -5,6 +5,7 @@
     </ion-buttons>
     <ion-buttons slot="end">
       <ion-button fill="outline" size="small" *ngIf="recipeComplete()" (click)="saveRecipeToFirestore()">Save</ion-button>
+      <ion-button fill="outline" size="small" *ngIf="anyIngredients()" (click)="resetMaterials()">Reset</ion-button>
     </ion-buttons>
     <ion-title></ion-title>
   </ion-toolbar>
@@ -97,42 +98,26 @@
     </ion-card-header>
     <ion-card-content>
       <ion-list lines="none">
-        <ion-item-sliding *ngFor="let ingredient of recipeService.recipeBuildInProgess.revisions[0].ingredients; let i = index" #itemSliding class="slide-in-animation material-ingredient">
+        <ion-item-sliding *ngFor="let material of recipeService.recipeBuildInProgess.revisions[0].materials; let i = index" #itemSliding class="slide-in-animation material-ingredient">
           <ion-item>
             <ion-grid class="ingredient-row">
               <ion-row class="ion-align-items-center">
                 <ion-col size="9">
-                  <ionic-selectable
-                    #selectComponent
-                    item-content
-                    [(ngModel)]="recipeService.recipeBuildInProgess.revisions[0].ingredients[i].name"
-                    fill="outline"
-                    class="item-content"
-                    [(items)]="allMaterials"
-                    [canSearch]="true"
-
-                    (onClose)="onSelectableClose($event)"
-                    (onSearch)="searchIngredients($event)"
-                    (onChange)="setIngredientValue($event, i)"
-                    [hasInfiniteScroll]="true"
-                    (onInfiniteScroll)="getMoreIngredients($event)"
-                    (ionClear)="resetMaterials($event, i)">
-                    <ng-template ionicSelectableItemTemplate let-ingredient="item">
-                      <div class="vertical-stack">
-                        <label>{{ingredient.Name}}</label>
-                        <label class="text-small">{{ingredient.Oxides.length}}</label>
-                      </div>
-                    </ng-template>
-                  </ionic-selectable>
+                  <app-materials-select
+                    [material]="recipeService.recipeBuildInProgess.revisions[0].materials[i]"
+                    [materialName]="recipeService.recipeBuildInProgess.revisions[0].materials[i].Name"
+                    [ingredientName]="material.Name"
+                    (ingredientChangedEmitter)="setIngredientValue($event, i)"
+                  ></app-materials-select>
                 </ion-col>
                 <ion-col size="3" class="ion-text-center">
                   <ion-input
-                    [disabled]="ingredient.name === ''"
+                    [disabled]="material.Name === ''"
                     fill="outline"
                     type="number"
                     label="%"
                     labelPlacement="floating"
-                    [(ngModel)]="ingredient.percentage"
+                    [(ngModel)]="material.Percentage"
                     [clearOnEdit]="true"
                     (ionBlur)="setPercentage($event, i)"></ion-input>
                 </ion-col>

@@ -69,8 +69,9 @@
         <ion-row>
           <ion-col size="8">
             <ion-item lines="none" [disabled]="recipeService.isRevision">
-              <ion-label>Status:</ion-label>
               <ion-select
+                label="Status"
+                labelPlacement="stacked"
                 [value]="recipeService.recipeEditInProgess.revisions[revision].status"
                 (ionChange)="setStatus($event)"
                 interface="popover"
@@ -166,37 +167,43 @@
   <ion-card>
     <ion-card-header>
       <ion-toolbar>
-        <ion-item lines="none" *ngIf="!isMobile">
-          <input
-            type="file"
-            accept="image/*"
-            (change)="uploadAndSetProfilePicture($event)"
-            hidden
-            #fileInput
-          />
-          <ion-button (click)="fileInput.click()">Update Image</ion-button>
-        </ion-item>
-        <ion-item lines="none">
-          <ion-button *ngIf="isMobile" (click)="updateImage()"
-            >Update Image</ion-button
-          >
-        </ion-item>
+        <ion-card-title>Images</ion-card-title>
+        <ion-button *ngIf="!imagesAtMax" slot="end" (click)="addImage()">Add</ion-button>
       </ion-toolbar>
     </ion-card-header>
     <ion-card-content class="ion-justify-content-center">
       <ion-avatar
         class="ion-margin w-50 horizontal-center"
-        *ngIf="!recipeService.recipeEditInProgess.revisions[revision].imageUrl"
+        *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrls.length === 0"
       >
         <ion-img
           src="../../../../assets/images/placeholder-image.png"
         ></ion-img>
       </ion-avatar>
-      <ion-img
-        *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrl"
-        class="ion-margin w-50 horizontal-center"
-        [src]="recipeService.recipeEditInProgess.revisions[revision].imageUrl"
-      ></ion-img>
+      <swiper-container #swiper [pagination]="true" *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrls.length > 0">
+        <swiper-slide
+          *ngFor="let image of recipeService.recipeEditInProgess.revisions[revision].imageUrls; let i = index"
+        >
+          <ion-img
+            class="ion-margin w-50 horizontal-center"
+            [src]="recipeService.recipeEditInProgess.revisions[revision].imageUrls[i]"
+          ></ion-img>
+          <ion-item lines="none" *ngIf="!isMobile">
+            <input
+              type="file"
+              accept="image/*"
+              (change)="uploadRevisionImage($event, i)"
+              hidden
+              #fileInput
+            />
+            <ion-button (click)="fileInput.click()">Update Image</ion-button>
+          </ion-item>
+          <ion-button *ngIf="isMobile" (click)="updateImage(i)"
+          >Update Image</ion-button
+        >
+        <ion-button (click)="deleteImage(i)">Delete</ion-button>
+        </swiper-slide>
+      </swiper-container>
     </ion-card-content>
   </ion-card>
 
@@ -213,7 +220,7 @@
     <ion-card-content>
       <ion-list lines="none">
         <ion-item-sliding
-          *ngFor="let ingredient of recipeService.recipeEditInProgess.revisions[revision].ingredients; let i = index"
+          *ngFor="let material of recipeService.recipeEditInProgess.revisions[revision].materials; let i = index"
           #itemSliding
           class="slide-in-animation"
         >
@@ -221,30 +228,12 @@
             <ion-grid class="ingredient-row">
               <ion-row class="ion-align-items-center">
                 <ion-col size="9">
-                  <ionic-selectable
-                    item-content
-                    [(ngModel)]="recipeService.recipeEditInProgess.revisions[revision].ingredients[i].name"
-                    fill="outline"
-                    class="item-content"
-                    [(items)]="allMaterials"
-                    [canSearch]="true"
-                    (onSearch)="searchIngredients($event)"
-                    (onChange)="setIngredientValue($event, i)"
-                  >
-                    <ng-template
-                      ionicSelectableItemTemplate
-                      let-ingredient="item"
-                    >
-                      <div class="vertical-stack">
-                        <label>{{ingredient.name}}</label>
-                        <label
-                          class="text-small"
-                          [ngClass]="ingredient.type + '-color'"
-                          >{{ingredient.composition.composition}}</label
-                        >
-                      </div>
-                    </ng-template>
-                  </ionic-selectable>
+                  <app-materials-select
+                    [material]="recipeService.recipeEditInProgess.revisions[revision].materials[i]"
+                    [materialName]="recipeService.recipeEditInProgess.revisions[revision].materials[i].Name"
+                    [ingredientName]="material.Name"
+                    (ingredientChangedEmitter)="setIngredientValue($event, i)"
+                  ></app-materials-select>
                 </ion-col>
                 <ion-col size="3" class="ion-text-center">
                   <ion-input
@@ -253,7 +242,7 @@
                     label="%"
                     labelPlacement="floating"
                     min="1"
-                    [value]="ingredient.percentage"
+                    [value]="material.Percentage"
                     (input)="setPercentage($event, i)"
                   ></ion-input>
                 </ion-col>

@@ -17,15 +17,11 @@ export class DialogueService {
           text: cancel,
           role: 'cancel',
           handler: () => {
-            // User clicked cancel
-            console.log('Confirm Cancel');
           }
         },
         {
           text: confirm,
           handler: () => {
-            // User clicked confirm
-            console.log('Confirm Okay');
           }
         }
       ]
@@ -34,7 +30,6 @@ export class DialogueService {
     await alert.present();
 
     const { role } = await alert.onDidDismiss();
-    console.log('onDidDismiss resolved with role', role);
     return role === undefined; // Return true if confirmed, false otherwise
   }
 

@@ -12,28 +12,33 @@ import { FirestoreService } from 'src/app/Services/firestore.service';
   templateUrl: './profile-editor.page.html',
   styleUrls: ['./profile-editor.page.scss'],
 })
-export class ProfileEditorPage implements OnInit{
-
+export class ProfileEditorPage {
   imageUrl: string = '';
   user: User | null = null;
   userMeta!: UserMeta | null;
   isMobile: boolean = true;
   cameraSource: CameraSource = CameraSource.Camera;
   photosSource: CameraSource = CameraSource.Photos;
+  nickname: string = '';
 
-  constructor(private loadingCtrl: LoadingController, private auth: AuthService, private firestoreService: FirestoreService, private firebaseStorage: FirebaseStorageService, private alertController: AlertController) {
+  constructor(
+    private loadingCtrl: LoadingController,
+    private auth: AuthService,
+    private firestoreService: FirestoreService,
+    private firebaseStorage: FirebaseStorageService,
+    private alertController: AlertController
+  ) {
     this.auth.user$.subscribe((user) => {
       this.user = user;
     });
     this.auth.userMeta$.subscribe((userMeta) => {
       this.userMeta = userMeta;
-      this.imageUrl = this.userMeta?.photoUrl || this.auth.user?.photoURL || "https://ionicframework.com/docs/img/demos/avatar.svg";
+      this.imageUrl =
+        this.userMeta?.photoUrl ||
+        this.auth.user?.photoURL ||
+        'https://ionicframework.com/docs/img/demos/avatar.svg';
     });
     this.isMobile = isPlatform('cordova');
-  }
-
-  ngOnInit() {
-    console.log('Profile editor page loaded');
   }
 
   async selectImage(source: CameraSource) {
@@ -44,38 +49,46 @@ export class ProfileEditorPage implements OnInit{
     });
 
     try {
-
       const image = await Camera.getPhoto({
         quality: 90,
         allowEditing: true,
         resultType: CameraResultType.Uri,
-        source: source
+        source: source,
       });
 
       if (image) {
         loading.present();
         const response = await fetch(image.webPath!);
         const blob = await response.blob();
-        const filePath = `profile_images/${new Date().getTime()}_${image.format}`;
-        const resultUrl = await this.firebaseStorage.uploadFile(filePath, blob as File);
+        const filePath = `profile_images/${new Date().getTime()}_${
+          image.format
+        }`;
+        const resultUrl = await this.firebaseStorage.uploadFile(
+          filePath,
+          blob as File
+        );
         this.imageUrl = resultUrl;
         if (this.userMeta !== null) {
           this.userMeta.photoUrl = this.imageUrl;
           this.auth.updateMeta(this.userMeta);
-          await this.firestoreService.upsert('users', this.auth.user?.uid || '', this.userMeta);
+          await this.firestoreService.upsert(
+            'users',
+            this.auth.user?.uid || '',
+            this.userMeta
+          );
           if (this.user) this.auth.storeAuthData(this.user, this.userMeta);
         }
-      }
-      else {
-        this.alertController.create({
-          header: 'Error',
-          message: 'Error with image',
-          buttons: ['OK']
-        }).then(alert => alert.present());
+      } else {
+        this.alertController
+          .create({
+            header: 'Error',
+            message: 'Error with image',
+            buttons: ['OK'],
+          })
+          .then((alert) => alert.present());
       }
 
       loading.dismiss();
-
     } catch (error) {
       loading.dismiss();
       console.error('Error accessing camera or gallery:', error);
@@ -98,7 +111,11 @@ export class ProfileEditorPage implements OnInit{
       if (this.userMeta) {
         this.userMeta.photoUrl = this.imageUrl;
         this.auth.updateMeta(this.userMeta);
-        await this.firestoreService.upsert('users', this.auth.user?.uid || '', this.userMeta);
+        await this.firestoreService.upsert(
+          'users',
+          this.auth.user?.uid || '',
+          this.userMeta
+        );
       }
       loading.dismiss();
     } catch (error) {
@@ -107,4 +124,29 @@ export class ProfileEditorPage implements OnInit{
     }
   }
 
+  async updateNickname() {
+    if (!this.userMeta) return;
+    if (this.nickname === null) {
+      await this.alertController
+        .create({
+          header: 'Error',
+          message:
+            'If you want to update your nickname, ya gotta give me something to work with',
+          buttons: ['OK'],
+        })
+        .then((alert) => alert.present());
+      return;
+    }
+    this.userMeta.nickname = this.nickname;
+    this.auth.updateMeta(this.userMeta);
+    this.firestoreService.upsert(
+      'users',
+      this.auth.user?.uid || '',
+      this.userMeta
+    );
+  }
+
+  setNickname(event: any) {
+    this.nickname = event.target.value;
+  }
 }

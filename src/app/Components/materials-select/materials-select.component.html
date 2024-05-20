@@ -1,0 +1,24 @@
+<ionic-selectable
+  #selectComponent
+  item-content
+  [(ngModel)]="material"
+  itemTextField="Name"
+  itemValueField="Name"
+  fill="outline"
+  class="item-content"
+  [(items)]="allMaterials"
+  [canSearch]="true"
+  (onClose)="onSelectableClose($event)"
+  (onSearch)="searchIngredients($event)"
+  (onChange)="setIngredientValue($event)"
+  [hasInfiniteScroll]="true"
+  (onInfiniteScroll)="getMoreIngredients($event)"
+  (ionClear)="resetMaterials($event)"
+>
+  <ng-template ionicSelectableItemTemplate let-ingredient="item">
+    <div class="vertical-stack">
+      <label>{{ingredient.Name}}</label>
+      <label class="text-small">{{ ingredient.Oxides.length }}</label>
+    </div>
+  </ng-template>
+</ionic-selectable>

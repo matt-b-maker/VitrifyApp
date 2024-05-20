@@ -50,7 +50,6 @@ export class IngredientComponent implements OnInit {
   }
 
   setPercentage(event: any) {
-    console.log(event.target.value);
     this.percentage = event.target.value;
     this.percentageValueChange.emit(this.percentage);
   }
@@ -65,7 +64,6 @@ export class IngredientComponent implements OnInit {
 
   setName(selectedName: any) {
     this.name = selectedName.value;
-    console.log(this.name);
     this.nameValueChange.emit(this.name);
   }
 

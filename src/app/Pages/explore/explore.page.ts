@@ -20,7 +20,6 @@ export class ExplorePage implements OnInit {
     this.loaded = false;
     this.recipeService.allRecipes = await this.firestoreService.getPublicRecipes();
     this.recipeService.allRecipes.forEach((recipe) => {
-      console.log(recipe.id);
     });
     this.loaded = true;
   }

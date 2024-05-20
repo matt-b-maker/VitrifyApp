@@ -24,7 +24,6 @@ export class PublicMaterialsPage implements OnInit {
 
   constructor(private materialsService: MaterialsService) {
     this.allMaterials = this.materialsService.materials;
-    console.log(this.allMaterials.length);
     this.listMaterials = this.allMaterials.filter((material) => {
       return material.Name.charAt(0) === this.chosenLetter;
     });
@@ -32,7 +31,6 @@ export class PublicMaterialsPage implements OnInit {
 
   async ngOnInit() {
     this.allMaterials = this.materialsService.materials;
-    console.log(this.allMaterials.length);
     this.listMaterials = this.allMaterials.filter((material) => {
       return material.Name.charAt(0) === this.chosenLetter;
     });

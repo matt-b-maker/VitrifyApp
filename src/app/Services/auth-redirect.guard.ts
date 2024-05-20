@@ -16,10 +16,8 @@ export class AuthRedirectGuard {
 
   canActivate(): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
     if (this.authService.userAuthenticated()) {
-      console.log('User is authenticated');
       return this.router.createUrlTree(['/profile']); // User is authenticated, allow access
     } else {
-      console.log('User is not authenticated, redirecting to login');
       return true;
     }
   }

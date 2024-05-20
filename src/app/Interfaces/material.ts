@@ -6,4 +6,7 @@ export interface Material {
   }>;
   "OxidesWeight": number;
   "Description": string;
+  "Percentage": number;
+  "Quantity": number;
+  "Hazardous": boolean;
 }

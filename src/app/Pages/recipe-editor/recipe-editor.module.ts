@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -12,6 +12,7 @@ import { IngredientComponent } from 'src/app/Components/ingredient/ingredient.co
 import { FilterSilicaPipe } from 'src/app/Pipes/filter-silica.pipe';
 import { FilterFluxPipe } from 'src/app/Pipes/filter-flux.pipe';
 import { IonicSelectableComponent, IonicSelectableItemEndTemplateDirective, IonicSelectableItemTemplateDirective, IonicSelectableValueTemplateDirective } from 'ionic-selectable';
+import { MaterialsSelectComponent } from 'src/app/Components/materials-select/materials-select.component';
 
 @NgModule({
   declarations: [RecipeEditorPage],
@@ -27,7 +28,9 @@ import { IonicSelectableComponent, IonicSelectableItemEndTemplateDirective, Ioni
     IonicSelectableComponent,
     IonicSelectableItemTemplateDirective,
     IonicSelectableItemEndTemplateDirective,
-    IonicSelectableValueTemplateDirective
-  ]
+    IonicSelectableValueTemplateDirective,
+    MaterialsSelectComponent
+  ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class RecipeEditorPageModule {}

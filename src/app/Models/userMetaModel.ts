@@ -11,6 +11,7 @@ export class UserMeta {
   photoUrl: string = '';
   isPremium: boolean = false;
   uid: string = '';
+  nickname: string = '';
 
   constructor(firstName:string, lastName: string, email: string, displayName: string, photoUrl: string, recipes: Recipe[], uid: string) {
     this.firstName = firstName;

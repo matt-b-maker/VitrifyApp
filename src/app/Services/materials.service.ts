@@ -66,8 +66,6 @@ export class MaterialsService {
     this.materials = await firstValueFrom(this.http.get(url)).then((data: any) => {
       return data as Material[];
     });
-
-    console.log(this.materials.length);
   }
 
   // materialsJson: MaterialsJson = {

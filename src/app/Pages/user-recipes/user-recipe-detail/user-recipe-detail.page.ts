@@ -1,8 +1,7 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   AlertController,
-  AnimationBuilder,
   IonModal,
   ModalController,
 } from '@ionic/angular';
@@ -14,8 +13,7 @@ import { AuthService } from 'src/app/Services/auth.service';
 import { v4 as uuidv4 } from 'uuid';
 import { Status } from 'src/app/Models/status';
 import { RecipeRevision } from 'src/app/Models/recipeRevision';
-import { ChartConfiguration, ChartOptions, ChartType } from 'chart.js';
-import { BaseChartDirective } from 'ng2-charts';
+import { IonicSlides } from '@ionic/angular';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -23,6 +21,12 @@ import { BaseChartDirective } from 'ng2-charts';
   styleUrls: ['./user-recipe-detail.page.scss'],
 })
 export class UserRecipeDetailPage implements OnInit {
+
+  public options = {
+    keyboard: true
+  };
+  swiperModules = [IonicSlides];
+
   // barChartData: ChartConfiguration<'bar'>['data'] = {
   //   labels: [ '2006', '2007', '2008', '2009', '2010', '2011', '2012' ],
   //   datasets: [
@@ -73,7 +77,6 @@ export class UserRecipeDetailPage implements OnInit {
       const recipeId = paramMap.get('recipeId');
       if (recipeId !== null) {
         this.loadedRecipe = this.recipeService.getUserRecipeById(recipeId);
-        console.log(this.loadedRecipe);
         if (Object.keys(this.loadedRecipe).length === 0) {
           this.loadedRecipe = this.recipeService.getRecipeById(recipeId);
         }
@@ -115,11 +118,11 @@ export class UserRecipeDetailPage implements OnInit {
       });
   }
 
-  async enlargeImage() {
+  async enlargeImage(index: number) {
     const modal = await this.modalController.create({
       component: ImageModalPage,
       componentProps: {
-        imageUrl: this.loadedRecipe.revisions[this.revision].imageUrl,
+        imageUrl: this.loadedRecipe.revisions[this.revision].imageUrls[index],
       },
     });
     return await modal.present();
@@ -210,8 +213,8 @@ export class UserRecipeDetailPage implements OnInit {
       ...lastRevision,
       revision: this.loadedRecipe.revisions.length + 1,
       status: Status.New,
-      imageUrl: '',
-      ingredients: lastRevision.ingredients.map((ing) => ({ ...ing })),
+      imageUrls: [],
+      materials: lastRevision.materials.map((material) => ({ ...material })),
     };
 
     this.recipeService.recipeEditInProgess = {
@@ -253,7 +256,6 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   onWillDismiss(event: Event) {
-    console.log(this.currentSectionIndex);
     this.currentSectionIndex = 0;
   }
 
@@ -319,10 +321,10 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   setIngredientQuantities() {
-    this.loadedRecipe.revisions[this.revision].ingredients.forEach(
-      (ingredient) => {
-        ingredient.quantity = (ingredient.percentage / 100) * this.totalAmount;
-        ingredient.quantity = parseFloat(ingredient.quantity.toFixed(2)); // Round to 2 decimal places
+    this.loadedRecipe.revisions[this.revision].materials.forEach(
+      (material) => {
+        material.Quantity = (material.Percentage / 100) * this.totalAmount;
+        material.Quantity = parseFloat(material.Quantity.toFixed(2)); // Round to 2 decimal places
       }
     );
   }

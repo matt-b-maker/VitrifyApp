@@ -35,19 +35,21 @@
       </ion-item>
       <ion-avatar
         class="ion-margin w-50 horizontal-center"
-        *ngIf="!loadedRecipe.revisions[revision].imageUrl"
+        *ngIf="loadedRecipe.revisions[revision].imageUrls.length === 0"
       >
         <!-- <ion-icon size="large" [ios]="'image' + '-outline'" [md]="'image' + '-sharp'"></ion-icon> -->
         <ion-img
           src="../../../../assets/images/placeholder-image.png"
         ></ion-img>
       </ion-avatar>
-      <ion-img
-        *ngIf="loadedRecipe.revisions[revision].imageUrl"
-        class="ion-margin w-50 horizontal-center"
-        [src]="loadedRecipe.revisions[revision].imageUrl"
-        (click)="enlargeImage()"
-      ></ion-img>
+
+      <swiper-container [pagination]="true">
+        <swiper-slide
+          *ngFor="let imageUrl of loadedRecipe.revisions[revision].imageUrls; let i = index"
+        >
+          <ion-img [src]="imageUrl" (click)="enlargeImage(i)"></ion-img>
+        </swiper-slide>
+      </swiper-container>
       <ion-card-title class="ion-margin horizontal-center"
         >{{loadedRecipe.name}}</ion-card-title
       >
@@ -99,11 +101,11 @@
         </ion-list-header>
 
         <ion-item
-          *ngFor="let ingredient of loadedRecipe.revisions[revision].ingredients"
+          *ngFor="let material of loadedRecipe.revisions[revision].materials"
         >
           <ion-label class="ion-text-wrap">
-            <h2>{{ingredient.name}}</h2>
-            <p>{{ingredient.percentage}}%</p>
+            <h2>{{material.Name}}</h2>
+            <p>{{material.Percentage}}%</p>
           </ion-label>
         </ion-item>
       </ion-list>
@@ -125,10 +127,18 @@
         <ion-toolbar>
           <ion-buttons slot="start">
             <ion-button (click)="cancel()">Cancel</ion-button>
-            <ion-button *ngIf="currentSectionIndex !== 0" (click)="prevSection()">Previous {{prevSectionName}}</ion-button>
+            <ion-button
+              *ngIf="currentSectionIndex !== 0"
+              (click)="prevSection()"
+              >Previous {{prevSectionName}}</ion-button
+            >
           </ion-buttons>
           <ion-buttons slot="end">
-            <ion-button *ngIf="currentSectionIndex !== 3" (click)="nextSection()">Next: {{nextSectionName}}</ion-button>
+            <ion-button
+              *ngIf="currentSectionIndex !== 3"
+              (click)="nextSection()"
+              >Next: {{nextSectionName}}</ion-button
+            >
             <ion-button
               *ngIf="currentSectionIndex === 3"
               [strong]="true"
@@ -147,20 +157,29 @@
             <ion-card-content class="ion-justify-content-center">
               <ion-card>
                 <ion-card-content class="ion-justify-content-center">
-                  <ion-label class="horizontal-center">Water Quantity</ion-label>
+                  <ion-label class="horizontal-center"
+                    >Water Quantity</ion-label
+                  >
                   <ion-radio-group [(ngModel)]="waterPreference">
-                    <ion-radio class="ion-margin" value="Proportion">Proportional</ion-radio>
-                    <ion-radio class="ion-margin" value="Specific Gravity">Specific Gravity</ion-radio>
+                    <ion-radio class="ion-margin" value="Proportion"
+                      >Proportional</ion-radio
+                    >
+                    <ion-radio class="ion-margin" value="Specific Gravity"
+                      >Specific Gravity</ion-radio
+                    >
                   </ion-radio-group>
-                  <div class="ion-justify-content-center" *ngIf="waterPreference === 'Proportion'">
+                  <div
+                    class="ion-justify-content-center"
+                    *ngIf="waterPreference === 'Proportion'"
+                  >
                     <ion-label>Water to Dry Material Ratio</ion-label>
                     <div class="horizontal-div">
                       <ion-input
-                      (ionBlur)="scrollToSection()"
-                      type="number"
-                      [(ngModel)]="waterToDryMaterialRatio"
-                    ></ion-input>
-                    <ion-label>:10</ion-label>
+                        (ionBlur)="scrollToSection()"
+                        type="number"
+                        [(ngModel)]="waterToDryMaterialRatio"
+                      ></ion-input>
+                      <ion-label>:10</ion-label>
                     </div>
                   </div>
                   <ion-item *ngIf="waterPreference === 'Specific Gravity'">
@@ -224,8 +243,12 @@
               </ion-card-header>
               <ion-card-content>
                 <ion-list>
-                  <ion-item *ngFor="let ingredient of loadedRecipe.revisions[revision].ingredients">
-                    <ion-checkbox>{{ingredient.name}}: {{ingredient.quantity}}g</ion-checkbox>
+                  <ion-item
+                    *ngFor="let material of loadedRecipe.revisions[revision].materials"
+                  >
+                    <ion-checkbox
+                      >{{material.Name}}: {{material.Quantity}}g</ion-checkbox
+                    >
                   </ion-item>
                 </ion-list>
               </ion-card-content>
@@ -241,10 +264,18 @@
               <ion-card-content>
                 <ion-list>
                   <ion-item *ngIf="waterPreference === 'Proportion'">
-                    <ion-label>Your ratio is {{waterToDryMaterialRatio}}:10, so the amount of water you need is {{this.totalAmount * (this.waterToDryMaterialRatio / 10)}}g</ion-label>
+                    <ion-label
+                      >Your ratio is {{waterToDryMaterialRatio}}:10, so the
+                      amount of water you need is {{this.totalAmount *
+                      (this.waterToDryMaterialRatio / 10)}}g</ion-label
+                    >
                   </ion-item>
                   <ion-item *ngIf="waterPreference === 'Specific Gravity'">
-                    <ion-label>Start with a 1:1 ratio of water, so in this case, {{totalAmount}}g of water. Add more little by little until you reach your desired specific gravity</ion-label>
+                    <ion-label
+                      >Start with a 1:1 ratio of water, so in this case,
+                      {{totalAmount}}g of water. Add more little by little until
+                      you reach your desired specific gravity</ion-label
+                    >
                   </ion-item>
                 </ion-list>
               </ion-card-content>
