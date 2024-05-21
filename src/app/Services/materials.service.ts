@@ -53,12 +53,12 @@ export class MaterialsService {
   //   });
   // }
 
-  async getMaterials(): Promise<Material[]> {
-    const digitalFireMaterialsJson = await firstValueFrom(this.http.get('../assets/json/materialInfoFull.json')).then((data: any) => {
-      return data;
-    });
-    return digitalFireMaterialsJson as Material[];
-  }
+  // async getMaterials(): Promise<Material[]> {
+  //   const digitalFireMaterialsJson = await firstValueFrom(this.http.get('../assets/json/materialInfoFull.json')).then((data: any) => {
+  //     return data;
+  //   });
+  //   return digitalFireMaterialsJson as Material[];
+  // }
 
   async setMaterials(): Promise<void> {
     let url = await this.firebaseStorage.getFileUrlAsync('materialInfoFull.json');
@@ -66,6 +66,13 @@ export class MaterialsService {
     this.materials = await firstValueFrom(this.http.get(url)).then((data: any) => {
       return data as Material[];
     });
+
+    //remove duplicates
+    this.materials = this.materials.filter((material, index, self) =>
+      index === self.findIndex((t) => (
+        t.Name === material.Name
+      ))
+    );
   }
 
   // materialsJson: MaterialsJson = {

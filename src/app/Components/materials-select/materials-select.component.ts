@@ -15,10 +15,9 @@ import { MaterialsService } from 'src/app/Services/materials.service';
 export class MaterialsSelectComponent {
 
   @Input() materialName: string = '';
-  @Input() material: Material = { Name: '', Oxides: [], OxidesWeight: 0, Description: '', Percentage: 0, Quantity: 0, Hazardous: false};
-  @Input() ingredientName: string = '';
+  @Input() material: Material = { Name: '', Oxides: [], OxidesWeight: 0, Description: '', Percentage: 0, Quantity: 0, Hazardous: false, Unit: 'g'};
+  @Input() allMaterials: Material[] = this.materialsService.materials.slice(0, 50);
   @Output() ingredientChangedEmitter: EventEmitter<Material> = new EventEmitter<Material>();
-  allMaterials: Material[] = this.materialsService.materials.slice(0, 50);
   searching: boolean = false;
 
   constructor(private materialsService: MaterialsService) {

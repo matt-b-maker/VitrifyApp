@@ -29,7 +29,6 @@ export class FirebaseStorageService {
 
   // Delete file
   async deleteFileWithUrl(fileUrl: string): Promise<void> {
-    console.log(fileUrl)
     return await firstValueFrom(this.storage.refFromURL(fileUrl).delete());
   }
 

@@ -348,7 +348,7 @@ export class RecipeBuilderPage {
     if (cancel) return;
 
     this.recipeService.recipeBuildInProgess.revisions[0].materials.push(
-      { Name: '', Oxides: [], OxidesWeight: 0, Description: '', Percentage: 0, Quantity: 0, Hazardous: false }
+      { Name: '', Oxides: [], OxidesWeight: 0, Description: '', Percentage: 0, Quantity: 0, Hazardous: false, Unit: 'g'}
     );
 
     //update percentages
@@ -423,10 +423,6 @@ export class RecipeBuilderPage {
 
     // Slide out the ingredient first, then remove it
     await this.slideOutIngredient(ingredientElementToRemove);
-    this.recipeService.recipeBuildInProgess.revisions[0].materials.splice(
-      index,
-      1
-    );
     this.updateMaterialsList();
     this.calculateTotalPercentage();
   }
@@ -516,7 +512,6 @@ export class RecipeBuilderPage {
       );
 
       const responseJson = JSON.parse(newRecipeResponse);
-      console.log(responseJson);
       if (responseJson.ingredients.length === 0) {
         await this.alertController
           .create({

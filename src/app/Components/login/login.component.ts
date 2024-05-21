@@ -13,6 +13,7 @@ import { Filesystem, Directory } from '@capacitor/filesystem';
 import { FileSystemService } from 'src/app/Services/file-system.service';
 import { MaterialsService } from 'src/app/Services/materials.service';
 import { user } from '@angular/fire/auth';
+import { InventoryService } from 'src/app/Services/inventory.service';
 
 interface Glaze {
   imageUrl: string;
@@ -40,7 +41,8 @@ export class LoginComponent implements OnInit {
     private firestore: FirestoreService,
     private glazeGetter: GlazeLogoGetterService,
     private loadingCtrl: LoadingController,
-    private materialsService: MaterialsService
+    private materialsService: MaterialsService,
+    private inventoryService: InventoryService
   ) {
     this.authService.userSubject.subscribe((user) => {
       this.userFromStorage = user;
@@ -126,6 +128,7 @@ export class LoginComponent implements OnInit {
       await this.firestore.upsert('users', userCredential.user.uid, userMeta);
       this.authService.updateUser(userCredential.user);
       this.authService.updateMeta(userMeta);
+      await this.inventoryService.getUserInventory();
       loading.dismiss();
       this.router.navigate(['/profile']);
     } else {

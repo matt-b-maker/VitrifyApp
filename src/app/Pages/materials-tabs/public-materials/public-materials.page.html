@@ -57,6 +57,7 @@
         <div class="horizontal-center ion-margin">
           <ion-label>Description: {{description}}</ion-label>
         </div>
+        <ion-label *ngIf="inInventory">This material is in your inventory!</ion-label>
       </ion-content>
     </ng-template>
   </ion-modal>

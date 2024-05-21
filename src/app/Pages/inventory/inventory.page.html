@@ -1,8 +1,6 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Inventory</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-side-menu-header>
+
+</app-side-menu-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
@@ -10,4 +8,137 @@
       <ion-title size="large">Inventory</ion-title>
     </ion-toolbar>
   </ion-header>
+  <div *ngIf="loaded">
+    <ion-item *ngIf="inventoryService.userInventory.inventory.length === 0">
+      <div>
+        <ion-label>No inventory yet</ion-label>
+        <ion-label>Click the button below to add items to your inventory</ion-label>
+      </div>
+    </ion-item>
+    <ion-list *ngIf="inventoryService.userInventory.inventory.length > 0">
+      <ion-item *ngFor="let item of inventoryService.userInventory.inventory" (click)="setOpen(item)">
+        <ion-label>{{item.Name}}</ion-label>
+        <ion-label>{{item.Quantity}}</ion-label>
+      </ion-item>
+    </ion-list>
+    <ion-modal trigger="add-inventory">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Add Inventory Items</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="closeModalAndSave()">Close and Save</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <ion-item-sliding *ngFor="let item of inventoryService.userInventory.inventory; let i = index" #itemSliding class="slide-in-animation inventory-item">
+            <ion-item>
+              <ion-grid class="ingredient-row">
+                <ion-row>
+                  <ion-col>
+                    <ion-select [value]="item.Unit" label="Unit" labelPlacement="stacked" (ionChange)="setItemUnit($event, i)">
+                      <ion-select-option *ngFor="let unit of unitSelection" [value]="unit">{{unit}}</ion-select-option>
+                    </ion-select>
+                  </ion-col>
+                </ion-row>
+                <ion-row class="ion-align-items-center">
+                  <ion-col size="9">
+                    <app-materials-select
+                      [allMaterials]="allMaterials"
+                      [material]="item"
+                      [materialName]="item.Name"
+                      (ingredientChangedEmitter)="setInventoryItem($event, i)"
+                    ></app-materials-select>
+                  </ion-col>
+                  <ion-col size="3" class="ion-text-center">
+                    <ion-input
+                      [disabled]="item.Name === ''"
+                      fill="outline"
+                      type="number"
+                      label="{{item.Unit}}"
+                      labelPlacement="floating"
+                      [value]="item.Quantity"
+                      (ionInput)="setQuantity($event, i)"
+                      [clearOnEdit]="true"></ion-input>
+                  </ion-col>
+                </ion-row>
+              </ion-grid>
+            </ion-item>
+            <ion-item-options side="end">
+              <ion-item-option color="danger" (click)="removeInventoryItem(i)">
+                <ion-icon slot="icon-only" name="trash"></ion-icon>
+              </ion-item-option>
+            </ion-item-options>
+          </ion-item-sliding>
+          <ion-fab vertical="bottom" horizontal="center" slot="fixed">
+            <ion-button (click)="addInventoryItem()">Add Inventory</ion-button>
+          </ion-fab>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+    <ion-modal [isOpen]="infoModalOpen">
+      <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-buttons slot="start">
+              <ion-button (click)="closeModalGeneral()">Close</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content class="ion-padding ion-justify-content-center">
+          <div class="horizontal-center ion-margin">
+            <ion-label>{{name}}</ion-label>
+          </div>
+          <div class="horizontal-center ion-margin">
+            <ion-label>Oxides Weight: {{oxidesWeight}}</ion-label>
+          </div>
+          <div class="horizontal-center ion-margin">
+            <ion-label>Hazardous: {{hazardous}}</ion-label>
+          </div>
+          <div class="horizontal-center ion-margin">
+            <ion-label>Description: {{description}}</ion-label>
+          </div>
+        </ion-content>
+      </ng-template>
+    </ion-modal>
+  </div>
+  <ion-list *ngIf="!loaded">
+    <ion-list-header>
+      <ion-skeleton-text
+        [animated]="true"
+        style="width: 80px"
+      ></ion-skeleton-text>
+    </ion-list-header>
+    <ion-item>
+      <ion-thumbnail slot="start">
+        <ion-skeleton-text [animated]="true"></ion-skeleton-text>
+      </ion-thumbnail>
+      <ion-label>
+        <h3>
+          <ion-skeleton-text
+            [animated]="true"
+            style="width: 80%"
+          ></ion-skeleton-text>
+        </h3>
+        <p>
+          <ion-skeleton-text
+            [animated]="true"
+            style="width: 60%"
+          ></ion-skeleton-text>
+        </p>
+        <p>
+          <ion-skeleton-text
+            [animated]="true"
+            style="width: 30%"
+          ></ion-skeleton-text>
+        </p>
+      </ion-label>
+    </ion-item>
+  </ion-list>
+  <ion-fab class="ion-margin" vertical="bottom" horizontal="end" slot="fixed">
+    <ion-fab-button [disabled]="!loaded">
+      <ion-icon id="add-inventory" (click)="addInventoryItem()" name="add"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
 </ion-content>

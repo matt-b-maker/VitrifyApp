@@ -9,4 +9,5 @@ export interface Material {
   "Percentage": number;
   "Quantity": number;
   "Hazardous": boolean;
+  "Unit": string;
 }

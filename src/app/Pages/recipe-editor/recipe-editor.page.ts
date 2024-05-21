@@ -111,7 +111,6 @@ export class RecipeEditorPage implements AfterViewInit {
     this.swiperRef?.nativeElement.swiper.update();
     this.swiperRef?.nativeElement.swiper.updateSlides();
     this.changeDetectorRef.detectChanges();
-    console.log('updated swiper');
   }
 
   updateImage(index: number) {
@@ -168,7 +167,6 @@ export class RecipeEditorPage implements AfterViewInit {
         }
       });
     this.changeDetectorRef.detectChanges();
-    console.log('deleted');
     this.updateSwiper();
   }
 
@@ -548,6 +546,7 @@ export class RecipeEditorPage implements AfterViewInit {
       Percentage: 0,
       Quantity: 0,
       Hazardous: false,
+      Unit: 'g',
     });
 
     //Do animation stuff

@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { InfiniteScrollCustomEvent } from '@ionic/angular';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { InfiniteScrollCustomEvent, ModalController } from '@ionic/angular';
+import { Subscription, fromEvent } from 'rxjs';
 import { Material } from 'src/app/Interfaces/material';
+import { InventoryService } from 'src/app/Services/inventory.service';
 import { MaterialsService } from 'src/app/Services/materials.service';
 
 @Component({
@@ -8,7 +10,7 @@ import { MaterialsService } from 'src/app/Services/materials.service';
   templateUrl: './public-materials.page.html',
   styleUrls: ['./public-materials.page.scss'],
 })
-export class PublicMaterialsPage implements OnInit {
+export class PublicMaterialsPage implements OnInit, OnDestroy {
 
   allMaterials: Material[] = this.materialsService.materials;
   listMaterials: Material[] = [];
@@ -21,8 +23,11 @@ export class PublicMaterialsPage implements OnInit {
   name: string = '';
   hazardous: boolean = false;
   description: string = '';
+  inInventory: boolean = false;
 
-  constructor(private materialsService: MaterialsService) {
+  backbuttonSubscription!: Subscription;
+
+  constructor(private materialsService: MaterialsService, private modal: ModalController, private inventoryService: InventoryService) {
     this.allMaterials = this.materialsService.materials;
     this.listMaterials = this.allMaterials.filter((material) => {
       return material.Name.charAt(0) === this.chosenLetter;
@@ -34,18 +39,34 @@ export class PublicMaterialsPage implements OnInit {
     this.listMaterials = this.allMaterials.filter((material) => {
       return material.Name.charAt(0) === this.chosenLetter;
     });
+    const event = fromEvent(document, 'backbutton');
+    this.backbuttonSubscription = event.subscribe(async () => {
+        const modal = await this.modal.getTop();
+        if (modal) {
+            modal.dismiss();
+        }
+    });
+  }
+
+  ngOnDestroy() {
+    this.modal.dismiss();
+    this.backbuttonSubscription.unsubscribe();
   }
 
   setOpen(material: any) {
-    this.modalOpen = true;
+    if (this.inventoryService.userInventory.inventory.some((inventoryItem) => inventoryItem.Name.trim().toLowerCase() === material.Name.trim().toLowerCase())) {
+      this.inInventory = true;
+    }
     this.oxidesWeight = material.OxidesWeight;
     this.name = material.Name;
     this.hazardous = material.Hazardous;
     this.description = material.Description;
+    this.modalOpen = true;
   }
 
   cancel() {
     this.modalOpen = false;
+    this.inInventory = false;
   }
 
   searchMaterials(event: any) {

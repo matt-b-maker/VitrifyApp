@@ -98,7 +98,7 @@
     </ion-card-header>
     <ion-card-content>
       <ion-list lines="none">
-        <ion-item-sliding *ngFor="let material of recipeService.recipeBuildInProgess.revisions[0].materials; let i = index" #itemSliding class="slide-in-animation material-ingredient">
+        <ion-item-sliding *ngFor="let material of recipeService.recipeBuildInProgess.revisions[0].materials; let i = index" #itemSliding class="slide-in-animation ingredient material-ingredient">
           <ion-item>
             <ion-grid class="ingredient-row">
               <ion-row class="ion-align-items-center">
@@ -106,7 +106,6 @@
                   <app-materials-select
                     [material]="recipeService.recipeBuildInProgess.revisions[0].materials[i]"
                     [materialName]="recipeService.recipeBuildInProgess.revisions[0].materials[i].Name"
-                    [ingredientName]="material.Name"
                     (ingredientChangedEmitter)="setIngredientValue($event, i)"
                   ></app-materials-select>
                 </ion-col>
