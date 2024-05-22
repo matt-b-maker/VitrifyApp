@@ -10,7 +10,7 @@ import { RecipesService } from 'src/app/Services/recipes.service';
 import { ImageModalPage } from '../../image-modal/image-modal.page';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { AuthService } from 'src/app/Services/auth.service';
-import { v4 as uuidv4 } from 'uuid';
+import { parse, v4 as uuidv4 } from 'uuid';
 import { Status } from 'src/app/Models/status';
 import { RecipeRevision } from 'src/app/Models/recipeRevision';
 import { IonicSlides } from '@ionic/angular';
@@ -52,6 +52,13 @@ export class UserRecipeDetailPage implements OnInit {
   sectionNames = ['Setup', 'Materials', 'Water', 'Finalize'];
   nextSectionName: string = 'Materials';
   prevSectionName: string = '';
+  testBatchSize: number = 100;
+  mediumBatchSize: number = 500;
+  largeBatchSize: number = 1000;
+  customBatchSize: number = 0;
+  customBatch: boolean = false;
+  batchUnit: string = 'g';
+  batchUnits: string[] = ['g', 'kg', 'lb', 'oz'];
   totalAmount: number = 100;
   waterPreference: string = 'Proportion';
   waterToDryMaterialRatio: number = 9;
@@ -60,6 +67,7 @@ export class UserRecipeDetailPage implements OnInit {
   checkInventory: boolean = false;
   inventoryOptionShowing: boolean = false;
   consumeInventory: boolean = false;
+  modalOpen: boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -219,6 +227,18 @@ export class UserRecipeDetailPage implements OnInit {
     return this.inventoryService.userInventory.inventory.some((item) => item.Name === materialName);
   }
 
+  checkInventoryForQuantity(materialName: string, quantity: number, unit: string) {
+    const inventoryItem = this.inventoryService.userInventory.inventory.find((item) => item.Name === materialName);
+    if (inventoryItem) {
+      if (inventoryItem.Quantity >= quantity) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return false;
+  }
+
   setConsumeInventory(event: any) {
     this.consumeInventory = event.detail.checked;
   }
@@ -260,9 +280,49 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   //all modal stuff
+  setModalOpen() {
+    let hasAllMaterials = true;
+    if (this.checkInventory) {
+      this.loadedRecipe.revisions[this.revision].materials.every((material) => {
+        if (!this.checkInventoryForMaterial(material.Name)) {
+          hasAllMaterials = false;
+          return false;
+        }
+        return true;
+      });
+    }
+    if (!hasAllMaterials) {
+      this.alertController
+        .create({
+          header: 'Missing Materials',
+          message:
+            'You do not have all the materials needed to make this recipe. Would you like to continue anyway?',
+          buttons: [
+            {
+              text: 'Cancel',
+              role: 'cancel',
+            },
+            {
+              text: 'Yup, let\'s go',
+              handler: () => {
+                this.modalOpen = true;
+              },
+            },
+          ],
+        })
+        .then(async (alertEl) => {
+          await alertEl.present();
+        });
+    } else {
+      this.modalOpen = true;
+    }
+  }
+
   cancel() {
     this.currentSectionIndex = 0;
     this.nextSectionName = 'Materials';
+    this.modalOpen = false;
+    this.customBatch = false;
     this.modal.dismiss(null, 'cancel');
   }
 
@@ -320,13 +380,34 @@ export class UserRecipeDetailPage implements OnInit {
     this.scrollToSection();
   }
 
+  setCustomBatchSize(event: any) {
+    this.totalAmount = event.detail.value;
+    this.customBatchSize = event.detail.value;
+    this.setIngredientQuantities();
+  }
+
   setBatchSize(event: any) {
     if (event.detail.value === 'custom') {
+      this.customBatch = true;
       return;
     }
+    this.customBatch = false;
     this.totalAmount = event.detail.value;
     this.setIngredientQuantities();
   }
+
+  setBatchUnit(event: any) {
+    let previousUnit = this.batchUnit;
+    this.batchUnit = event.detail.value;
+    this.totalAmount = this.convertToUnit(this.totalAmount, previousUnit, this.batchUnit);
+    this.testBatchSize = this.convertToUnit(this.testBatchSize, previousUnit, this.batchUnit);
+    this.mediumBatchSize = this.convertToUnit(this.mediumBatchSize, previousUnit, this.batchUnit);
+    this.largeBatchSize = this.convertToUnit(this.largeBatchSize, previousUnit, this.batchUnit);
+    this.customBatchSize = this.convertToUnit(this.customBatchSize, previousUnit, this.batchUnit);
+    console.log(this.customBatchSize)
+    this.setIngredientQuantities();
+  }
+
 
   getWaterQuantity() {
     if (this.waterPreference === 'Proportion') {
@@ -339,11 +420,52 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   setIngredientQuantities() {
-    this.loadedRecipe.revisions[this.revision].materials.forEach(
-      (material) => {
-        material.Quantity = (material.Percentage / 100) * this.totalAmount;
-        material.Quantity = parseFloat(material.Quantity.toFixed(2)); // Round to 2 decimal places
+    this.loadedRecipe.revisions[this.revision].materials.forEach((material) => {
+      material.Quantity = this.calculateQuantity(material.Percentage);
+    });
+  }
+
+  calculateQuantity(percentage: number) {
+    return parseFloat(((this.totalAmount * percentage) / 100).toFixed(2));
+  }
+
+  convertToUnit(quantity: number, previousUnit: string, currentUnit: string): number {
+    if (previousUnit === currentUnit) {
+      return quantity;
+    }
+    if (previousUnit === 'g') {
+      if (currentUnit === 'kg') {
+        return parseFloat((quantity / 1000).toFixed(2));
+      } else if (currentUnit === 'lb') {
+        return parseFloat((quantity / 453.592).toFixed(2));
+      } else if (currentUnit === 'oz') {
+        return parseFloat((quantity / 28.3495).toFixed(2));
       }
-    );
+    } else if (previousUnit === 'kg') {
+      if (currentUnit === 'g') {
+        return Math.round(quantity * 1000);
+      } else if (currentUnit === 'lb') {
+        return parseFloat((quantity * 2.20462).toFixed(2));
+      } else if (currentUnit === 'oz') {
+        return parseFloat((quantity * 35.274).toFixed(2));
+      }
+    } else if (previousUnit === 'lb') {
+      if (currentUnit === 'g') {
+        return Math.round(quantity * 453.592);
+      } else if (currentUnit === 'kg') {
+        return parseFloat((quantity / 2.20462).toFixed(2));
+      } else if (currentUnit === 'oz') {
+        return parseFloat((quantity * 16).toFixed(2));
+      }
+    } else if (previousUnit === 'oz') {
+      if (currentUnit === 'g') {
+        return Math.round(quantity * 28.3495);
+      } else if (currentUnit === 'kg') {
+        return parseFloat((quantity / 35.274).toFixed(2));
+      } else if (currentUnit === 'lb') {
+        return parseFloat((quantity / 16).toFixed(2));
+      }
+    }
+    return quantity;
   }
 }

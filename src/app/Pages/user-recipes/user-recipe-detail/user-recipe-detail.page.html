@@ -59,7 +59,7 @@
         <ion-card-content class="m-0">
           <ion-item lines="none">
             <ion-label slot="start">
-              Cone {{loadedRecipe.cone}}, {{loadedRecipe.firingType}}, {{loadedRecipe.public ? "Public Recipe" : "Private Recipe"}}
+              Cone {{loadedRecipe.cone}}, {{loadedRecipe.firingType}}, {{loadedRecipe.public ? "Public" : "Private"}}
             </ion-label>
             <ion-label *ngIf="loadedRecipe.revisions.length === 1" slot="end"
               >{{revision + 1}} of {{loadedRecipe.revisions.length}}</ion-label
@@ -132,7 +132,7 @@
     </ion-card-content>
   </ion-card>
 
-  <ion-modal trigger="make-recipe">
+  <ion-modal [isOpen]="modalOpen">
     <ng-template>
       <ion-header>
         <ion-toolbar>
@@ -205,31 +205,36 @@
               </ion-card>
               <ion-card>
                 <ion-card-content>
-                  <ion-label>Batch Size</ion-label>
+                  <ion-item>
+                    <ion-label>Batch Size</ion-label>
+                    <ion-select [value]="batchUnit" label="Unit" labelPlacement="stacked" (ionChange)="setBatchUnit($event)">
+                      <ion-select-option *ngFor="let unit of batchUnits" [value]="unit">{{unit}}</ion-select-option>
+                    </ion-select>
+                  </ion-item>
                   <ion-radio-group
-                    value="100"
+                    [value]="testBatchSize"
                     (ionChange)="setBatchSize($event)"
                   >
                     <ion-radio
                       class="ion-margin"
                       labelPlacement="start"
-                      value="100"
+                      [value]="testBatchSize"
                     >
-                      Test Batch (100g)
+                      Test Batch ({{testBatchSize}}{{batchUnit}})
                     </ion-radio>
                     <ion-radio
                       class="ion-margin"
                       labelPlacement="start"
-                      value="500"
+                      [value]="mediumBatchSize"
                     >
-                      Medium Batch (500g)
+                      Medium Batch ({{mediumBatchSize}}{{batchUnit}})
                     </ion-radio>
                     <ion-radio
                       class="ion-margin"
                       labelPlacement="start"
-                      value="1000"
+                      [value]="largeBatchSize"
                     >
-                      Large Batch (1000g)
+                      Large Batch ({{largeBatchSize}}{{batchUnit}})
                     </ion-radio>
                     <ion-radio
                       class="ion-margin"
@@ -239,12 +244,16 @@
                       Custom
                     </ion-radio>
                   </ion-radio-group>
+                  <ion-item *ngIf="customBatch">
+                    <ion-input [label]="'Custom Batch Size ' + '(' + batchUnit + ')'" labelPlacement="stacked" [value]="customBatchSize" (ionChange)="setCustomBatchSize($event)">
+                    </ion-input>
+                  </ion-item>
                 </ion-card-content>
               </ion-card>
             </ion-card-content>
           </ion-card>
         </div>
-        <div id="section-1" class="section w-fill-available">
+        <div id="section-1" class="section w-fill-available vertical-center">
           <!-- <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'"> </canvas> -->
           <div class="w-fill-available">
             <ion-card>
@@ -264,8 +273,8 @@
                   <ion-item
                     *ngFor="let material of loadedRecipe.revisions[revision].materials"
                   >
-                    <ion-checkbox
-                      >{{material.Name}}: {{material.Quantity}}g</ion-checkbox
+                    <ion-checkbox (ionChange)="checkInventoryForQuantity(material.Name, material.Quantity, material.Unit)"
+                      >{{material.Name}}: {{material.Quantity}}{{batchUnit}}</ion-checkbox
                     >
                   </ion-item>
                 </ion-list>
@@ -285,7 +294,7 @@
                     <ion-label
                       >Your ratio is {{waterToDryMaterialRatio}}:10, so the
                       amount of water you need is {{this.totalAmount *
-                      (this.waterToDryMaterialRatio / 10)}}g</ion-label
+                      (this.waterToDryMaterialRatio / 10)}}{{batchUnit}}</ion-label
                     >
                   </ion-item>
                   <ion-item *ngIf="waterPreference === 'Specific Gravity'">
@@ -306,6 +315,6 @@
   </ion-modal>
 
   <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-    <ion-button id="make-recipe">Make this glaze</ion-button>
+    <ion-button (click)="setModalOpen()">Make this glaze</ion-button>
   </ion-fab>
 </ion-content>
