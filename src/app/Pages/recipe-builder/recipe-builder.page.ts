@@ -310,6 +310,10 @@ export class RecipeBuilderPage {
       : [...this.allCones];
   }
 
+  setPublicProperty(event: any) {
+    this.recipeService.recipeBuildInProgess.public = event.detail.checked;
+  }
+
   trimDescription() {
     this.recipeService.recipeBuildInProgess.description =
       this.recipeService.recipeBuildInProgess.description.trim();

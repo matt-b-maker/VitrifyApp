@@ -145,6 +145,16 @@
               >
             </ion-select>
           </ion-col>
+          <ion-col size="6">
+            <ion-toggle
+              class="align-center"
+              [(ngModel)]="recipeService.recipeBuildInProgess.public"
+              labelPlacement="stacked"
+              (ionChange)="setPublicProperty($event)"
+            >
+              <ion-label style="height: 25px">Public</ion-label>
+            </ion-toggle>
+          </ion-col>
         </ion-row>
         <ion-row>
           <ion-col>
@@ -168,7 +178,6 @@
     <ion-card-header>
       <ion-toolbar>
         <ion-card-title>Images</ion-card-title>
-        <ion-button *ngIf="!imagesAtMax" slot="end" (click)="addImage()">Add</ion-button>
       </ion-toolbar>
     </ion-card-header>
     <ion-card-content class="ion-justify-content-center">
@@ -180,30 +189,42 @@
           src="../../../../assets/images/placeholder-image.png"
         ></ion-img>
       </ion-avatar>
-      <swiper-container #swiper [pagination]="true" *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrls.length > 0">
+      <swiper-container
+        #swiper
+        [pagination]="true"
+        *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrls.length > 0"
+      >
         <swiper-slide
           *ngFor="let image of recipeService.recipeEditInProgess.revisions[revision].imageUrls; let i = index"
         >
           <ion-img
             class="ion-margin w-50 horizontal-center"
+            *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrls[i] !== ''"
             [src]="recipeService.recipeEditInProgess.revisions[revision].imageUrls[i]"
           ></ion-img>
+        </swiper-slide>
+      </swiper-container>
+      <div class="justify-content-center mt-10">
+        <ion-item lines="none">
+          <ion-button size="small" *ngIf="!imagesAtMax" (click)="addImage()"
+            >Add</ion-button
+          >
           <ion-item lines="none" *ngIf="!isMobile">
             <input
               type="file"
               accept="image/*"
-              (change)="uploadRevisionImage($event, i)"
+              (change)="uploadRevisionImage($event)"
               hidden
               #fileInput
             />
-            <ion-button (click)="fileInput.click()">Update Image</ion-button>
+            <ion-button size="small" (click)="fileInput.click()">Update</ion-button>
           </ion-item>
-          <ion-button *ngIf="isMobile" (click)="updateImage(i)"
-          >Update Image</ion-button
-        >
-        <ion-button (click)="deleteImage(i)">Delete</ion-button>
-        </swiper-slide>
-      </swiper-container>
+          <ion-button size="small" *ngIf="isMobile" (click)="updateImage(undefined)"
+            >Update Image</ion-button
+          >
+          <ion-button (click)="deleteImage()">Delete</ion-button>
+        </ion-item>
+      </div>
     </ion-card-content>
   </ion-card>
 

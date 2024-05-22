@@ -11,10 +11,10 @@ import { MaterialsService } from 'src/app/Services/materials.service';
   styleUrls: ['./public-materials.page.scss'],
 })
 export class PublicMaterialsPage implements OnInit, OnDestroy {
-
   allMaterials: Material[] = this.materialsService.materials;
   listMaterials: Material[] = [];
-  letters: string[] = 'A B C D E F Frits G H I J K L M N O P Q R S T U V W X Y Z'.split(' ');
+  letters: string[] =
+    'A B C D E F Frits G H I J K L M N O P Q R S T U V W X Y Z'.split(' ');
   dropdownShowing: boolean = true;
   loading: boolean = false;
   chosenLetter: string = 'A';
@@ -27,7 +27,11 @@ export class PublicMaterialsPage implements OnInit, OnDestroy {
 
   backbuttonSubscription!: Subscription;
 
-  constructor(private materialsService: MaterialsService, private modal: ModalController, private inventoryService: InventoryService) {
+  constructor(
+    private materialsService: MaterialsService,
+    private modal: ModalController,
+    private inventoryService: InventoryService
+  ) {
     this.allMaterials = this.materialsService.materials;
     this.listMaterials = this.allMaterials.filter((material) => {
       return material.Name.charAt(0) === this.chosenLetter;
@@ -41,10 +45,10 @@ export class PublicMaterialsPage implements OnInit, OnDestroy {
     });
     const event = fromEvent(document, 'backbutton');
     this.backbuttonSubscription = event.subscribe(async () => {
-        const modal = await this.modal.getTop();
-        if (modal) {
-            modal.dismiss();
-        }
+      const modal = await this.modal.getTop();
+      if (modal) {
+        modal.dismiss();
+      }
     });
   }
 
@@ -54,8 +58,16 @@ export class PublicMaterialsPage implements OnInit, OnDestroy {
   }
 
   setOpen(material: any) {
-    if (this.inventoryService.userInventory.inventory.some((inventoryItem) => inventoryItem.Name.trim().toLowerCase() === material.Name.trim().toLowerCase())) {
-      this.inInventory = true;
+    if (this.inventoryService.userInventory) {
+      if (
+        this.inventoryService.userInventory.inventory.some(
+          (inventoryItem) =>
+            inventoryItem.Name.trim().toLowerCase() ===
+            material.Name.trim().toLowerCase()
+        )
+      ) {
+        this.inInventory = true;
+      }
     }
     this.oxidesWeight = material.OxidesWeight;
     this.name = material.Name;
@@ -73,20 +85,40 @@ export class PublicMaterialsPage implements OnInit, OnDestroy {
     let searchValue = event.target.value.toLowerCase();
     this.loading = true;
 
-    setTimeout(() => {
-      if (searchValue === '') {
-        this.listMaterials = this.allMaterials.filter((material) => {
-          return material.Name.charAt(0) === this.chosenLetter;
-        });
-        this.dropdownShowing = true;
-      } else {
-        this.dropdownShowing = false;
-        this.listMaterials = this.allMaterials.filter((material) => {
+    if (searchValue === '') {
+      this.listMaterials = this.allMaterials.filter((material) => {
+        return material.Name.charAt(0) === this.chosenLetter;
+      });
+      this.dropdownShowing = true;
+    } else {
+      this.dropdownShowing = false;
+      this.listMaterials = this.allMaterials
+        .filter((material) => {
           return material.Name.toLowerCase().includes(searchValue);
-        });
-      }
-      this.loading = false;
-    }, 0);
+        })
+        .slice(0, 50);
+    }
+    this.loading = false;
+  }
+
+  getMoreResults(event: any) {
+    let searchValue = (
+      document.getElementById('searchBar') as HTMLInputElement
+    ).value.toLowerCase();
+    if (searchValue === '') {
+      this.listMaterials = this.allMaterials
+        .filter((material) => {
+          return material.Name.charAt(0) === this.chosenLetter;
+        })
+        .slice(0, this.listMaterials.length + 50);
+    } else {
+      this.listMaterials = this.allMaterials
+        .filter((material) => {
+          return material.Name.toLowerCase().includes(searchValue);
+        })
+        .slice(0, this.listMaterials.length + 50);
+    }
+    (event as InfiniteScrollCustomEvent).target.complete();
   }
 
   onIonInfinite(event: any) {
@@ -102,8 +134,10 @@ export class PublicMaterialsPage implements OnInit, OnDestroy {
       return;
     }
     this.listMaterials = this.allMaterials.filter((material) => {
-      return material.Name.charAt(0) === this.chosenLetter && !material.Name.toLowerCase().includes("frit");
+      return (
+        material.Name.charAt(0) === this.chosenLetter &&
+        !material.Name.toLowerCase().includes('frit')
+      );
     });
   }
-
 }

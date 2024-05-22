@@ -14,6 +14,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Status } from 'src/app/Models/status';
 import { RecipeRevision } from 'src/app/Models/recipeRevision';
 import { IonicSlides } from '@ionic/angular';
+import { InventoryService } from 'src/app/Services/inventory.service';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -56,6 +57,9 @@ export class UserRecipeDetailPage implements OnInit {
   waterToDryMaterialRatio: number = 9;
   specificGravity: number = 1.55;
   waterQuantity: number = 0;
+  checkInventory: boolean = false;
+  inventoryOptionShowing: boolean = false;
+  consumeInventory: boolean = false;
 
   constructor(
     private activatedRoute: ActivatedRoute,
@@ -65,7 +69,7 @@ export class UserRecipeDetailPage implements OnInit {
     private modalController: ModalController,
     private alertController: AlertController,
     private auth: AuthService,
-    private changeDetector: ChangeDetectorRef
+    private inventoryService: InventoryService,
   ) {}
 
   ngOnInit() {
@@ -88,6 +92,7 @@ export class UserRecipeDetailPage implements OnInit {
     });
     this.setIngredientQuantities();
     this.getWaterQuantity();
+    this.inventoryOptionShowing = this.inventoryService.userInventory !== null && this.inventoryService.userInventory !== undefined && this.inventoryService.userInventory.inventory.length > 0;
   }
 
   deleteRecipe() {
@@ -206,6 +211,18 @@ export class UserRecipeDetailPage implements OnInit {
     }
   }
 
+  setCheckInventory(event: any) {
+    this.checkInventory = event.detail.checked;
+  }
+
+  checkInventoryForMaterial(materialName: string) {
+    return this.inventoryService.userInventory.inventory.some((item) => item.Name === materialName);
+  }
+
+  setConsumeInventory(event: any) {
+    this.consumeInventory = event.detail.checked;
+  }
+
   addRevision() {
     const lastRevision =
       this.loadedRecipe.revisions[this.loadedRecipe.revisions.length - 1];
@@ -245,6 +262,7 @@ export class UserRecipeDetailPage implements OnInit {
   //all modal stuff
   cancel() {
     this.currentSectionIndex = 0;
+    this.nextSectionName = 'Materials';
     this.modal.dismiss(null, 'cancel');
   }
 

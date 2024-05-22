@@ -11,6 +11,7 @@ import { AuthService } from 'src/app/Services/auth.service';
 import { IngredientTypesService } from 'src/app/Services/ingredient-types.service';
 import { DialogueService } from 'src/app/Services/dialogue-service.service';
 import {
+  ActionSheetController,
   AlertController,
   AnimationController,
   IonInput,
@@ -88,7 +89,8 @@ export class RecipeEditorPage implements AfterViewInit {
     private firingDetailsService: FiringDetailsService,
     private loadingCtrl: LoadingController,
     private firebaseStorage: FirebaseStorageService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
+    private actionSheetController: ActionSheetController
   ) {
     this.calculateTotalPercentage();
     this.isEditing = this.recipeService.isEditing;
@@ -113,41 +115,98 @@ export class RecipeEditorPage implements AfterViewInit {
     this.changeDetectorRef.detectChanges();
   }
 
-  updateImage(index: number) {
-    //ask user if they want to take a photo or choose from gallery
-    this.dialogueService
-      .presentConfirmationDialog(
-        'Select Image',
-        'Would you like to take a photo or choose from gallery?',
-        'Take Photo',
-        'Choose from Gallery'
-      )
-      .then((result) => {
-        if (result === true) {
-          this.selectImage(this.cameraSource, index);
-        } else {
-          this.selectImage(this.photosSource, index);
-        }
-      });
+  async addImage() {
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Would you like to take a photo or choose from gallery?',
+      buttons: [
+        {
+          text: 'Take Photo',
+          handler: async () => {
+            this.recipeService.recipeEditInProgess.revisions[
+              this.revision
+            ].imageUrls.push('');
+            await this.selectImage(
+              this.cameraSource,
+              this.recipeService.recipeEditInProgess.revisions[this.revision]
+                .imageUrls.length - 1
+            );
+            this.imagesAtMax =
+              this.recipeService.recipeEditInProgess.revisions[this.revision]
+                .imageUrls.length >= this.imageMax;
+            this.changeDetectorRef.detectChanges();
+            this.updateSwiper();
+          },
+        },
+        {
+          text: 'Choose from Gallery',
+          handler: async () => {
+            this.recipeService.recipeEditInProgess.revisions[
+              this.revision
+            ].imageUrls.push('');
+            await this.selectImage(
+              this.photosSource,
+              this.recipeService.recipeEditInProgess.revisions[this.revision]
+                .imageUrls.length - 1
+            );
+            this.imagesAtMax =
+              this.recipeService.recipeEditInProgess.revisions[this.revision]
+                .imageUrls.length >= this.imageMax;
+            this.changeDetectorRef.detectChanges();
+            this.updateSwiper();
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => {
+            console.log('Cancel clicked');
+          },
+        },
+      ],
+    });
+
+    await actionSheet.present();
   }
 
-  addImage() {
-    this.recipeService.recipeEditInProgess.revisions[
-      this.revision
-    ].imageUrls.push('');
-    this.updateImage(
-      this.recipeService.recipeEditInProgess.revisions[
-        this.revision
-      ].imageUrls.indexOf('')
-    );
-    this.imagesAtMax =
-      this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrls
-        .length >= this.imageMax;
-    this.changeDetectorRef.detectChanges();
-    this.updateSwiper();
+  async updateImage(index: number | undefined) {
+    let swiperIndex = this.swiperRef?.nativeElement.swiper.activeIndex || 0;
+
+    if (index !== undefined) swiperIndex = index;
+    console.log(swiperIndex);
+    //ask user if they want to take a photo or choose from gallery or cancel
+    const actionSheet = await this.actionSheetController.create({
+      header: 'Would you like to take a photo or choose from gallery?',
+      buttons: [
+        {
+          text: 'Take Photo',
+          handler: async () => {
+            await this.selectImage(this.cameraSource, swiperIndex);
+          },
+        },
+        {
+          text: 'Choose from Gallery',
+          handler: async () => {
+            await this.selectImage(this.photosSource, swiperIndex);
+          },
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => {
+            console.log('Cancel clicked');
+          },
+        },
+      ],
+    });
+
+    await actionSheet.present();
+
+    console.log('updated image');
   }
 
-  async deleteImage(index: number) {
+  async deleteImage() {
+    const swiperIndex = this.swiperRef?.nativeElement.swiper.activeIndex || 0;
+    console.log(swiperIndex);
     await this.dialogueService
       .presentConfirmationDialog(
         'Delete Image',
@@ -157,10 +216,13 @@ export class RecipeEditorPage implements AfterViewInit {
       )
       .then(async (result) => {
         if (result === true) {
-          await this.firebaseStorage.deleteFileWithUrl(this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrls[index]);
+          await this.firebaseStorage.deleteFileWithUrl(
+            this.recipeService.recipeEditInProgess.revisions[this.revision]
+              .imageUrls[swiperIndex]
+          );
           this.recipeService.recipeEditInProgess.revisions[
             this.revision
-          ].imageUrls.splice(index, 1);
+          ].imageUrls.splice(swiperIndex, 1);
           this.imagesAtMax =
             this.recipeService.recipeEditInProgess.revisions[this.revision]
               .imageUrls.length >= this.imageMax;
@@ -168,6 +230,7 @@ export class RecipeEditorPage implements AfterViewInit {
       });
     this.changeDetectorRef.detectChanges();
     this.updateSwiper();
+    console.log('deleted image');
   }
 
   async selectImage(source: CameraSource, index: number) {
@@ -216,12 +279,13 @@ export class RecipeEditorPage implements AfterViewInit {
     }
   }
 
-  async uploadRevisionImage(event: any, index: number) {
+  async uploadRevisionImage(event: any) {
     const loading = await this.loadingCtrl.create({
       message: 'Uploading image...',
       spinner: 'bubbles',
       translucent: true,
     });
+    const swiperIndex = this.swiperRef?.nativeElement.swiper.activeIndex || 0;
     const file = event.target.files[0];
     if (!this.auth.user) return;
     const filePath = `glaze_photos/${new Date().getTime()}/${
@@ -231,7 +295,7 @@ export class RecipeEditorPage implements AfterViewInit {
       loading.present();
       const resultUrl = await this.firebaseStorage.uploadFile(filePath, file);
       this.recipeService.recipeEditInProgess.revisions[this.revision].imageUrls[
-        index
+        swiperIndex
       ] = resultUrl;
       loading.dismiss();
     } catch (error) {
@@ -615,6 +679,10 @@ export class RecipeEditorPage implements AfterViewInit {
     ].materials.splice(index, 1);
     this.updateMaterialsList();
     this.calculateTotalPercentage();
+  }
+
+  setPublicProperty(event: any) {
+    this.recipeService.recipeEditInProgess.public = event.detail.checked;
   }
 
   calculateTotalPercentage() {

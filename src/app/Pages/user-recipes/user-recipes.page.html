@@ -14,7 +14,7 @@
           <ion-label>No recipes found</ion-label>
           <ion-button routerLink="/recipe-builder">Create one</ion-button>
         </ion-item>
-        <ion-item *ngFor="let recipe of recipeService.userRecipes" [routerLink]="['./', recipe.id]" >
+        <ion-item class="ion-margin" *ngFor="let recipe of recipeService.userRecipes" [routerLink]="['./', recipe.id]" >
           <div *ngIf="recipeService.userRecipes.length > 0">
             <ion-label>{{recipe.name}}</ion-label>
             <div>
@@ -24,6 +24,7 @@
                 <ion-label>{{recipe.cone}}</ion-label>
               </ion-chip>
               <ion-chip color="dark">{{recipe.firingType}}</ion-chip>
+              <ion-chip color="danger">{{recipe.public ? "public" : "private"}}</ion-chip>
             </div>
           </div>
         </ion-item>

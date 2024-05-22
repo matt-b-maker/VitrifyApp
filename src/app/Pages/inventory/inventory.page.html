@@ -18,7 +18,7 @@
     <ion-list *ngIf="inventoryService.userInventory.inventory.length > 0">
       <ion-item *ngFor="let item of inventoryService.userInventory.inventory" (click)="setOpen(item)">
         <ion-label>{{item.Name}}</ion-label>
-        <ion-label>{{item.Quantity}}</ion-label>
+        <ion-label>{{item.Quantity}}{{item.Unit}}</ion-label>
       </ion-item>
     </ion-list>
     <ion-modal trigger="add-inventory">
@@ -138,7 +138,7 @@
   </ion-list>
   <ion-fab class="ion-margin" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button [disabled]="!loaded">
-      <ion-icon id="add-inventory" (click)="addInventoryItem()" name="add"></ion-icon>
+      <ion-icon id="add-inventory" (click)="addInventoryItem()" name="create"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>

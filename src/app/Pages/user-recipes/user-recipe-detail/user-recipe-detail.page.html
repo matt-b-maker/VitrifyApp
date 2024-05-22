@@ -59,7 +59,7 @@
         <ion-card-content class="m-0">
           <ion-item lines="none">
             <ion-label slot="start">
-              Cone {{loadedRecipe.cone}}, {{loadedRecipe.firingType}}
+              Cone {{loadedRecipe.cone}}, {{loadedRecipe.firingType}}, {{loadedRecipe.public ? "Public Recipe" : "Private Recipe"}}
             </ion-label>
             <ion-label *ngIf="loadedRecipe.revisions.length === 1" slot="end"
               >{{revision + 1}} of {{loadedRecipe.revisions.length}}</ion-label
@@ -95,9 +95,19 @@
     <ion-card-content>
       <ion-list>
         <ion-list-header>
-          <ion-label>
-            <h1>Ingredients</h1>
-          </ion-label>
+          <ion-toolbar>
+            <ion-label slot="start">
+              <h1>Ingredients</h1>
+            </ion-label>
+            <ion-toggle
+              *ngIf="inventoryOptionShowing"
+              slot="end"
+              [value]="checkInventory"
+              (ionChange)="setCheckInventory($event)"
+              labelPlacement="stacked"
+            >
+          <ion-label>Check Inventory</ion-label></ion-toggle>
+          </ion-toolbar>
         </ion-list-header>
 
         <ion-item
@@ -107,6 +117,7 @@
             <h2>{{material.Name}}</h2>
             <p>{{material.Percentage}}%</p>
           </ion-label>
+          <ion-icon color="success" *ngIf="checkInventory && checkInventoryForMaterial(material.Name)" name="checkmark-circle-outline"></ion-icon>
         </ion-item>
       </ion-list>
     </ion-card-content>
@@ -238,8 +249,15 @@
           <div class="w-fill-available">
             <ion-card>
               <ion-card-header>
-                <ion-card-subtitle>Weigh 'em Out</ion-card-subtitle>
-                <ion-card-title>Materials</ion-card-title>
+                <ion-toolbar>
+                  <ion-card-subtitle>Weigh 'em Out</ion-card-subtitle>
+                  <ion-card-title>Materials</ion-card-title>
+                  <div slot="end" *ngIf="inventoryOptionShowing">
+                    <ion-toggle [value]="consumeInventory" (ionChange)="setConsumeInventory($event)" labelPlacement="stacked">
+                      <ion-label>Consume Inventory</ion-label>
+                    </ion-toggle>
+                  </div>
+                </ion-toolbar>
               </ion-card-header>
               <ion-card-content>
                 <ion-list>
