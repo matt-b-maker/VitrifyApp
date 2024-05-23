@@ -520,25 +520,25 @@ export class RecipeEditorPage implements AfterViewInit {
 
   setCone(event: any) {
     this.lowerCone = event.target.value;
-    this.recipeService.recipeBuildInProgess.cone = event.target.value;
+    this.recipeService.recipeEditInProgess.cone = event.target.value;
   }
 
   setLowerCone(event: any) {
     this.lowerCone = event.target.value;
     if (this.isConeRange) {
-      this.recipeService.recipeBuildInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
+      this.recipeService.recipeEditInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
       //modify the upper cone range to disinclude the lower cone and all cones below it
       this.conesUpperRange = [
         ...this.allCones.slice(0, this.allCones.indexOf(this.lowerCone)),
       ];
     } else {
-      this.recipeService.recipeBuildInProgess.cone = event.target.value;
+      this.recipeService.recipeEditInProgess.cone = event.target.value;
     }
   }
 
   setUpperCone(event: any) {
     this.upperCone = event.target.value;
-    this.recipeService.recipeBuildInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
+    this.recipeService.recipeEditInProgess.cone = `${this.lowerCone}-${this.upperCone}`;
     this.conesLowerRange = [
       ...this.allCones.slice(
         this.allCones.indexOf(this.upperCone) + 1,
@@ -548,7 +548,7 @@ export class RecipeEditorPage implements AfterViewInit {
   }
 
   toggleConeRange() {
-    this.recipeService.recipeBuildInProgess.cone = this.isConeRange
+    this.recipeService.recipeEditInProgess.cone = this.isConeRange
       ? `${this.lowerCone}-${this.upperCone}`
       : this.lowerCone;
     this.lowerConeLabel = this.isConeRange ? 'Min Cone' : 'Cone';
@@ -600,7 +600,7 @@ export class RecipeEditorPage implements AfterViewInit {
 
     if (cancel) return;
 
-    this.recipeService.recipeBuildInProgess.revisions[
+    this.recipeService.recipeEditInProgess.revisions[
       this.revision
     ].materials.push({
       Name: '',
@@ -638,7 +638,7 @@ export class RecipeEditorPage implements AfterViewInit {
   }
 
   setIngredientValue(event: any, index: number) {
-    this.recipeService.recipeBuildInProgess.revisions[this.revision].materials[
+    this.recipeService.recipeEditInProgess.revisions[this.revision].materials[
       index
     ].Name = event.Name;
     this.updateMaterialsList();

@@ -56,6 +56,7 @@ export class RecipeBuilderPage {
   lowerConeLabel: string = 'Cone';
   upperConeLabel: string = 'Max';
   remainingPercentageOver: boolean = false;
+  remainingOrAdditional: string = 'Remaining';
   coneRegex: RegExp = /^(0[1-9]|1[0-2]|[1-9])([-/](0[1-9]|1[0-2]|[1-9]))?$/;
   isEditing: boolean;
   //get all app-ingredient components
@@ -175,7 +176,6 @@ export class RecipeBuilderPage {
       this.recipeService.recipeBuildInProgess.revisions[0].materials.filter(
         (material) => material.Name !== ''
       );
-    debugger;
     await this.firestoreService.saveRecipe(
       this.recipeService.recipeBuildInProgess
     );
@@ -410,27 +410,6 @@ export class RecipeBuilderPage {
     this.calculateTotalPercentage();
   }
 
-  trimLeadingZeros(input: string): string {
-    if (input) {
-      return input.replace(/^0+/, '');
-    }
-    return '';
-  }
-
-  async removeIngredient(index: number) {
-    // Get the HTML element of the ingredient to be removed
-    const ingredientElements = document.querySelectorAll('.ingredient');
-    const ingredientElementToRemove = ingredientElements[index] as HTMLElement;
-
-    //get elements after the one to be removed
-    //const remainingIngredientElements: HTMLElement[] = Array.from(ingredientElements).slice(index + 1) as HTMLElement[];
-
-    // Slide out the ingredient first, then remove it
-    await this.slideOutIngredient(ingredientElementToRemove);
-    this.updateMaterialsList();
-    this.calculateTotalPercentage();
-  }
-
   calculateTotalPercentage() {
     if (
       this.recipeService.recipeBuildInProgess.revisions[0].materials
@@ -450,6 +429,34 @@ export class RecipeBuilderPage {
     this.remainingPercentage = Number.isNaN(100 - this.totalPercentage)
       ? 100
       : Math.round((100 - this.totalPercentage) * 100) / 100;
+    if (this.remainingPercentage < 0) {
+      this.remainingOrAdditional = 'Additional';
+      this.remainingPercentage = Math.abs(this.remainingPercentage);
+    }
+    else {
+      this.remainingOrAdditional = 'Remaining';
+    }
+  }
+
+  trimLeadingZeros(input: string): string {
+    if (input) {
+      return input.replace(/^0+/, '');
+    }
+    return '';
+  }
+
+  async removeIngredient(index: number) {
+    // Get the HTML element of the ingredient to be removed
+    const ingredientElements = document.querySelectorAll('.ingredient');
+    const ingredientElementToRemove = ingredientElements[index] as HTMLElement;
+
+    //get elements after the one to be removed
+    //const remainingIngredientElements: HTMLElement[] = Array.from(ingredientElements).slice(index + 1) as HTMLElement[];
+
+    // Slide out the ingredient first, then remove it
+    await this.slideOutIngredient(ingredientElementToRemove);
+    this.updateMaterialsList();
+    this.calculateTotalPercentage();
   }
 
   async aiGenerateRecipe() {
@@ -536,8 +543,9 @@ export class RecipeBuilderPage {
           IngredientName: string;
           Percentage: number;
         }) => {
-          let newMaterial: Material | undefined = this.materialsService.materials.find(
-            (material) => material.Name.includes(ingredient.IngredientName)
+          let newMaterial: Material | undefined;
+          newMaterial = this.materialsService.materials.find(
+            (material) => material.Name === ingredient.IngredientName
           );
           if (newMaterial) {
             newMaterial.Percentage = ingredient.Percentage;
@@ -545,6 +553,22 @@ export class RecipeBuilderPage {
             this.recipeService.recipeBuildInProgess.revisions[0].materials.push(
               newMaterial
             );
+            return;
+          }
+          else {
+            newMaterial = this.materialsService.materials.find(
+              (material) => material.Name.includes(ingredient.IngredientName.split(' ')[0])
+            );
+          }
+          if (newMaterial) {
+            newMaterial.Percentage = ingredient.Percentage;
+            newMaterial.Quantity = 0;
+            this.recipeService.recipeBuildInProgess.revisions[0].materials.push(
+              newMaterial
+            );
+          }
+          else {
+            console.log('Material not found:', ingredient.IngredientName);
           }
         }
       );
