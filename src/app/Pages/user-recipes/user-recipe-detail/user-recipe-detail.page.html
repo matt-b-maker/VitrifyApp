@@ -293,14 +293,14 @@
                   <ion-item *ngIf="waterPreference === 'Proportion'">
                     <ion-label
                       >Your ratio is {{waterToDryMaterialRatio}}:10, so the
-                      amount of water you need is {{this.totalAmount *
+                      amount of water you need is {{this.totalBatchSize *
                       (this.waterToDryMaterialRatio / 10)}}{{batchUnit}}</ion-label
                     >
                   </ion-item>
                   <ion-item *ngIf="waterPreference === 'Specific Gravity'">
                     <ion-label
-                      >Start with a 1:1 ratio of water, so in this case,
-                      {{totalAmount}}g of water. Add more little by little until
+                      >Start with a 1:1 ratio of water and your batch size is {{totalBatchSize}}, so in this case,
+                      {{totalBatchSize}}g of water. Add more little by little until
                       you reach your desired specific gravity</ion-label
                     >
                   </ion-item>

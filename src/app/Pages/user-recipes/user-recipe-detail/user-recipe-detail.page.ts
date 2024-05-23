@@ -59,13 +59,14 @@ export class UserRecipeDetailPage implements OnInit {
   customBatch: boolean = false;
   batchUnit: string = 'g';
   batchUnits: string[] = ['g', 'kg', 'lb', 'oz'];
-  totalAmount: number = 100;
+  totalBatchSize: number = 100;
   waterPreference: string = 'Proportion';
   waterToDryMaterialRatio: number = 9;
   specificGravity: number = 1.55;
   waterQuantity: number = 0;
   checkInventory: boolean = false;
   inventoryOptionShowing: boolean = false;
+  userHasInventory: boolean = false;
   consumeInventory: boolean = false;
   modalOpen: boolean = false;
 
@@ -228,6 +229,7 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   checkInventoryForQuantity(materialName: string, quantity: number, unit: string) {
+    if (!this.userHasInventory) return;
     const inventoryItem = this.inventoryService.userInventory.inventory.find((item) => item.Name === materialName);
     if (inventoryItem) {
       if (inventoryItem.Quantity >= quantity) {
@@ -282,7 +284,8 @@ export class UserRecipeDetailPage implements OnInit {
   //all modal stuff
   setModalOpen() {
     let hasAllMaterials = true;
-    if (this.checkInventory) {
+    this.userHasInventory = this.inventoryService.userInventory !== null && this.inventoryService.userInventory !== undefined && this.inventoryService.userInventory.inventory.length > 0;
+    if (this.userHasInventory && this.checkInventory) {
       this.loadedRecipe.revisions[this.revision].materials.every((material) => {
         if (!this.checkInventoryForMaterial(material.Name)) {
           hasAllMaterials = false;
@@ -381,7 +384,7 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   setCustomBatchSize(event: any) {
-    this.totalAmount = event.detail.value;
+    this.totalBatchSize = event.detail.value;
     this.customBatchSize = event.detail.value;
     this.setIngredientQuantities();
   }
@@ -392,14 +395,14 @@ export class UserRecipeDetailPage implements OnInit {
       return;
     }
     this.customBatch = false;
-    this.totalAmount = event.detail.value;
+    this.totalBatchSize = event.detail.value;
     this.setIngredientQuantities();
   }
 
   setBatchUnit(event: any) {
     let previousUnit = this.batchUnit;
     this.batchUnit = event.detail.value;
-    this.totalAmount = this.convertToUnit(this.totalAmount, previousUnit, this.batchUnit);
+    this.totalBatchSize = this.convertToUnit(this.totalBatchSize, previousUnit, this.batchUnit);
     this.testBatchSize = this.convertToUnit(this.testBatchSize, previousUnit, this.batchUnit);
     this.mediumBatchSize = this.convertToUnit(this.mediumBatchSize, previousUnit, this.batchUnit);
     this.largeBatchSize = this.convertToUnit(this.largeBatchSize, previousUnit, this.batchUnit);
@@ -412,9 +415,9 @@ export class UserRecipeDetailPage implements OnInit {
   getWaterQuantity() {
     if (this.waterPreference === 'Proportion') {
       this.waterQuantity =
-        this.totalAmount * (this.waterToDryMaterialRatio / 10);
+        this.totalBatchSize * (this.waterToDryMaterialRatio / 10);
     } else {
-      this.waterQuantity = this.totalAmount * this.specificGravity;
+      this.waterQuantity = this.totalBatchSize * this.specificGravity;
     }
     return this.waterQuantity;
   }
@@ -426,7 +429,7 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   calculateQuantity(percentage: number) {
-    return parseFloat(((this.totalAmount * percentage) / 100).toFixed(2));
+    return parseFloat(((this.totalBatchSize * percentage) / 100).toFixed(2));
   }
 
   convertToUnit(quantity: number, previousUnit: string, currentUnit: string): number {

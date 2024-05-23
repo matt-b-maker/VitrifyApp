@@ -14,8 +14,8 @@ export class RecipesService {
   userRecipes: Recipe[] = [];
   allRecipes: Recipe[] = [];
 
-  recipeBuildInProgess: Recipe = new Recipe("", "", "", "", '06', [new RecipeRevision(1, [])]);
-  recipeEditInProgess: Recipe = new Recipe("", "", "", "", '06', [new RecipeRevision(1, [])]);
+  recipeBuildInProgess: Recipe = new Recipe("", "", "", "", '6', [new RecipeRevision(1, [])]);
+  recipeEditInProgess: Recipe = new Recipe("", "", "", "", '6', [new RecipeRevision(1, [])]);
   editingRevision: number = 0;
 
   getUserRecipeById(id: string): Recipe {

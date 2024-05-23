@@ -60,6 +60,7 @@ export class RecipeEditorPage implements AfterViewInit {
 
   totalPercentage: number = 0;
   remainingPercentage: number = 100;
+  remainingOrAdditional: string = 'Remaining';
 
   allMaterials: Ingredient[] = [
     ...this.ingredientService.allMaterials.sort((a, b) =>
@@ -703,6 +704,13 @@ export class RecipeEditorPage implements AfterViewInit {
       ) / 100;
     this.remainingPercentage = Number.isNaN(100 - this.totalPercentage)
       ? 100
-      : Math.abs(Math.round((100 - this.totalPercentage) * 100) / 100);
+      : Math.round((100 - this.totalPercentage) * 100) / 100;
+    if (this.remainingPercentage < 0) {
+      this.remainingOrAdditional = 'Additional';
+      this.remainingPercentage = Math.abs(this.remainingPercentage);
+    }
+    else {
+      this.remainingOrAdditional = 'Remaining';
+    }
   }
 }

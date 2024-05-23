@@ -145,10 +145,16 @@ export class RecipeBuilderPage {
           'Yes',
           'No'
         )
-        .then((result) => {
+        .then(async (result) => {
           if (result === false) {
             cancel = true;
           } else {
+            const loading = await this.loadingController.create({
+              message: 'Saving recipe...',
+              spinner: 'bubbles',
+              translucent: true,
+            });
+            loading.present();
             this.recipeService.recipeBuildInProgess.id =
               this.recipeService.userRecipes.find(
                 (recipe) =>
@@ -164,10 +170,17 @@ export class RecipeBuilderPage {
             this.firestoreService.saveRecipe(
               this.recipeService.recipeBuildInProgess
             );
+            loading.dismiss();
           }
         });
     }
     if (cancel) return;
+    const loading = await this.loadingController.create({
+      message: 'Saving recipe...',
+      spinner: 'bubbles',
+      translucent: true,
+    });
+    loading.present();
     this.recipeService.recipeBuildInProgess.creator =
       this.auth.user?.displayName || '';
     this.recipeService.recipeBuildInProgess.uid = this.auth.user?.uid || '';
@@ -182,6 +195,7 @@ export class RecipeBuilderPage {
     this.recipeService.userRecipes.push(
       this.recipeService.recipeBuildInProgess
     );
+    loading.dismiss();
     this.alertController
       .create({
         header: 'Recipe Saved',
@@ -491,7 +505,6 @@ export class RecipeBuilderPage {
     });
 
     loading.present();
-
     try {
       const newRecipeResponse: string = await this.openAiService.getCompletion(
         `Glaze recipe, cone: ${this.recipeService.recipeBuildInProgess.cone}, firing type: ${this.recipeService.recipeBuildInProgess.firingType} and description: ${this.recipeService.recipeBuildInProgess.description}.
@@ -518,6 +531,7 @@ export class RecipeBuilderPage {
           "notes": "This glaze formula creates a glossy finish suitable for cone 6 oxidation firing environments. Adjust the amount of Copper Carbonate to vary the color intensity."
         }
         Please use any ingredients that are available on digitalfire.com, as that's where I get my data.
+        Keep UMF in mind to make sure this recipe shows in the good area of the stull chart.
         Also, feel free to play with the percentages as floats and be as creative as you want!
         If you cannot make a glaze with the given information, please respond with "I cannot make a glaze with this information.".`
       );
