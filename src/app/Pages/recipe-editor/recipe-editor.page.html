@@ -217,12 +217,12 @@
               hidden
               #fileInput
             />
-            <ion-button size="small" (click)="fileInput.click()">Update</ion-button>
+            <ion-button size="small" *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrls.length > 0" (click)="fileInput.click()">Update</ion-button>
           </ion-item>
-          <ion-button size="small" *ngIf="isMobile" (click)="updateImage(undefined)"
+          <ion-button size="small" *ngIf="isMobile && recipeService.recipeEditInProgess.revisions[revision].imageUrls.length > 0" (click)="updateImage(undefined)"
             >Update Image</ion-button
           >
-          <ion-button (click)="deleteImage()">Delete</ion-button>
+          <ion-button *ngIf="recipeService.recipeEditInProgess.revisions[revision].imageUrls.length > 0" (click)="deleteImage()">Delete</ion-button>
         </ion-item>
       </div>
     </ion-card-content>

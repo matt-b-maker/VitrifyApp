@@ -17,22 +17,9 @@
 
   <ion-card>
     <ion-card-header>
-      <ion-item lines="none">
-        <ion-item lines="none" slot="start">
-          <ion-chip
-            [color]="getChipColor(loadedRecipe.revisions[revision].status)"
-            >{{loadedRecipe.revisions[revision].status}}</ion-chip
-          >
-        </ion-item>
-        <ion-item slot="end" lines="none">
-          <ion-button
-            color="danger"
-            *ngIf="loadedRecipe.revisions[revision].status !== status.Tested && recipeIsUsers()"
-            (click)="moveRevisionToTested()"
-            >Mark as Tested</ion-button
-          >
-        </ion-item>
-      </ion-item>
+      <ion-card-title class="ion-margin horizontal-center"
+        >{{loadedRecipe.name}}</ion-card-title
+      >
       <ion-avatar
         class="ion-margin w-50 horizontal-center"
         *ngIf="loadedRecipe.revisions[revision].imageUrls.length === 0"
@@ -50,9 +37,27 @@
           <ion-img [src]="imageUrl" (click)="enlargeImage(i)"></ion-img>
         </swiper-slide>
       </swiper-container>
-      <ion-card-title class="ion-margin horizontal-center"
-        >{{loadedRecipe.name}}</ion-card-title
-      >
+      <ion-item lines="none">
+        <ion-grid>
+          <ion-row class="ion-align-items-center">
+            <ion-col size="6">
+              <ion-chip
+              [color]="getChipColor(loadedRecipe.revisions[revision].status)"
+              >{{loadedRecipe.revisions[revision].status}}</ion-chip
+            >
+            </ion-col>
+            <ion-col size="6">
+              <ion-button
+              class="ion-margin"
+              color="danger"
+              *ngIf="loadedRecipe.revisions[revision].status !== status.Tested && recipeIsUsers()"
+              (click)="moveRevisionToTested()"
+              >Mark as Tested</ion-button
+            >
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </ion-item>
     </ion-card-header>
     <ion-card-content>
       <ion-card>
@@ -212,7 +217,7 @@
                     </ion-select>
                   </ion-item>
                   <ion-radio-group
-                    [value]="testBatchSize"
+                    [value]="selectedBatchSize"
                     (ionChange)="setBatchSize($event)"
                   >
                     <ion-radio

@@ -52,6 +52,7 @@ export class UserRecipeDetailPage implements OnInit {
   sectionNames = ['Setup', 'Materials', 'Water', 'Finalize'];
   nextSectionName: string = 'Materials';
   prevSectionName: string = '';
+  selectedBatchSize: string = '100';
   testBatchSize: number = 100;
   mediumBatchSize: number = 500;
   largeBatchSize: number = 1000;
@@ -79,7 +80,8 @@ export class UserRecipeDetailPage implements OnInit {
     private alertController: AlertController,
     private auth: AuthService,
     private inventoryService: InventoryService,
-  ) {}
+  ) {
+  }
 
   ngOnInit() {
     this.activatedRoute.paramMap.subscribe((paramMap) => {
@@ -283,6 +285,9 @@ export class UserRecipeDetailPage implements OnInit {
 
   //all modal stuff
   setModalOpen() {
+    if (this.selectedBatchSize === 'custom') {
+      this.customBatch = true;
+    }
     let hasAllMaterials = true;
     this.userHasInventory = this.inventoryService.userInventory !== null && this.inventoryService.userInventory !== undefined && this.inventoryService.userInventory.inventory.length > 0;
     if (this.userHasInventory && this.checkInventory) {
@@ -390,10 +395,12 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   setBatchSize(event: any) {
+    this.selectedBatchSize = event.detail.value;
     if (event.detail.value === 'custom') {
       this.customBatch = true;
       return;
     }
+    console.log(event.detail.value)
     this.customBatch = false;
     this.totalBatchSize = event.detail.value;
     this.setIngredientQuantities();

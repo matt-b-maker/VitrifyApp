@@ -61,6 +61,7 @@ export class AppComponent implements OnInit, OnDestroy {
     { title: 'My Firing Schedules', url: '/user-firing-schedules', icon: 'flame'},
     { title: 'Firing Schedule Builder', url: '/firing-schedule-builder', icon: 'bar-chart' },
     { title: 'My Inventory', url: "/inventory", icon: 'file-tray-stacked'},
+    { title: 'Testing', url: '/testing', icon: 'newspaper' },
     { title: 'Materials', url: '/materials-tabs', icon: 'flask' },
     { title: 'Explore', url: '/explore', icon: 'globe' },
     { title: 'Learn', url: '/learn', icon: 'library' },

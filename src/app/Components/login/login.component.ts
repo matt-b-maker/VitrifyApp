@@ -14,6 +14,8 @@ import { FileSystemService } from 'src/app/Services/file-system.service';
 import { MaterialsService } from 'src/app/Services/materials.service';
 import { user } from '@angular/fire/auth';
 import { InventoryService } from 'src/app/Services/inventory.service';
+import { TestingService } from 'src/app/Services/testing.service';
+import { RecipesService } from 'src/app/Services/recipes.service';
 
 interface Glaze {
   imageUrl: string;
@@ -42,7 +44,9 @@ export class LoginComponent implements OnInit {
     private glazeGetter: GlazeLogoGetterService,
     private loadingCtrl: LoadingController,
     private materialsService: MaterialsService,
-    private inventoryService: InventoryService
+    private recipesService: RecipesService,
+    private inventoryService: InventoryService,
+    private testingService: TestingService
   ) {
     this.authService.userSubject.subscribe((user) => {
       this.userFromStorage = user;
@@ -128,7 +132,9 @@ export class LoginComponent implements OnInit {
       await this.firestore.upsert('users', userCredential.user.uid, userMeta);
       this.authService.updateUser(userCredential.user);
       this.authService.updateMeta(userMeta);
+      this.recipesService.userRecipes = await this.firestore.getUserRecipes(userMeta.uid || '');
       await this.inventoryService.getUserInventory();
+      await this.testingService.getUserTestBatches();
       loading.dismiss();
       this.router.navigate(['/profile']);
     } else {

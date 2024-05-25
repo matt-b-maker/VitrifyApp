@@ -128,7 +128,7 @@ export class InventoryPage {
     });
 
     //do the animation
-    await this.slideInNewIngredient().then(() => {
+    await this.slideInNewItem().then(() => {
       // Get the last ingredient's HTML element and slide it in
       let materialElements = document.querySelectorAll('.inventory-item');
       let lastIngredientElement = materialElements[
@@ -151,7 +151,7 @@ export class InventoryPage {
       this.inventoryService.userInventory.inventory.splice(index, 1);
 
       // Slide up all remaining ingredients to fill the gap
-      this.slideUpRemainingIngredients(
+      this.slideUpRemainingItems(
         Array.from(ingredientElements) as HTMLElement[],
         index
       );
@@ -159,7 +159,7 @@ export class InventoryPage {
   }
 
   //animation methods
-  async slideInNewIngredient(): Promise<void> {
+  async slideInNewItem(): Promise<void> {
     const slideInAnimation = this.animationCtrl
       .create()
       .duration(100)
@@ -168,7 +168,7 @@ export class InventoryPage {
     await slideInAnimation.play();
   }
 
-  async slideUpRemainingIngredients(
+  async slideUpRemainingItems(
     ingredientElements: HTMLElement[],
     removedIndex: number
   ) {

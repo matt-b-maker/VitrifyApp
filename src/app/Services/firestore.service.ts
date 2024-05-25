@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, input } from '@angular/core';
 import { Observable, firstValueFrom } from 'rxjs';
 import { map, materialize } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,6 +19,7 @@ import { UserMeta } from '../Models/userMetaModel';
 import { AuthService } from './auth.service';
 import { RecipesService } from './recipes.service';
 import { UserInventory } from '../Models/userInventoryModel';
+import { TestBatch } from '../Models/testBatchModel';
 
 @Injectable({
   providedIn: 'root',
@@ -157,6 +158,64 @@ export class FirestoreService {
       inventory: [],
     };
     return newInventory;
+  }
+
+  async getUserTestBatches(uid: string): Promise<any> {
+    let testBatchesData: any = await this.getDocumentsByUid('testBatches', uid);
+
+    // Validate that the returned data matches the expected structure of UserInventory
+    if (testBatchesData && typeof testBatchesData === 'object' && testBatchesData.length > 0) {
+      return testBatchesData;
+    }
+
+    // If the data is not valid, return a new UserInventory object
+    const newTestBatches: TestBatch[] = [];
+    return newTestBatches;
+  }
+
+  async upsertTestBatch(testBatch: TestBatch) {
+    debugger;
+    const data = {
+      id: testBatch.id || uuidv4(),
+      uid: testBatch.uid,
+      name: testBatch.name,
+      tiles: testBatch.tiles.map((tile) => ({
+        number: tile.number,
+        recipes: tile.recipes.map((recipe) => ({
+          id: recipe.id,
+          name: recipe.name,
+          description: recipe.description,
+          creator: recipe.creator,
+          cone: recipe.cone,
+          firingType: recipe.firingType,
+          notes: recipe.notes,
+          dateCreated: recipe.dateCreated,
+          dateModified: recipe.dateModified,
+          revisions: recipe.revisions.map((r) => ({
+            revision: r.revision,
+            status: r.status,
+            notes: r.notes,
+            imageUrls: r.imageUrls || [], // Include imageUrl if needed
+            materials: r.materials.map((material) => ({
+              Name: material.Name,
+              Quantity: material.Quantity,
+              Percentage: material.Percentage,
+              // imageUrl: ingredient.imageUrl, // Include imageUrl if needed
+            })),
+          })),
+        })),
+        notes: tile.notes,
+        inputTitleMode: tile.inputTitleMode,
+      })),
+      creator: this.auth.userMeta?.nickname || '',
+      dateCreated: testBatch.dateCreated || new Date(),
+      dateModified: new Date(),
+    };
+    await this.upsert('testBatches', data.id, data);
+  }
+
+  async deleteTestBatch(id: string) {
+    return await this.delete('testBatches', id);
   }
 
   async setUserInventory(uid: string, inventory: UserInventory) {

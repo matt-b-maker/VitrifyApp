@@ -3,6 +3,7 @@ import {
   Auth,
   User,
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
@@ -11,7 +12,7 @@ import {
 } from '@angular/fire/auth';
 import { AngularFireModule } from '@angular/fire/compat';
 import { GooglePlus } from '@ionic-native/google-plus/ngx';
-import { AlertController, Platform } from '@ionic/angular';
+import { AlertController, Platform, ToastController } from '@ionic/angular';
 import { UserCredential, signInWithCredential } from 'firebase/auth';
 import { BehaviorSubject, Observable, map, of } from 'rxjs';
 import { UserMeta } from '../Models/userMetaModel';
@@ -36,7 +37,8 @@ export class AuthService {
     private gPlus: GooglePlus,
     private afAuth: AngularFireModule,
     private platform: Platform,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private toastController: ToastController
   ) {
     let user = localStorage.getItem('user');
     if (user) {
@@ -71,7 +73,27 @@ export class AuthService {
   }
 
   async register(email: string, password: string) {
-    return await createUserWithEmailAndPassword(this.auth, email, password);
+    try {
+      const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+      await sendEmailVerification(userCredential.user);
+      console.log('Verification email sent.');
+      const toast = await this.toastController.create({
+        message: 'Registration successful! Please check your email for verification.',
+        duration: 3000,
+        color: 'success'
+      });
+      await toast.present();
+      return userCredential;
+    } catch (error: any) {
+      console.error('Error during registration: ', error);
+      const toast = await this.toastController.create({
+        message: 'Registration failed: ' + error.message,
+        duration: 3000,
+        color: 'danger'
+      });
+      await toast.present();
+      throw error;
+    }
   }
 
   async loginWithGoogle() {
