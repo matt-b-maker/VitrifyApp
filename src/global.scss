@@ -129,6 +129,16 @@ text-black {
   color: #FF69B4;
 }
 
+.horizontal-center {
+  display: flex;
+  justify-content: center;
+}
+
+.horizontal-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
 /* Animations */
 /* slide-up animation */
 .slide-up-enter {

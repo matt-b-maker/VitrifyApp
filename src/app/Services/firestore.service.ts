@@ -210,6 +210,8 @@ export class FirestoreService {
       creator: this.auth.userMeta?.nickname || '',
       dateCreated: testBatch.dateCreated || new Date(),
       dateModified: new Date(),
+      descriptionString: testBatch.descriptionString,
+      dateCreatedFormatted: testBatch.dateCreatedFormatted,
     };
     await this.upsert('testBatches', data.id, data);
   }

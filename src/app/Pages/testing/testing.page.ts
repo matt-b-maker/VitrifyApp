@@ -14,7 +14,9 @@ import {
   AnimationController,
   IonInput,
   ModalController,
+  ToastController,
 } from '@ionic/angular';
+import { Timestamp } from 'firebase/firestore';
 import { Subscription, fromEvent } from 'rxjs';
 import { Recipe } from 'src/app/Models/recipeModel';
 import { TestBatch } from 'src/app/Models/testBatchModel';
@@ -48,16 +50,21 @@ export class TestingPage implements OnInit {
     private firestore: FirestoreService,
     private auth: AuthService,
     private alertController: AlertController,
-    private modal: ModalController
+    private modal: ModalController,
+    private toastController: ToastController
   ) {
     //this.testingService.getUserTestBatches();
     (async () => {
       this.loaded = false;
       await this.testingService.getUserTestBatches();
       this.testingService.testBatches.forEach((batch) => {
-        batch.descriptionString = this.getTileSetupString(this.testingService.testBatches.indexOf(batch));
+        batch.descriptionString = this.getTileSetupString(
+          this.testingService.testBatches.indexOf(batch)
+        );
       });
-      this.recipesService.userRecipes = await this.firestore.getUserRecipes(this.auth.userMeta?.uid || '');
+      this.recipesService.userRecipes = await this.firestore.getUserRecipes(
+        this.auth.userMeta?.uid || ''
+      );
       this.initialTestBatches = this.testingService.testBatches;
       this.loaded = true;
     })();
@@ -76,8 +83,7 @@ export class TestingPage implements OnInit {
   getTileSetupString(index: number): string {
     if (this.testingService.testBatches[index].tiles.length === 0) {
       return 'No Tiles Yet';
-    } else
-    if (this.testingService.testBatches[index].tiles.length === 1) {
+    } else if (this.testingService.testBatches[index].tiles.length === 1) {
       return '1 Tile';
     } else {
       return `${this.testingService.testBatches[index].tiles.length} Tiles`;
@@ -191,7 +197,7 @@ export class TestingPage implements OnInit {
   }
 
   editTestBatch(testBatch: TestBatch) {
-    this.testBatchUnderEdit = testBatch;
+    this.testBatchUnderEdit = JSON.parse(JSON.stringify(testBatch));
     this.editOrAdd = `Editing ${testBatch.name}`;
     console.log(this.testBatchUnderEdit.tiles[0]);
     this.editingModalOpen = true;
@@ -203,24 +209,34 @@ export class TestingPage implements OnInit {
   }
 
   setLayerName(event: any, tileIndex: number, recipeIndex: number) {
-    console.log(event)
+    console.log(event);
     const selectedRecipe = this.recipesService.userRecipes.find(
       (recipe) => recipe.name === event.detail.value
     );
     console.log(selectedRecipe);
     if (selectedRecipe) {
-      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].name = selectedRecipe.name;
-      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].id = selectedRecipe.id;
-      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].description = selectedRecipe.description;
-      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].creator = selectedRecipe.creator;
-      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].cone = selectedRecipe.cone;
-      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].revisions = selectedRecipe.revisions;
-      this.testBatchUnderEdit.tiles[tileIndex].selectedRevisions[recipeIndex] = 1;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].name =
+        selectedRecipe.name;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].id =
+        selectedRecipe.id;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[
+        recipeIndex
+      ].description = selectedRecipe.description;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].creator =
+        selectedRecipe.creator;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].cone =
+        selectedRecipe.cone;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].revisions =
+        selectedRecipe.revisions;
+      this.testBatchUnderEdit.tiles[tileIndex].selectedRevisions[
+        recipeIndex
+      ] = 1;
     }
   }
 
   setLayerRevision(event: any, tileIndex: number, recipeIndex: number) {
-    this.testBatchUnderEdit.tiles[tileIndex].selectedRevisions[recipeIndex] = event.detail.value;
+    this.testBatchUnderEdit.tiles[tileIndex].selectedRevisions[recipeIndex] =
+      event.detail.value;
   }
 
   addTestBatch() {
@@ -229,36 +245,48 @@ export class TestingPage implements OnInit {
       '',
       this.auth.userMeta?.uid || '',
       `Test Batch ${this.testingService.testBatches.length + 1}`,
-      [new TestTile(1, [], '')]
+      [new TestTile(1, [new Recipe('', '', '', '', '', [])], '')]
     );
     this.editingModalOpen = true;
   }
 
   async deleteTestBatch(testBatch: TestBatch) {
-    await this.alertController.create
-    ({
-      header: 'Just Checking',
-      message: 'Are you sure you want to delete this test batch?',
-      buttons: [
-        {
-          text: 'Yes, do it',
-          handler: async () => {
-            this.testingService.testBatches = this.testingService.testBatches.filter(
-              (batch) => batch.id !== testBatch.id
-            );
-            await this.firestore.deleteTestBatch(testBatch.id);
+    await this.alertController
+      .create({
+        header: 'Just Checking',
+        message: 'Are you sure you want to delete this test batch?',
+        buttons: [
+          {
+            text: 'Yes, do it',
+            handler: async () => {
+              await this.firestore.deleteTestBatch(testBatch.id);
+              this.testingService.testBatches =
+                this.testingService.testBatches.filter(
+                  (batch) => batch.id !== testBatch.id
+                );
+              this.toastController
+                .create({
+                  message: 'Test batch deleted',
+                  duration: 2000,
+                  position: 'bottom',
+                  color: 'success',
+                })
+                .then((toast) => {
+                  toast.present();
+                });
+            },
           },
-        },
-        {
-          text: 'Nope',
-          handler: () => {
-            return;
+          {
+            text: 'Nope',
+            handler: () => {
+              return;
+            },
           },
-        },
-      ],
-    }).then((alert) => {
-      alert.present();
-    });
+        ],
+      })
+      .then((alert) => {
+        alert.present();
+      });
   }
 
   closeDetailsModal() {
@@ -266,6 +294,26 @@ export class TestingPage implements OnInit {
   }
 
   async closeModalAndSave() {
+    //just close if nothing has changed
+    console.log(
+      JSON.stringify(
+        this.testingService.testBatches.find(
+          (batch) => batch.id === this.testBatchUnderEdit.id
+        )
+      ) === JSON.stringify(this.testBatchUnderEdit)
+    );
+    if (
+      JSON.stringify(this.testBatchUnderEdit) ==
+      JSON.stringify(
+        this.testingService.testBatches.find(
+          (batch) => batch.id === this.testBatchUnderEdit.id
+        )
+      )
+    ) {
+      this.editingModalOpen = false;
+      return;
+    }
+
     if (this.testBatchUnderEdit?.name === '') {
       //let the user close the modal and clear the test batch if they want to
       await this.alertController
@@ -282,6 +330,47 @@ export class TestingPage implements OnInit {
             {
               text: 'Forget it, leave it',
               handler: () => {
+                this.testBatchUnderEdit = new TestBatch(
+                  '',
+                  this.auth.userMeta?.uid || '',
+                  `Test Batch ${this.testingService.testBatches.length + 1}`,
+                  [new TestTile(1, [], '')]
+                );
+                this.editingModalOpen = false;
+              },
+            },
+          ],
+        })
+        .then((alert) => {
+          alert.present();
+        });
+    } else if (
+      this.testingService.testBatches.some(
+        (batch) => batch.name === this.testBatchUnderEdit.name
+      )
+    ) {
+      //let the user close the modal and clear the test batch if they want to
+      await this.alertController
+        .create({
+          header: 'Error',
+          message:
+            'You already have a test batch with that name. Please enter a unique name.',
+          buttons: [
+            {
+              text: 'Oh, yeah, ok',
+              handler: () => {
+                return;
+              },
+            },
+            {
+              text: 'Forget it, leave it',
+              handler: () => {
+                this.testBatchUnderEdit = new TestBatch(
+                  '',
+                  this.auth.userMeta?.uid || '',
+                  `Test Batch ${this.testingService.testBatches.length + 1}`,
+                  [new TestTile(1, [], '')]
+                );
                 this.editingModalOpen = false;
               },
             },
@@ -291,6 +380,20 @@ export class TestingPage implements OnInit {
           alert.present();
         });
     } else {
+      //if there's no content, just close the modal
+      this.testBatchUnderEdit.tiles = this.testBatchUnderEdit.tiles.filter(
+        (tile) => tile.recipes.length > 0 && tile.recipes[0].name !== ''
+      );
+      //remove any recipes from the tiles that don't have a name
+      this.testBatchUnderEdit.tiles.forEach((tile) => {
+        tile.recipes = tile.recipes.filter((recipe) => recipe.name !== '');
+      });
+
+      if (this.testBatchUnderEdit.tiles.length === 0) {
+        this.editingModalOpen = false;
+        return;
+      }
+
       //ask if they want to save or close without saving
       await this.alertController
         .create({
@@ -300,29 +403,41 @@ export class TestingPage implements OnInit {
             {
               text: 'Yes, save it',
               handler: async () => {
+                this.testBatchUnderEdit.dateCreatedFormatted =
+                  this.getDateCreated(this.testBatchUnderEdit);
                 //remove tiles without any recipes
-                this.testBatchUnderEdit.tiles =
-                  this.testBatchUnderEdit.tiles.filter(
-                    (tile) => tile.recipes.length > 0
-                  );
-                //remove any recipes from the tiles that don't have a name
-                this.testBatchUnderEdit.tiles.forEach((tile) => {
-                  tile.recipes = tile.recipes.filter(
-                    (recipe) => recipe.name !== ''
-                  );
-                });
-
                 await this.firestore.upsertTestBatch(this.testBatchUnderEdit);
-                if (this.testingService.testBatches.includes(this.testBatchUnderEdit)) {
+                //if the test batch is already in the array, update it, else add it
+                if (
+                  this.testingService.testBatches.find(
+                    (batch) => batch.id === this.testBatchUnderEdit.id
+                  )
+                ) {
                   this.testingService.testBatches[
                     this.testingService.testBatches.findIndex(
                       (batch) => batch.id === this.testBatchUnderEdit.id
                     )
                   ] = this.testBatchUnderEdit;
-                  this.testingService.testBatches[this.testingService.testBatches.indexOf(this.testBatchUnderEdit)].descriptionString = this.getTileSetupString(this.testingService.testBatches.indexOf(this.testBatchUnderEdit));
+
+                  //mod the description string
+                  this.testingService.testBatches[
+                    this.testingService.testBatches.indexOf(
+                      this.testBatchUnderEdit
+                    )
+                  ].descriptionString = this.getTileSetupString(
+                    this.testingService.testBatches.indexOf(
+                      this.testBatchUnderEdit
+                    )
+                  );
                 } else {
                   this.testingService.testBatches.push(this.testBatchUnderEdit);
-                  this.testingService.testBatches[this.testingService.testBatches.length - 1].descriptionString = this.getTileSetupString(this.testingService.testBatches.length - 1);
+
+                  //mod the description string
+                  this.testingService.testBatches[
+                    this.testingService.testBatches.length - 1
+                  ].descriptionString = this.getTileSetupString(
+                    this.testingService.testBatches.length - 1
+                  );
                 }
                 this.testBatchUnderEdit = new TestBatch(
                   '',
@@ -367,10 +482,9 @@ export class TestingPage implements OnInit {
                 recipeIndex,
                 1
               );
-              this.testBatchUnderEdit?.tiles[tileIndex].selectedRevisions.splice(
-                recipeIndex,
-                1
-              );
+              this.testBatchUnderEdit?.tiles[
+                tileIndex
+              ].selectedRevisions.splice(recipeIndex, 1);
             },
           },
           {
@@ -389,13 +503,25 @@ export class TestingPage implements OnInit {
   async addTileToBatch() {
     this.testBatchUnderEdit?.tiles.push({
       number: this.testBatchUnderEdit.tiles.length + 1,
-      recipes: [],
+      recipes: [new Recipe('', '', '', '', '', [])],
       selectedRevisions: [],
       notes: '',
       inputTitleMode: false,
     });
     //do the animation
     await this.slideInNewItem();
+  }
+
+  getDateCreated(testBatch: TestBatch): string {
+    const timeStamp = testBatch.dateCreated as unknown as Timestamp;
+    const date = new Date(
+      timeStamp.nanoseconds / 1000000 + timeStamp.seconds * 1000
+    );
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    const year = date.getFullYear().toString();
+
+    return `${month}/${day}/${year}`;
   }
 
   //animation methods
