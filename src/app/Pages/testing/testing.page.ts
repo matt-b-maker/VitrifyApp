@@ -54,9 +54,11 @@ export class TestingPage implements OnInit {
     (async () => {
       this.loaded = false;
       await this.testingService.getUserTestBatches();
+      this.testingService.testBatches.forEach((batch) => {
+        batch.descriptionString = this.getTileSetupString(this.testingService.testBatches.indexOf(batch));
+      });
       this.recipesService.userRecipes = await this.firestore.getUserRecipes(this.auth.userMeta?.uid || '');
       this.initialTestBatches = this.testingService.testBatches;
-      console.log(this.initialTestBatches);
       this.loaded = true;
     })();
   }
@@ -190,7 +192,8 @@ export class TestingPage implements OnInit {
 
   editTestBatch(testBatch: TestBatch) {
     this.testBatchUnderEdit = testBatch;
-    this.editOrAdd = `Edit ${testBatch.name}`;
+    this.editOrAdd = `Editing ${testBatch.name}`;
+    console.log(this.testBatchUnderEdit.tiles[0]);
     this.editingModalOpen = true;
   }
 
@@ -199,18 +202,25 @@ export class TestingPage implements OnInit {
     this.detailsModalOpen = true;
   }
 
-  setLayerDetails(event: any, tileIndex: number, recipeIndex: number) {
+  setLayerName(event: any, tileIndex: number, recipeIndex: number) {
+    console.log(event)
     const selectedRecipe = this.recipesService.userRecipes.find(
-      (recipe) => recipe.name === event.detail.value.name
+      (recipe) => recipe.name === event.detail.value
     );
     console.log(selectedRecipe);
     if (selectedRecipe) {
-      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex] = selectedRecipe;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].name = selectedRecipe.name;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].id = selectedRecipe.id;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].description = selectedRecipe.description;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].creator = selectedRecipe.creator;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].cone = selectedRecipe.cone;
+      this.testBatchUnderEdit.tiles[tileIndex].recipes[recipeIndex].revisions = selectedRecipe.revisions;
+      this.testBatchUnderEdit.tiles[tileIndex].selectedRevisions[recipeIndex] = 1;
     }
   }
 
   setLayerRevision(event: any, tileIndex: number, recipeIndex: number) {
-    console.log(event);
+    this.testBatchUnderEdit.tiles[tileIndex].selectedRevisions[recipeIndex] = event.detail.value;
   }
 
   addTestBatch() {
@@ -309,9 +319,17 @@ export class TestingPage implements OnInit {
                       (batch) => batch.id === this.testBatchUnderEdit.id
                     )
                   ] = this.testBatchUnderEdit;
+                  this.testingService.testBatches[this.testingService.testBatches.indexOf(this.testBatchUnderEdit)].descriptionString = this.getTileSetupString(this.testingService.testBatches.indexOf(this.testBatchUnderEdit));
                 } else {
                   this.testingService.testBatches.push(this.testBatchUnderEdit);
+                  this.testingService.testBatches[this.testingService.testBatches.length - 1].descriptionString = this.getTileSetupString(this.testingService.testBatches.length - 1);
                 }
+                this.testBatchUnderEdit = new TestBatch(
+                  '',
+                  this.auth.userMeta?.uid || '',
+                  `Test Batch ${this.testingService.testBatches.length + 1}`,
+                  [new TestTile(1, [], '')]
+                );
                 this.editingModalOpen = false;
               },
             },
@@ -333,6 +351,7 @@ export class TestingPage implements OnInit {
     this.testBatchUnderEdit?.tiles[index].recipes.push(
       new Recipe('', '', '', '', '', [])
     );
+    this.testBatchUnderEdit?.tiles[index].selectedRevisions.push(1);
   }
 
   async removeRecipeFromTile(tileIndex: number, recipeIndex: number) {
@@ -345,6 +364,10 @@ export class TestingPage implements OnInit {
             text: 'Yes, do it',
             handler: () => {
               this.testBatchUnderEdit?.tiles[tileIndex].recipes.splice(
+                recipeIndex,
+                1
+              );
+              this.testBatchUnderEdit?.tiles[tileIndex].selectedRevisions.splice(
                 recipeIndex,
                 1
               );
@@ -367,6 +390,7 @@ export class TestingPage implements OnInit {
     this.testBatchUnderEdit?.tiles.push({
       number: this.testBatchUnderEdit.tiles.length + 1,
       recipes: [],
+      selectedRevisions: [],
       notes: '',
       inputTitleMode: false,
     });

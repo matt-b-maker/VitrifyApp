@@ -174,7 +174,6 @@ export class FirestoreService {
   }
 
   async upsertTestBatch(testBatch: TestBatch) {
-    debugger;
     const data = {
       id: testBatch.id || uuidv4(),
       uid: testBatch.uid,
@@ -189,8 +188,8 @@ export class FirestoreService {
           cone: recipe.cone,
           firingType: recipe.firingType,
           notes: recipe.notes,
-          dateCreated: recipe.dateCreated,
-          dateModified: recipe.dateModified,
+          dateCreated: recipe.dateCreated === undefined ? '' : recipe.dateCreated,
+          dateModified: recipe.dateModified === undefined ? '' : recipe.dateModified,
           revisions: recipe.revisions.map((r) => ({
             revision: r.revision,
             status: r.status,
@@ -204,6 +203,7 @@ export class FirestoreService {
             })),
           })),
         })),
+        selectedRevisions: tile.selectedRevisions,
         notes: tile.notes,
         inputTitleMode: tile.inputTitleMode,
       })),

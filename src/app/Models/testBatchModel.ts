@@ -10,6 +10,7 @@ export class TestBatch {
   creator: string = "";
   dateCreated: Date = new Date();
   dateModified: Date = new Date();
+  descriptionString: string = "";
 
   constructor(id: string, uid: string, name: string, tiles: TestTile[]) {
     this.id = id;

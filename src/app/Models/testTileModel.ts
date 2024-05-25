@@ -4,6 +4,7 @@ export class TestTile {
 
   number: number | string = 1;
   recipes: Recipe[] = [];
+  selectedRevisions: number[] = [];
   notes: string = "";
   inputTitleMode: boolean = false;
 
