@@ -193,3 +193,18 @@ text-black {
     transform: translateY(-100%);
   }
 }
+
+.slide-in-animation {
+  animation-name: slideIn;
+  animation-duration: 0.3s;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+

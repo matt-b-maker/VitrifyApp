@@ -20,6 +20,7 @@ import { AuthService } from './auth.service';
 import { RecipesService } from './recipes.service';
 import { UserInventory } from '../Models/userInventoryModel';
 import { TestBatch } from '../Models/testBatchModel';
+import { FiringSchedule } from '../Models/FiringScheduleModel';
 
 @Injectable({
   providedIn: 'root',
@@ -238,6 +239,36 @@ export class FirestoreService {
       }))
     };
     await this.upsert('inventory', uid, data);
+  }
+
+  async getUserFiringSchedules(uid: string): Promise<any> {
+    let firingSchedulesData: any = await this.getDocumentsByUid('firingSchedules', uid);
+
+    // Validate that the returned data matches the expected structure of UserInventory
+    if (firingSchedulesData && typeof firingSchedulesData === 'object' && firingSchedulesData.length > 0) {
+      return firingSchedulesData;
+    }
+
+    // If the data is not valid, return a new UserInventory object
+    const newFiringSchedules: any = [];
+    return newFiringSchedules;
+  }
+
+  async upsertFiringSchedule(firingSchedule: FiringSchedule) {
+    const data = {
+      id: firingSchedule.id || uuidv4(),
+      uid: firingSchedule.uid,
+      name: firingSchedule.name,
+      segments: firingSchedule.segments.map((segment) => ({
+        lowTemp: segment.lowTemp,
+        highTemp: segment.highTemp,
+        duration: segment.duration,
+      })),
+      creator: this.auth.userMeta?.nickname || '',
+      dateCreated: firingSchedule.dateCreated || new Date(),
+      dateModified: new Date(),
+    };
+    await this.upsert('firingSchedules', data.id, data);
   }
 
   //get all public and tested recipes

@@ -27,6 +27,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { FirebaseStorageService } from 'src/app/Services/firebase-storage.service';
 import { SwiperContainer } from 'swiper/element';
 import { Swiper } from 'swiper/types';
+import { AnimationService } from 'src/app/Services/animation.service';
 
 @Component({
   selector: 'app-recipe-editor',
@@ -91,7 +92,8 @@ export class RecipeEditorPage implements AfterViewInit {
     private loadingCtrl: LoadingController,
     private firebaseStorage: FirebaseStorageService,
     private changeDetectorRef: ChangeDetectorRef,
-    private actionSheetController: ActionSheetController
+    private actionSheetController: ActionSheetController,
+    private animationService: AnimationService
   ) {
     this.calculateTotalPercentage();
     this.isEditing = this.recipeService.isEditing;
@@ -457,58 +459,6 @@ export class RecipeEditorPage implements AfterViewInit {
       .then((alert) => alert.present());
   }
 
-  //animation methods
-  async slideInNewIngredient(ingredientElement: HTMLElement) {
-    const slideInAnimation = this.animationCtrl
-      .create()
-      .addElement(ingredientElement)
-      .duration(100)
-      .fromTo('transform', 'translateX(100%)', 'translateX(0)')
-      .fromTo('opacity', '0', '1'); // Fade in effect
-
-    await slideInAnimation.play();
-  }
-
-  async slideUpRemainingIngredients(
-    ingredientElements: HTMLElement[],
-    removedIndex: number
-  ) {
-    if (
-      ingredientElements.length === 0 ||
-      removedIndex < 0 ||
-      removedIndex >= ingredientElements.length
-    )
-      return;
-
-    const slideUpAnimation = this.animationCtrl.create().duration(300); // Adjust duration as needed
-
-    //slide up all elements after the one removed to fill the gap
-    ingredientElements.forEach((element, index) => {
-      if (index >= removedIndex) {
-        slideUpAnimation
-          .addElement(element)
-          .fromTo(
-            'transform',
-            `translateY(${element.clientHeight}px)`,
-            'translateY(0)'
-          );
-      }
-    });
-
-    await slideUpAnimation.play();
-  }
-
-  async slideOutIngredient(ingredientElement: HTMLElement) {
-    const slideOutAnimation = this.animationCtrl
-      .create()
-      .addElement(ingredientElement)
-      .duration(300)
-      .fromTo('transform', 'translateX(0)', 'translateX(100%)')
-      .fromTo('opacity', '1', '0'); // Fade out effect
-
-    await slideOutAnimation.play();
-  }
-
   trimName() {
     this.recipeService.recipeEditInProgess.name =
       this.recipeService.recipeEditInProgess.name.trim();
@@ -615,21 +565,26 @@ export class RecipeEditorPage implements AfterViewInit {
     });
 
     //Do animation stuff
-    const newIngredientIndex =
+    await this.animationService.slideInNewItem().then(() => {
+      // Get the last ingredient's HTML element and slide it in
+      const newIngredientIndex =
       this.recipeService.recipeEditInProgess.revisions[this.revision].materials
         .length - 1;
+      const ingredientElements = document.querySelectorAll('.w-fill-available');
+      //get last element
+      const newIngredientElement = ingredientElements[
+        newIngredientIndex
+      ] as HTMLElement;
+        ;
+      newIngredientElement?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
 
-    // Get the last ingredient's HTML element and slide it in
-    const ingredientElements = document.querySelectorAll('.w-fill-available');
-    //get last element
-    const newIngredientElement = ingredientElements[
-      newIngredientIndex
-    ] as HTMLElement;
-    await this.slideInNewIngredient(newIngredientElement);
-
-    //update percentages
-    this.calculateTotalPercentage();
-  }
+      //update percentages
+      this.calculateTotalPercentage();
+  });
+}
 
   anyIngredients() {
     return (
@@ -670,14 +625,15 @@ export class RecipeEditorPage implements AfterViewInit {
     const ingredientElements = document.querySelectorAll('.ingredient');
     const ingredientElementToRemove = ingredientElements[index] as HTMLElement;
 
-    //get elements after the one to be removed
-    //const remainingIngredientElements: HTMLElement[] = Array.from(ingredientElements).slice(index + 1) as HTMLElement[];
-
     // Slide out the ingredient first, then remove it
-    await this.slideOutIngredient(ingredientElementToRemove);
-    this.recipeService.recipeEditInProgess.revisions[
-      this.revision
-    ].materials.splice(index, 1);
+    await this.animationService.slideOutItem(ingredientElementToRemove).then(() => {
+      this.recipeService.recipeEditInProgess.revisions[this.revision].materials.splice(index, 1);
+      this.animationService.slideUpRemainingItems(
+        Array.from(ingredientElements) as HTMLElement[],
+        index
+      );
+    });
+
     this.updateMaterialsList();
     this.calculateTotalPercentage();
   }

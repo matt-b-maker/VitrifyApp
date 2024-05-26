@@ -31,6 +31,7 @@ import { Material } from 'src/app/Interfaces/material';
 import { IonicSelectableComponent } from 'ionic-selectable';
 import { ignoreElements } from 'rxjs';
 import { MaterialsSelectComponent } from 'src/app/Components/materials-select/materials-select.component';
+import { AnimationService } from 'src/app/Services/animation.service';
 
 @Component({
   selector: 'app-recipe-builder',
@@ -84,8 +85,10 @@ export class RecipeBuilderPage {
     private router: Router,
     private firingDetailsService: FiringDetailsService,
     private materialsService: MaterialsService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private animationService: AnimationService
   ) {
+
     this.calculateTotalPercentage();
     this.isEditing = this.recipeService.isEditing;
     this.allMaterials = this.allMaterials.sort((a, b) =>
@@ -218,56 +221,6 @@ export class RecipeBuilderPage {
       .then((alert) => alert.present());
   }
 
-  //animation methods
-  async slideInNewIngredient(): Promise<void> {
-    const slideInAnimation = this.animationCtrl
-      .create()
-      .duration(100)
-      .fromTo('transform', 'translateX(100%)', 'translateX(0)')
-      .fromTo('opacity', '0', '1'); // Fade in effect
-    await slideInAnimation.play();
-  }
-
-  async slideUpRemainingIngredients(
-    ingredientElements: HTMLElement[],
-    removedIndex: number
-  ) {
-    if (
-      ingredientElements.length === 0 ||
-      removedIndex < 0 ||
-      removedIndex >= ingredientElements.length
-    )
-      return;
-
-    const slideUpAnimation = this.animationCtrl.create().duration(300); // Adjust duration as needed
-
-    //slide up all elements after the one removed to fill the gap
-    ingredientElements.forEach((element, index) => {
-      if (index >= removedIndex) {
-        slideUpAnimation
-          .addElement(element)
-          .fromTo(
-            'transform',
-            `translateY(${element.clientHeight}px)`,
-            'translateY(0)'
-          );
-      }
-    });
-
-    await slideUpAnimation.play();
-  }
-
-  async slideOutIngredient(ingredientElement: HTMLElement) {
-    const slideOutAnimation = this.animationCtrl
-      .create()
-      .addElement(ingredientElement)
-      .duration(300)
-      .fromTo('transform', 'translateX(0)', 'translateX(100%)')
-      .fromTo('opacity', '1', '0'); // Fade out effect
-
-    await slideOutAnimation.play();
-  }
-
   trimName() {
     this.recipeService.recipeBuildInProgess.name =
       this.recipeService.recipeBuildInProgess.name.trim();
@@ -373,7 +326,7 @@ export class RecipeBuilderPage {
     this.calculateTotalPercentage();
 
     //do the animation
-    await this.slideInNewIngredient().then(() => {
+    await this.animationService.slideInNewItem().then(() => {
       // Get the last ingredient's HTML element and slide it in
       let materialElements = document.querySelectorAll(
         '.material-ingredient'
@@ -468,7 +421,13 @@ export class RecipeBuilderPage {
     //const remainingIngredientElements: HTMLElement[] = Array.from(ingredientElements).slice(index + 1) as HTMLElement[];
 
     // Slide out the ingredient first, then remove it
-    await this.slideOutIngredient(ingredientElementToRemove);
+    await this.animationService.slideOutItem(ingredientElementToRemove).then(() => {
+      this.recipeService.recipeEditInProgess.revisions[0].materials.splice(index, 1);
+      this.animationService.slideUpRemainingItems(
+        Array.from(ingredientElements) as HTMLElement[],
+        index
+      );
+    });;
     this.updateMaterialsList();
     this.calculateTotalPercentage();
   }

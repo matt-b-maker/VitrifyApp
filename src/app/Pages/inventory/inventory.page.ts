@@ -7,6 +7,7 @@ import { FirestoreService } from 'src/app/Services/firestore.service';
 import { AuthService } from 'src/app/Services/auth.service';
 import { MaterialsService } from 'src/app/Services/materials.service';
 import { ModalController } from '@ionic/angular';
+import { AnimationService } from 'src/app/Services/animation.service';
 
 @Component({
   selector: 'app-inventory',
@@ -35,7 +36,8 @@ export class InventoryPage {
     private auth: AuthService,
     private alertController: AlertController,
     private materialsService: MaterialsService,
-    private modalController: ModalController
+    private modalController: ModalController,
+    private animationService: AnimationService
   ) {
     (async () => {
       this.loaded = false;
@@ -128,7 +130,7 @@ export class InventoryPage {
     });
 
     //do the animation
-    await this.slideInNewItem().then(() => {
+    await this.animationService.slideInNewItem().then(() => {
       // Get the last ingredient's HTML element and slide it in
       let materialElements = document.querySelectorAll('.inventory-item');
       let lastIngredientElement = materialElements[
@@ -143,68 +145,18 @@ export class InventoryPage {
 
   async removeInventoryItem(index: number) {
     // Get the ingredient's HTML element and slide it out
-    let ingredientElements = document.querySelectorAll('.inventory-item');
-    let removedIngredientElement = ingredientElements[index] as HTMLElement;
+    let inventoryItems = document.querySelectorAll('.inventory-item');
+    let removedInventoryItem = inventoryItems[index] as HTMLElement;
 
-    await this.slideOutIngredient(removedIngredientElement).then(() => {
+    await this.animationService.slideOutItem(removedInventoryItem).then(() => {
       // Remove the ingredient from the array
       this.inventoryService.userInventory.inventory.splice(index, 1);
 
       // Slide up all remaining ingredients to fill the gap
-      this.slideUpRemainingItems(
-        Array.from(ingredientElements) as HTMLElement[],
+      this.animationService.slideUpRemainingItems(
+        Array.from(inventoryItems) as HTMLElement[],
         index
       );
     });
-  }
-
-  //animation methods
-  async slideInNewItem(): Promise<void> {
-    const slideInAnimation = this.animationCtrl
-      .create()
-      .duration(100)
-      .fromTo('transform', 'translateX(100%)', 'translateX(0)')
-      .fromTo('opacity', '0', '1'); // Fade in effect
-    await slideInAnimation.play();
-  }
-
-  async slideUpRemainingItems(
-    ingredientElements: HTMLElement[],
-    removedIndex: number
-  ) {
-    if (
-      ingredientElements.length === 0 ||
-      removedIndex < 0 ||
-      removedIndex >= ingredientElements.length
-    )
-      return;
-
-    const slideUpAnimation = this.animationCtrl.create().duration(300); // Adjust duration as needed
-
-    //slide up all elements after the one removed to fill the gap
-    ingredientElements.forEach((element, index) => {
-      if (index >= removedIndex) {
-        slideUpAnimation
-          .addElement(element)
-          .fromTo(
-            'transform',
-            `translateY(${element.clientHeight}px)`,
-            'translateY(0)'
-          );
-      }
-    });
-
-    await slideUpAnimation.play();
-  }
-
-  async slideOutIngredient(ingredientElement: HTMLElement) {
-    const slideOutAnimation = this.animationCtrl
-      .create()
-      .addElement(ingredientElement)
-      .duration(300)
-      .fromTo('transform', 'translateX(0)', 'translateX(100%)')
-      .fromTo('opacity', '1', '0'); // Fade out effect
-
-    await slideOutAnimation.play();
   }
 }

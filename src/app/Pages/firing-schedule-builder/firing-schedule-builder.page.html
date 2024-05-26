@@ -1,13 +1,33 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>FiringScheduleBuilder</ion-title>
-  </ion-toolbar>
-</ion-header>
+<app-side-menu-header>
+</app-side-menu-header>
 
 <ion-content [fullscreen]="true">
   <ion-header collapse="condense">
     <ion-toolbar>
-      <ion-title size="large">FiringScheduleBuilder</ion-title>
+      <ion-title size="large">Firing Schedule Builder</ion-title>
     </ion-toolbar>
   </ion-header>
+  <div class="chart-container">
+    <ion-button size="small" (click)="addSegment()">Add Segment</ion-button>
+    <app-firing-schedule></app-firing-schedule>
+  </div>
+  <div class="ion-items-container">
+    <ion-item-sliding *ngFor="let segment of firingScheduleService.firingScheduleBuildInProgress.segments; let i = index" #itemSliding class="slide-in-animation segment">
+      <ion-item>
+        <ion-input type="number" label="Low temp" labelPlacement="stacked" [(ngModel)]="segment.lowTemp"></ion-input>
+        <ion-input type="number" label="High temp" labelPlacement="stacked" [(ngModel)]="segment.highTemp"></ion-input>
+        <ion-select label="Hours" labelPlacement="stacked" [value]="hourInputs[i]" (ionChange)="setSegmentDuration($event, 'hour', i)">
+          <ion-select-option *ngFor="let hour of hourOptions" [value]="hour">{{hour}}</ion-select-option>
+        </ion-select>
+        <ion-select label="Minutes" labelPlacement="stacked" [value]="minuteInputs[i]" (ionChange)="setSegmentDuration($event, 'minute', i)">
+          <ion-select-option *ngFor="let minute of minuteOptions" [value]="minute">{{minute}}</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item-options side="end">
+        <ion-item-option color="danger" (click)="removeSegment(i)">
+          <ion-icon slot="icon-only" name="trash"></ion-icon>
+        </ion-item-option>
+      </ion-item-options>
+    </ion-item-sliding>
+  </div>
 </ion-content>

@@ -21,6 +21,7 @@ import { Subscription, fromEvent } from 'rxjs';
 import { Recipe } from 'src/app/Models/recipeModel';
 import { TestBatch } from 'src/app/Models/testBatchModel';
 import { TestTile } from 'src/app/Models/testTileModel';
+import { AnimationService } from 'src/app/Services/animation.service';
 import { AuthService } from 'src/app/Services/auth.service';
 import { FirestoreService } from 'src/app/Services/firestore.service';
 import { RecipesService } from 'src/app/Services/recipes.service';
@@ -51,7 +52,8 @@ export class TestingPage implements OnInit {
     private auth: AuthService,
     private alertController: AlertController,
     private modal: ModalController,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private animationService: AnimationService
   ) {
     //this.testingService.getUserTestBatches();
     (async () => {
@@ -174,9 +176,9 @@ export class TestingPage implements OnInit {
             handler: () => {
               let tiles = document.querySelectorAll('.tile');
               let removedTile = tiles[index] as HTMLElement;
-              this.slideOutIngredient(removedTile).then(() => {
+              this.animationService.slideOutItem(removedTile).then(() => {
                 this.testBatchUnderEdit.tiles.splice(index, 1);
-                this.slideUpRemainingItems(
+                this.animationService.slideUpRemainingItems(
                   Array.from(tiles) as HTMLElement[],
                   index
                 );
@@ -295,13 +297,6 @@ export class TestingPage implements OnInit {
 
   async closeModalAndSave() {
     //just close if nothing has changed
-    console.log(
-      JSON.stringify(
-        this.testingService.testBatches.find(
-          (batch) => batch.id === this.testBatchUnderEdit.id
-        )
-      ) === JSON.stringify(this.testBatchUnderEdit)
-    );
     if (
       JSON.stringify(this.testBatchUnderEdit) ==
       JSON.stringify(
@@ -509,7 +504,7 @@ export class TestingPage implements OnInit {
       inputTitleMode: false,
     });
     //do the animation
-    await this.slideInNewItem();
+    await this.animationService.slideInNewItem();
   }
 
   getDateCreated(testBatch: TestBatch): string {
@@ -522,55 +517,5 @@ export class TestingPage implements OnInit {
     const year = date.getFullYear().toString();
 
     return `${month}/${day}/${year}`;
-  }
-
-  //animation methods
-  async slideInNewItem(): Promise<void> {
-    const slideInAnimation = this.animationCtrl
-      .create()
-      .duration(100)
-      .fromTo('transform', 'translateX(100%)', 'translateX(0)')
-      .fromTo('opacity', '0', '1'); // Fade in effect
-    await slideInAnimation.play();
-  }
-
-  async slideUpRemainingItems(
-    ingredientElements: HTMLElement[],
-    removedIndex: number
-  ) {
-    if (
-      ingredientElements.length === 0 ||
-      removedIndex < 0 ||
-      removedIndex >= ingredientElements.length
-    )
-      return;
-
-    const slideUpAnimation = this.animationCtrl.create().duration(300); // Adjust duration as needed
-
-    //slide up all elements after the one removed to fill the gap
-    ingredientElements.forEach((element, index) => {
-      if (index >= removedIndex) {
-        slideUpAnimation
-          .addElement(element)
-          .fromTo(
-            'transform',
-            `translateY(${element.clientHeight}px)`,
-            'translateY(0)'
-          );
-      }
-    });
-
-    await slideUpAnimation.play();
-  }
-
-  async slideOutIngredient(ingredientElement: HTMLElement) {
-    const slideOutAnimation = this.animationCtrl
-      .create()
-      .addElement(ingredientElement)
-      .duration(300)
-      .fromTo('transform', 'translateX(0)', 'translateX(100%)')
-      .fromTo('opacity', '1', '0'); // Fade out effect
-
-    await slideOutAnimation.play();
   }
 }

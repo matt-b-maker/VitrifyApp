@@ -1,0 +1,18 @@
+.chart-container {
+  //stick this to the top
+  position: fixed;
+  top: 1;
+  z-index: 100;
+  background-color: white;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  //height 70% of the screen width
+  height: 80vw;
+}
+
+.ion-items-container {
+  //put this directly underneath the .chart-container
+  margin-top: 90vw;
+}
