@@ -7,7 +7,7 @@
       <ion-grid>
         <ion-row class="ion-align-items-center">
           <ion-col>
-            <ion-button size="small" (click)="addSegment()">Add Segment</ion-button>
+            <ion-button [disabled]="addSegmentDisabled" size="small" (click)="addSegment()">Add Segment</ion-button>
           </ion-col>
           <ion-col>
             <ion-radio-group [value]="firingScheduleService.firingScheduleBuildInProgress.tempScale" (ionChange)="adjustTempScale($event)">
@@ -32,7 +32,7 @@
     </ion-item>
     <app-firing-schedule [totalTime]="getTotalTime()" [data]="chartData" [schedule]="firingScheduleService.firingScheduleBuildInProgress"></app-firing-schedule>
   </div>
-  <div class="ion-items-container">
+  <div #ionItemsContainer id="ionItemsContainer" class="ion-items-container">
     <ion-label class="ion-margin" slot="end">Total Time {{getTotalTime()}}</ion-label>
     <ion-item-sliding *ngFor="let segment of firingScheduleService.firingScheduleBuildInProgress.segments; let i = index" #itemSliding class="slide-in-animation segment">
       <ion-item>

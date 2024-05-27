@@ -26,14 +26,14 @@ export class FiringScheduleComponent implements OnInit {
   }
 
   public updateChart(chartData: any, schedule: FiringSchedule, totalTime: string) {
-    console.log('chartData', chartData);
+    const seriesName = 'Temperature over Time';
     this.options = {
       title: {
           text: `Total Time: ${totalTime} hours`,
       },
-      legend: {
-          data: ['Temperature over Time'],
-      },
+      // legend: {
+      //     data: [seriesName],
+      // },
       tooltip: {
           trigger: 'axis',
           axisPointer: {
@@ -58,7 +58,7 @@ export class FiringScheduleComponent implements OnInit {
       },
       series: [
           {
-              name: 'Temperature',
+              name: seriesName,
               type: 'line',
               data: chartData,
               smooth: true,
