@@ -8,6 +8,8 @@ export class FiringSchedule {
   dateCreated: Date = new Date();
   dateModified: Date = new Date();
   segments: Segment[] = [];
+  tempScale: string = 'F'; // F or C
+  maxTemp: number = 2232;
 
   constructor(id: string, uid: string, name: string, description: string, segments: Segment[]) {
     this.id = id;

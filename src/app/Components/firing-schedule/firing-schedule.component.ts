@@ -1,63 +1,69 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { NgxEchartsModule } from 'ngx-echarts';
+import { FiringSchedule } from 'src/app/Models/FiringScheduleModel';
+import { FiringScheduleService } from 'src/app/Services/firing-schedule.service';
 
 @Component({
   selector: 'app-firing-schedule',
   standalone: true,
   templateUrl: './firing-schedule.component.html',
   styleUrls: ['./firing-schedule.component.scss'],
-  imports: [NgxEchartsModule]
+  imports: [NgxEchartsModule],
 })
+export class FiringScheduleComponent implements OnInit {
+  @Input() options!: EChartsOption;
+  @Input() data: any;
+  @Input() schedule!: FiringSchedule;
+  @Input() totalTime!: string;
 
-export class FiringScheduleComponent  implements OnInit {
+  chartHeightStyle: string = `height: ${window.innerWidth * 0.7}px;`;
 
-  options!: EChartsOption;
-  chartHeightStyle: string = `height: ${window.innerWidth * .7}px;`;
-
-  constructor() { }
+  constructor() {}
 
   ngOnInit() {
-    const xAxisData = [];
-    const data1 = [];
-    const data2 = [];
+    this.updateChart(this.data, this.schedule, this.totalTime);
+  }
 
-    for (let i = 0; i < 100; i++) {
-      xAxisData.push('category' + i);
-      data1.push((Math.sin(i / 5) * (i / 5 - 10) + i / 6) * 5);
-      data2.push((Math.cos(i / 5) * (i / 5 - 10) + i / 6) * 5);
-    }
-
+  public updateChart(chartData: any, schedule: FiringSchedule, totalTime: string) {
+    console.log('chartData', chartData);
     this.options = {
+      title: {
+          text: `Total Time: ${totalTime} hours`,
+      },
       legend: {
-        data: ['bar', 'bar2'],
-        align: 'left',
+          data: ['Temperature over Time'],
       },
-      tooltip: {},
+      tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+              type: 'cross',
+              label: {
+                  backgroundColor: '#6a7985',
+              },
+          },
+          formatter: (params: any) => {
+            let time = params[0].data[0];
+            let temp = params[0].data[1];
+            return `Time: ${time.toFixed(2)} hours<br/>Temperature: ${temp}°${schedule.tempScale}`;
+        },
+      },
       xAxis: {
-        data: xAxisData,
-        silent: false,
-        splitLine: {
-          show: false,
-        },
+          type: 'value',
+          name: 'Time (minutes)',
       },
-      yAxis: {},
+      yAxis: {
+          type: 'value',
+          name: schedule.tempScale === 'F' ? 'Temperature (°F)' : 'Temperature (°C)',
+      },
       series: [
-        {
-          name: 'bar',
-          type: 'line',
-          data: data1,
-          animationDelay: idx => idx * 10,
-        },
-        {
-          name: 'bar2',
-          type: 'bar',
-          data: data2,
-          animationDelay: idx => idx * 10 + 100,
-        },
+          {
+              name: 'Temperature',
+              type: 'line',
+              data: chartData,
+              smooth: true,
+          },
       ],
-      animationEasing: 'elasticOut',
-      animationDelayUpdate: idx => idx * 5,
-    };
+  };
   }
 }

@@ -1,27 +1,50 @@
-<app-side-menu-header>
+<app-side-menu-header [title]="'Firing Schedule Builder'">
 </app-side-menu-header>
 
 <ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Firing Schedule Builder</ion-title>
-    </ion-toolbar>
-  </ion-header>
   <div class="chart-container">
-    <ion-button size="small" (click)="addSegment()">Add Segment</ion-button>
-    <app-firing-schedule></app-firing-schedule>
+    <ion-item lines="none">
+      <ion-grid>
+        <ion-row class="ion-align-items-center">
+          <ion-col>
+            <ion-button size="small" (click)="addSegment()">Add Segment</ion-button>
+          </ion-col>
+          <ion-col>
+            <ion-radio-group [value]="firingScheduleService.firingScheduleBuildInProgress.tempScale" (ionChange)="adjustTempScale($event)">
+              <ion-item lines="none">
+                <ion-radio slot="start" value="C" >Celsius</ion-radio>
+                <ion-radio slot="end" value="F">Fahrenheit</ion-radio>
+              </ion-item>
+            </ion-radio-group>
+          </ion-col>
+        </ion-row>
+        <ion-row class="ion-align-items-center">
+          <ion-col>
+            <ion-select [value]="selectedCone">
+              <ion-select-option *ngFor="let cone of coneOptions" [value]="cone">{{cone}}</ion-select-option>
+            </ion-select>
+          </ion-col>
+          <ion-col>
+            <ion-input type="number" label="Target temp" labelPlacement="stacked" [(ngModel)]="firingScheduleService.firingScheduleBuildInProgress.maxTemp"></ion-input>
+          </ion-col>
+        </ion-row>
+      </ion-grid>
+    </ion-item>
+    <app-firing-schedule [totalTime]="getTotalTime()" [data]="chartData" [schedule]="firingScheduleService.firingScheduleBuildInProgress"></app-firing-schedule>
   </div>
   <div class="ion-items-container">
+    <ion-label class="ion-margin" slot="end">Total Time {{getTotalTime()}}</ion-label>
     <ion-item-sliding *ngFor="let segment of firingScheduleService.firingScheduleBuildInProgress.segments; let i = index" #itemSliding class="slide-in-animation segment">
       <ion-item>
-        <ion-input type="number" label="Low temp" labelPlacement="stacked" [(ngModel)]="segment.lowTemp"></ion-input>
-        <ion-input type="number" label="High temp" labelPlacement="stacked" [(ngModel)]="segment.highTemp"></ion-input>
+        <ion-input type="number" [label]="segment.hold ? 'Hold Temp' : 'Low Temp'" labelPlacement="stacked" [(ngModel)]="segment.lowTemp" (ionChange)="updateChildChart()"></ion-input>
+        <ion-input *ngIf="!segment.hold" type="number" label="High Temp" labelPlacement="stacked" [(ngModel)]="segment.highTemp" (ionChange)="updateChildChart()"></ion-input>
         <ion-select label="Hours" labelPlacement="stacked" [value]="hourInputs[i]" (ionChange)="setSegmentDuration($event, 'hour', i)">
           <ion-select-option *ngFor="let hour of hourOptions" [value]="hour">{{hour}}</ion-select-option>
         </ion-select>
         <ion-select label="Minutes" labelPlacement="stacked" [value]="minuteInputs[i]" (ionChange)="setSegmentDuration($event, 'minute', i)">
           <ion-select-option *ngFor="let minute of minuteOptions" [value]="minute">{{minute}}</ion-select-option>
         </ion-select>
+        <ion-checkbox justify="end" class="ion-margin" [value]="segment.hold" (ionChange)="setHoldForSegment($event, segment)" labelPlacement="start">Hold</ion-checkbox>
       </ion-item>
       <ion-item-options side="end">
         <ion-item-option color="danger" (click)="removeSegment(i)">

@@ -11,7 +11,7 @@ export class FiringScheduleService {
 
   userFiringSchedules: FiringSchedule[] = [];
 
-  firingScheduleBuildInProgress: FiringSchedule = new FiringSchedule('', '', '', '', [new Segment(0, 0, '00:01')]);
+  firingScheduleBuildInProgress: FiringSchedule = new FiringSchedule('', '', '', '', [new Segment(70, 200, '01:00')]);
 
   constructor(private firestore: FirestoreService, private auth: AuthService) {
 
