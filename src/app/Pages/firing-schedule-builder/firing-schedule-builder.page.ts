@@ -10,7 +10,7 @@ import { EChartsOption } from 'echarts';
 import { AnimationService } from 'src/app/Services/animation.service';
 import { FiringDetailsService } from 'src/app/Services/firing-details.service';
 import { Segment } from 'src/app/Models/segment';
-import { FiringSchedule } from 'src/app/Models/FiringScheduleModel';
+import { FiringSchedule } from 'src/app/Models/firingScheduleModel';
 import { FiringScheduleComponent } from 'src/app/Components/firing-schedule/firing-schedule.component';
 import { AlertController, IonItemSliding } from '@ionic/angular';
 
@@ -71,8 +71,45 @@ export class FiringScheduleBuilderPage {
       );
   }
 
-  async addSegment() {
+  async openSegmentDialog() {
     this.addSegmentDisabled = true;
+    await this.alertController.create({
+      header: 'Add Segment',
+      message: 'Which type of segment would you like to add?',
+      buttons: [
+        {
+          text: 'Ramp',
+          handler: () => {
+            this.addSegment('ramp');
+          }
+        },
+        {
+          text: 'Hold',
+          handler: () => {
+            this.addSegment('hold');
+          }
+        },
+        {
+          text: 'Cool',
+          handler: () => {
+            this.addSegment('cool');
+          }
+        },
+        {
+          text: 'Cancel',
+          role: 'cancel',
+          handler: () => {
+            this.addSegmentDisabled = false;
+            console.log('Cancel clicked')
+          }
+        }
+      ]
+    }).then((alert) => alert.present());
+
+    this.addSegmentDisabled = false;
+  }
+
+  async addSegment(type: string) {
     if (
       this.firingScheduleService.firingScheduleBuildInProgress.segments
         .length >= 1
@@ -80,37 +117,39 @@ export class FiringScheduleBuilderPage {
       let lastSegmentIndex =
         this.firingScheduleService.firingScheduleBuildInProgress.segments
           .length - 1;
-      if (
-        this.firingScheduleService.firingScheduleBuildInProgress.segments[
-          lastSegmentIndex
-        ].hold
-      ) {
+      let previousType = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].type;
+      let highTemp: number | string = 0;
+      let lowTemp: number | string = 0;
+
+      if (type === 'hold') {
+        if (previousType === 'ramp') {
+          lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].highTemp;
+          highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].highTemp;
+        } else if (previousType === 'hold' || previousType === 'cool') {
+          lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].lowTemp;
+          highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].lowTemp;
+        }
         this.firingScheduleService.firingScheduleBuildInProgress.segments.push({
-          lowTemp:
-            this.firingScheduleService.firingScheduleBuildInProgress.segments[
-              lastSegmentIndex
-            ].lowTemp,
-          highTemp:
-            this.firingScheduleService.firingScheduleBuildInProgress.segments[
-              lastSegmentIndex
-            ].lowTemp + 100,
+          lowTemp: lowTemp,
+          highTemp: highTemp,
           duration: '01:00',
-          hold: false,
+          hold: true,
+          type: type,
         });
-      } else {
+      } else if (type === 'ramp'){
         //set up the new segment and check for max temp reached
-        let newSegment = {
-          lowTemp:
-            this.firingScheduleService.firingScheduleBuildInProgress.segments[
-              lastSegmentIndex
-            ].highTemp,
-          highTemp:
-            this.firingScheduleService.firingScheduleBuildInProgress.segments[
-              lastSegmentIndex
-            ].highTemp + 100,
-          duration: '01:00',
-          hold: false,
-        };
+        if (previousType === 'cool' || previousType === 'hold') {
+          lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].lowTemp;
+          highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].lowTemp + 100;
+        } else if (previousType === 'ramp') {
+          lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].highTemp;
+          highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].highTemp + 100;
+        }
+        let newSegment = new Segment(lowTemp, highTemp, '01:00', 'ramp')
+        this.hourInputs.push(1);
+        this.minuteInputs.push(0);
+        this.durationInputs.push('01:00');
+        await this.scrollToBottom();
         if (
           newSegment.lowTemp ===
           this.firingScheduleService.firingScheduleBuildInProgress.maxTemp
@@ -134,6 +173,21 @@ export class FiringScheduleBuilderPage {
         this.firingScheduleService.firingScheduleBuildInProgress.segments.push(
           newSegment
         );
+      } else if (type === 'cool') {
+        if (previousType === 'ramp') {
+          lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].highTemp - 100;
+          highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].highTemp;
+        } else if (previousType === 'hold' || previousType === 'cool') {
+          lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].lowTemp - 100;
+          highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[lastSegmentIndex].lowTemp;
+        }
+        this.firingScheduleService.firingScheduleBuildInProgress.segments.push({
+          lowTemp: lowTemp,
+          highTemp: highTemp,
+          duration: '01:00',
+          hold: false,
+          type: type,
+        });
       }
       this.hourInputs.push(1);
       this.minuteInputs.push(0);
@@ -161,6 +215,7 @@ export class FiringScheduleBuilderPage {
       highTemp: 200,
       duration: '01:00',
       hold: false,
+      type: 'ramp',
     });
     this.hourInputs.push(1);
     this.minuteInputs.push(0);
@@ -189,8 +244,6 @@ export class FiringScheduleBuilderPage {
     await new Promise(resolve => setTimeout(resolve, 500));
 
     this.updateChildChart();
-
-    this.addSegmentDisabled = false;
   }
 
   async scrollToBottom(): Promise<void> {
@@ -298,6 +351,90 @@ export class FiringScheduleBuilderPage {
     this.updateChildChart();
   }
 
+  setLowTemp(index: number) {
+    //check if there is a segment after this one
+    if (
+      this.firingScheduleService.firingScheduleBuildInProgress.segments.length >
+      index + 1
+    ) {
+      //check if the next segment is a hold
+      if (
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].type === 'hold'
+      ) {
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index
+        ].highTemp;
+      } else if (
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].type === 'cool'
+      ) {
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index
+        ].lowTemp;
+      } else if (
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].type === 'ramp'
+      ) {
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index
+        ].highTemp;
+      }
+    }
+    this.updateChildChart();
+  }
+
+  setHighTemp(index: number) {
+    //check if there is a segment after this one
+    if (
+      this.firingScheduleService.firingScheduleBuildInProgress.segments.length >
+      index + 1
+    ) {
+      //check if the next segment is a hold
+      if (
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].type === 'hold'
+      ) {
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index
+        ].highTemp;
+      } else if (
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].type === 'cool'
+      ) {
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index
+        ].highTemp;
+      } else if (
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].type === 'ramp'
+      ) {
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index + 1
+        ].lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index
+        ].highTemp;
+      }
+    }
+    this.updateChildChart();
+  }
+
   updateChildChart() {
     this.chartData = this.transformFiringSchedule(
       this.firingScheduleService.firingScheduleBuildInProgress
@@ -311,7 +448,7 @@ export class FiringScheduleBuilderPage {
 
   transformFiringSchedule(schedule: FiringSchedule) {
     let time: number = 0;
-    let data = [] as [number, number][]; // Array of [time, temperature] pairs
+    let data = [] as [number, number, string][]; // Array of [time, temperature] pairs
 
     schedule.segments.forEach((segment) => {
       let durationMinutes =
@@ -320,18 +457,30 @@ export class FiringScheduleBuilderPage {
 
       // If the segment is the first one
       if (schedule.segments.indexOf(segment) === 0) {
-        data.push([time / 60, segment.lowTemp]); // Convert minutes to hours
+        data.push([time / 60, segment.lowTemp, '#800000']); // Convert minutes to hours
         time += durationMinutes;
         data.push([
           time / 60,
-          segment.hold ? segment.lowTemp : segment.highTemp,
+          segment.hold ? segment.lowTemp : segment.highTemp, '#800000'
         ]); // Convert minutes to hours
         return;
       }
 
-      // If the segment is not the first one
+      // For non-first segments, update data with color based on type
       time += durationMinutes;
-      data.push([time / 60, segment.hold ? segment.lowTemp : segment.highTemp]); // Convert minutes to hours
+      let dataTemp: number = 0;
+      let segmentColor: string = '#800000'; // default color (red)
+      if (segment.type === 'ramp') {
+        dataTemp = segment.highTemp;
+        segmentColor = '#FF0000'; // red
+      } else if (segment.type === 'hold') {
+        dataTemp = segment.lowTemp;
+        segmentColor = '#0000FF'; // blue
+      } else if (segment.type === 'cool') {
+        dataTemp = segment.lowTemp;
+        segmentColor = '#008000'; // green
+      }
+      data.push([time / 60, dataTemp, segmentColor]);
     });
 
     return data;
@@ -354,5 +503,16 @@ export class FiringScheduleBuilderPage {
     return `${hours.toString().padStart(2, '0')}:${minutes
       .toString()
       .padStart(2, '0')}`;
+  }
+
+  getChipColor(type: string) {
+    if (type === 'ramp') {
+      return 'danger';
+    } else if (type === 'hold') {
+      return 'warning';
+    } else if (type === 'cool') {
+      return 'primary';
+    }
+    return 'medium';
   }
 }

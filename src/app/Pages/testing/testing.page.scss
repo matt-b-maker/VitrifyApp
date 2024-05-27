@@ -1,0 +1,64 @@
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-container {
+  flex: 1;
+}
+
+.button-container {
+  display: flex;
+  gap: 10px;
+}
+
+ion-card-title {
+  cursor: pointer;
+}
+
+.title-input {
+  width: 100%;
+}
+
+ion-button {
+  --padding-start: 0;
+  --padding-end: 0;
+}
+
+ion-icon {
+  font-size: 1.2em;
+}
+
+.horizontal-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.test-batch-name {
+  font-size: 1.2em;
+  cursor: pointer;
+  color: var(--ion-color-primary);
+  margin-bottom: 4px;
+}
+
+.test-batch-date {
+  font-size: 1em;
+  color: var(--ion-color-medium);
+}
+
+.action-icon {
+  font-size: 1.5em;
+  color: var(--ion-color-primary);
+  cursor: pointer;
+  margin: 0 8px;
+}
+
+ion-icon:hover {
+  color: var(--ion-color-danger);
+}
+
+.mt-10 {
+  margin-top: 10px;
+}

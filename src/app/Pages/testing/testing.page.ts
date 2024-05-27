@@ -13,12 +13,14 @@ import {
   AlertController,
   AnimationController,
   IonInput,
+  LoadingController,
   ModalController,
   ToastController,
 } from '@ionic/angular';
 import { Timestamp } from 'firebase/firestore';
 import { Subscription, fromEvent } from 'rxjs';
 import { Recipe } from 'src/app/Models/recipeModel';
+import { Status } from 'src/app/Models/status';
 import { TestBatch } from 'src/app/Models/testBatchModel';
 import { TestTile } from 'src/app/Models/testTileModel';
 import { AnimationService } from 'src/app/Services/animation.service';
@@ -44,6 +46,28 @@ export class TestingPage implements OnInit {
 
   backbuttonSubscription!: Subscription;
 
+  completeTestButtons = [
+    {
+      text: 'Update All Statuses',
+      handler: () => {
+        this.completeTest(true);
+      },
+    },
+    {
+      text: 'Only Update Batch Status',
+      handler: () => {
+        this.completeTest(false);
+      },
+    },
+    {
+      text: 'Cancel',
+      role: 'cancel',
+      handler: () => {
+        console.log('Cancel clicked');
+      }
+    }
+  ];
+
   constructor(
     public testingService: TestingService,
     public recipesService: RecipesService,
@@ -53,7 +77,8 @@ export class TestingPage implements OnInit {
     private alertController: AlertController,
     private modal: ModalController,
     private toastController: ToastController,
-    private animationService: AnimationService
+    private animationService: AnimationService,
+    private loadingController: LoadingController
   ) {
     //this.testingService.getUserTestBatches();
     (async () => {
@@ -173,10 +198,10 @@ export class TestingPage implements OnInit {
         buttons: [
           {
             text: 'Yes, do it',
-            handler: () => {
+            handler: async () => {
               let tiles = document.querySelectorAll('.tile');
               let removedTile = tiles[index] as HTMLElement;
-              this.animationService.slideOutItem(removedTile).then(() => {
+              await this.animationService.slideOutItem(removedTile).then(() => {
                 this.testBatchUnderEdit.tiles.splice(index, 1);
                 this.animationService.slideUpRemainingItems(
                   Array.from(tiles) as HTMLElement[],
@@ -342,7 +367,7 @@ export class TestingPage implements OnInit {
     } else if (
       this.testingService.testBatches.some(
         (batch) => batch.name === this.testBatchUnderEdit.name
-      )
+      ) && !this.editingModalOpen
     ) {
       //let the user close the modal and clear the test batch if they want to
       await this.alertController
@@ -508,6 +533,15 @@ export class TestingPage implements OnInit {
   }
 
   getDateCreated(testBatch: TestBatch): string {
+
+    if (typeof testBatch.dateCreated === 'object'){
+      console.log('dateCreated is an object');
+      const month = (testBatch.dateCreated.getMonth() + 1).toString().padStart(2, '0');
+      const day = testBatch.dateCreated.getDate().toString().padStart(2, '0');
+      const year = testBatch.dateCreated.getFullYear().toString();
+
+      return `${month}/${day}/${year}`;
+    }
     const timeStamp = testBatch.dateCreated as unknown as Timestamp;
     const date = new Date(
       timeStamp.nanoseconds / 1000000 + timeStamp.seconds * 1000
@@ -517,5 +551,71 @@ export class TestingPage implements OnInit {
     const year = date.getFullYear().toString();
 
     return `${month}/${day}/${year}`;
+  }
+
+  getChipColor(testBatch: TestBatch) {
+    if (testBatch.status === Status.InProgress) {
+      return 'primary';
+    } else if (testBatch.status === Status.Tested) {
+      return 'success';
+    } else {
+      return 'warning';
+    }
+  }
+
+  async completeTest(updateRecipeStatuses: boolean) {
+
+    const loading = await this.loadingController.create({
+      message: 'Completing this Test...',
+    });
+
+    if (updateRecipeStatuses) {
+      await loading.present();
+
+      //to prevent updating the status of the same recipe multiple times
+      let moddedRecipes: string[] = [];
+
+      //update the status of the recipes in the test batch
+      this.testBatchUnderEdit.tiles.forEach((tile) => {
+        tile.recipes.forEach(async (recipe, index) => {
+          console.log(tile.selectedRevisions[index])
+          if (moddedRecipes.includes(recipe.id)) {
+            return;
+          }
+          let recipeToUpdate = this.recipesService.userRecipes.find(
+            (userRecipe) => userRecipe.id === recipe.id
+          );
+          if (recipeToUpdate) {
+            recipeToUpdate.revisions[tile.selectedRevisions[index] - 1].status = Status.Tested;
+            moddedRecipes.push(recipeToUpdate.id);
+            await this.firestore.updateRecipe(recipeToUpdate);
+          }
+        });
+      });
+
+      loading.dismiss();
+    }
+
+    await loading.present();
+
+    //update the status of the test batch
+    this.testBatchUnderEdit.status = Status.Tested;
+
+    await this.firestore.upsertTestBatch(this.testBatchUnderEdit);
+
+    loading.dismiss();
+
+    this.detailsModalOpen = false;
+
+    this.toastController
+      .create({
+        message: 'Test Batch Completed',
+        duration: 2000,
+        position: 'bottom',
+        color: 'success',
+      })
+      .then((toast) => {
+        toast.present();
+      });
   }
 }

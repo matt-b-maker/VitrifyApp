@@ -1,6 +1,4 @@
-<app-side-menu-header>
-
-</app-side-menu-header>
+<app-side-menu-header> </app-side-menu-header>
 
 <ion-content>
   <ion-header collapse="condense">
@@ -16,31 +14,54 @@
       </div>
     </ion-item>
     <ion-list *ngIf="testingService.testBatches.length > 0">
-      <ion-item *ngFor="let testBatch of testingService.testBatches; let i = index">
-        <ion-grid>
-          <ion-row>
-            <ion-col class="horizontal-center" size="5">
-              <div>
-                <ion-label style="font-size: 1.2em;" (click)="showTestBatchDetails(testBatch)">{{testBatch.name}}</ion-label>
-                <ion-label style="font-size: 1em;">{{testBatch.dateCreatedFormatted}}</ion-label>
-              </div>
-            </ion-col>
-            <ion-col class="horizontal-center ion-align-items-center" size="3">
-              <ion-label>{{testBatch.descriptionString}}</ion-label>
-            </ion-col>
-            <ion-col size="2" class="ion-float-right">
-              <ion-item lines="none">
-                <ion-icon name="create" (click)="editTestBatch(testBatch)"></ion-icon>
-              </ion-item>
-            </ion-col>
-            <ion-col size="2" class="horizontal-center">
-              <ion-item lines="none">
-                <ion-icon name="trash" (click)="deleteTestBatch(testBatch)"></ion-icon>
-              </ion-item>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-      </ion-item>
+      <ion-card
+        *ngFor="let testBatch of testingService.testBatches; let i = index"
+      >
+        <ion-item lines="none">
+          <ion-grid>
+            <ion-row class="ion-align-items-center">
+              <ion-col size="5" class="horizontal-center">
+                <div>
+                  <ion-label
+                    class="test-batch-name"
+                    (click)="showTestBatchDetails(testBatch)"
+                    >{{testBatch.name}}</ion-label
+                  >
+                  <ion-label class="test-batch-date"
+                    >{{testBatch.dateCreatedFormatted}}</ion-label
+                  >
+                  <ion-chip
+                    class="test-batch-date"
+                    [color]="getChipColor(testBatch)"
+                  >
+                    <ion-label>{{testBatch.status}}</ion-label>
+                  </ion-chip>
+                </div>
+              </ion-col>
+              <ion-col
+                size="5"
+                class="horizontal-center ion-align-items-center"
+              >
+                <ion-label>{{testBatch.descriptionString}}</ion-label>
+              </ion-col>
+              <ion-col size="2" class="horizontal-center">
+                <div class="button-container">
+                  <ion-icon
+                    name="create"
+                    class="action-icon"
+                    (click)="editTestBatch(testBatch)"
+                  ></ion-icon>
+                  <ion-icon
+                    name="trash"
+                    class="action-icon"
+                    (click)="deleteTestBatch(testBatch)"
+                  ></ion-icon>
+                </div>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </ion-item>
+      </ion-card>
     </ion-list>
     <ion-modal id="editingModal" [isOpen]="editingModalOpen">
       <ng-template>
@@ -48,67 +69,148 @@
           <ion-toolbar>
             <ion-title>{{editOrAdd}}</ion-title>
             <ion-buttons slot="end">
-              <ion-button (click)="closeModalAndSave()">Close and Save</ion-button>
+              <ion-button (click)="closeModalAndSave()"
+                >Close and Save</ion-button
+              >
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
         <ion-content>
           <ion-item>
-            <ion-input [(ngModel)]="testBatchUnderEdit.name" label="Batch Name" labelPlacement="floating"></ion-input>
-            <ion-input id="startingTilesInput" label="Tile Count" labelPlacement="floating" type="number" [clearOnEdit]="true" [value]="testBatchUnderEdit.tiles.length" (ionBlur)="setTileCount($event)" (keyup.enter)="setTileCount($event)"></ion-input>
+            <ion-input
+              [(ngModel)]="testBatchUnderEdit.name"
+              label="Batch Name"
+              labelPlacement="floating"
+            ></ion-input>
+            <ion-input
+              id="startingTilesInput"
+              label="Tile Count"
+              labelPlacement="floating"
+              type="number"
+              [clearOnEdit]="true"
+              [value]="testBatchUnderEdit.tiles.length"
+              (ionBlur)="setTileCount($event)"
+              (keyup.enter)="setTileCount($event)"
+            ></ion-input>
           </ion-item>
-          <ion-card *ngFor="let testTile of testBatchUnderEdit?.tiles; let i = index" #itemSliding class="slide-in-animation tile slide-item tile-{{i}}">
-            <ion-toolbar>
-              <ion-card-header slot="start">
-                <ion-card-title *ngIf="!testTile.inputTitleMode" (click)="makeTitleEditable(i)">
-                  Tile {{ testTile.number }}
-                </ion-card-title>
-                <ion-input id="titleInput" [clearOnEdit]="true" class="title-input-{{i}}" *ngIf="testTile.inputTitleMode" [(ngModel)]="testTile.number" (ionBlur)="makeTitleReadOnly(i)" (blur)="makeTitleReadOnly(i)" (keyup.enter)="unfocusInput(i)">
-                </ion-input>
-              </ion-card-header>
-              <ion-buttons slot="end">
-                <ion-button (click)="addLayerToTile(i)">Add Layer</ion-button>
-                <ion-icon name="trash" (click)="deleteTile(i)"></ion-icon>
-              </ion-buttons>
-            </ion-toolbar>
+          <ion-card
+            *ngFor="let testTile of testBatchUnderEdit?.tiles; let i = index"
+            #itemSliding
+            class="slide-in-animation tile slide-item tile-{{i}}"
+          >
+            <ion-card-header>
+              <div class="header-content">
+                <div class="title-container">
+                  <ion-card-title
+                    *ngIf="!testTile.inputTitleMode"
+                    (click)="makeTitleEditable(i)"
+                  >
+                    Tile {{ testTile.number }}
+                  </ion-card-title>
+                  <ion-input
+                    id="titleInput"
+                    class="title-input"
+                    [clearOnEdit]="true"
+                    *ngIf="testTile.inputTitleMode"
+                    [(ngModel)]="testTile.number"
+                    (ionBlur)="makeTitleReadOnly(i)"
+                    (blur)="makeTitleReadOnly(i)"
+                    (keyup.enter)="unfocusInput(i)"
+                  >
+                  </ion-input>
+                </div>
+                <div class="button-container">
+                  <ion-button fill="clear" (click)="addLayerToTile(i)">
+                    <ion-icon
+                      slot="icon-only"
+                      name="add-circle-outline"
+                    ></ion-icon>
+                  </ion-button>
+                  <ion-button
+                    fill="clear"
+                    color="danger"
+                    (click)="deleteTile(i)"
+                  >
+                    <ion-icon slot="icon-only" name="trash"></ion-icon>
+                  </ion-button>
+                </div>
+              </div>
+            </ion-card-header>
+
             <ion-card-content>
               <ion-list>
-                <ion-item *ngFor="let tileRecipe of testTile.recipes; let j = index" #itemSliding class="slide-in-animation slide-item">
+                <ion-item
+                  *ngFor="let tileRecipe of testTile.recipes; let j = index"
+                  #itemSliding
+                  class="slide-in-animation slide-item"
+                >
                   <ion-grid>
                     <ion-row class="ion-align-items-center">
                       <ion-col size="7">
-                        <ion-select placeholder="Select Recipe" [value]="tileRecipe.name" (ionChange)="setLayerName($event, i, j)">
-                          <ion-select-option *ngFor="let recipe of recipesService.userRecipes" [value]="recipe.name">
+                        <ion-select
+                          label="Layer"
+                          labelPlacement="stacked"
+                          placeholder="Select Recipe"
+                          [value]="tileRecipe.name"
+                          (ionChange)="setLayerName($event, i, j)"
+                        >
+                          <ion-select-option
+                            *ngFor="let recipe of recipesService.userRecipes"
+                            [value]="recipe.name"
+                          >
                             {{recipe.name}}
                           </ion-select-option>
                         </ion-select>
                       </ion-col>
                       <ion-col>
-                        <ion-label *ngIf="tileRecipe.revisions.length === 1">Revision 1</ion-label>
-                        <ion-select *ngIf="tileRecipe.revisions.length > 1" [value]="testTile.selectedRevisions[j]" (ionChange)="setLayerRevision($event, i, j)">
-                          <ion-select-option *ngFor="let revision of tileRecipe.revisions" [value]="revision.revision">
+                        <ion-label *ngIf="tileRecipe.revisions.length === 1"
+                          >Revision 1</ion-label
+                        >
+                        <ion-select
+                          label="Revision"
+                          labelPlacement="stacked"
+                          *ngIf="tileRecipe.revisions.length > 1"
+                          [value]="testTile.selectedRevisions[j]"
+                          (ionChange)="setLayerRevision($event, i, j)"
+                        >
+                          <ion-select-option
+                            *ngFor="let revision of tileRecipe.revisions"
+                            [value]="revision.revision"
+                          >
                             {{revision.revision}}
                           </ion-select-option>
                         </ion-select>
                       </ion-col>
                       <ion-col size="auto">
-                        <div style="width: 150;">
-                          <ion-icon name="trash" (click)="removeRecipeFromTile(i, j)"></ion-icon>
-                        </div>
+                        <ion-button
+                          fill="clear"
+                          color="danger"
+                          (click)="removeRecipeFromTile(i, j)"
+                        >
+                          <ion-icon slot="icon-only" name="trash"></ion-icon>
+                        </ion-button>
                       </ion-col>
                     </ion-row>
                   </ion-grid>
                 </ion-item>
               </ion-list>
-              <ion-textarea label="Notes" labelPlacement="stacked" [(ngModel)]="testTile.notes">
+              <ion-textarea
+                label="Notes"
+                labelPlacement="stacked"
+                [(ngModel)]="testTile.notes"
+              >
               </ion-textarea>
             </ion-card-content>
           </ion-card>
-          <div style="margin-top: 100px;">
 
-          </div>
+          <div style="margin-top: 100px"></div>
         </ion-content>
-        <ion-fab class="ion-margin" vertical="bottom" horizontal="end" slot="fixed">
+        <ion-fab
+          class="ion-margin"
+          vertical="bottom"
+          horizontal="end"
+          slot="fixed"
+        >
           <ion-fab-button>
             <ion-icon id="" (click)="addTileToBatch()" name="add"></ion-icon>
           </ion-fab-button>
@@ -117,28 +219,56 @@
     </ion-modal>
     <ion-modal id="detailsModal" [isOpen]="detailsModalOpen">
       <ng-template>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>{{testBatchUnderEdit.name}}</ion-title>
+            <ion-buttons slot="end">
+              <ion-button (click)="closeDetailsModal()">Close</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
         <ion-content>
-          <ion-header>
-            <ion-toolbar>
-              <ion-title>{{testBatchUnderEdit.name}}</ion-title>
-              <ion-buttons slot="end">
-                <ion-button (click)="closeDetailsModal()">Close</ion-button>
-              </ion-buttons>
-            </ion-toolbar>
-          </ion-header>
-          <ion-card *ngFor="let tile of testBatchUnderEdit.tiles; let i = index">
+          <ion-button
+            id="present-complete-alert"
+            class="ion-align-self-center"
+            color="tertiary"
+            >Mark as Complete</ion-button
+          >
+          <ion-card
+            *ngFor="let tile of testBatchUnderEdit.tiles; let i = index"
+          >
             <ion-card-header>
               <ion-card-title>{{tile.number}}</ion-card-title>
             </ion-card-header>
             <ion-card-content>
               <ion-list>
-                <ion-item>
-                  <ion-label></ion-label>
+                <ion-item
+                  *ngFor="let layer of tile.recipes; let i = index"
+                  style="margin-bottom: 30px"
+                >
+                  <ion-label
+                    ><strong>Layer {{i+1}}:</strong> {{layer.name}}</ion-label
+                  >
+                  <ion-label slot="end" *ngIf="layer.revisions.length > 1"
+                    >Revision {{tile.selectedRevisions[i]}}</ion-label
+                  >
+                  <ion-label slot="end" *ngIf="layer.revisions.length === 1"
+                    >Revision 1</ion-label
+                  >
                 </ion-item>
+                <ion-label class="ion-text-wrap ion-margin"
+                  ><strong>Notes: </strong>{{tile.notes}}</ion-label
+                >
               </ion-list>
             </ion-card-content>
           </ion-card>
         </ion-content>
+        <ion-alert
+          trigger="present-complete-alert"
+          header="Complete this Test?"
+          message="Great work on your science times. How would you like to complete this test?"
+          [buttons]="completeTestButtons"
+        ></ion-alert>
       </ng-template>
     </ion-modal>
   </div>
@@ -177,7 +307,11 @@
   </ion-list>
   <ion-fab class="ion-margin" vertical="bottom" horizontal="end" slot="fixed">
     <ion-fab-button [disabled]="!loaded">
-      <ion-icon id="add-inventory" (click)="addTestBatch()" name="add"></ion-icon>
+      <ion-icon
+        id="add-inventory"
+        (click)="addTestBatch()"
+        name="add"
+      ></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>

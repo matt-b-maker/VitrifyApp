@@ -20,7 +20,7 @@ import { AuthService } from './auth.service';
 import { RecipesService } from './recipes.service';
 import { UserInventory } from '../Models/userInventoryModel';
 import { TestBatch } from '../Models/testBatchModel';
-import { FiringSchedule } from '../Models/FiringScheduleModel';
+import { FiringSchedule } from '../Models/firingScheduleModel';
 
 @Injectable({
   providedIn: 'root',
@@ -211,8 +211,11 @@ export class FirestoreService {
       creator: this.auth.userMeta?.nickname || '',
       dateCreated: testBatch.dateCreated || new Date(),
       dateModified: new Date(),
+      dateCompleted: testBatch.dateCompleted || null,
       descriptionString: testBatch.descriptionString,
       dateCreatedFormatted: testBatch.dateCreatedFormatted,
+      dateCompletedFormatted: testBatch.dateCompletedFormatted,
+      status: testBatch.status,
     };
     await this.upsert('testBatches', data.id, data);
   }
@@ -263,6 +266,8 @@ export class FirestoreService {
         lowTemp: segment.lowTemp,
         highTemp: segment.highTemp,
         duration: segment.duration,
+        hold: segment.hold,
+        type: segment.type,
       })),
       creator: this.auth.userMeta?.nickname || '',
       dateCreated: firingSchedule.dateCreated || new Date(),
