@@ -9,6 +9,7 @@ export class FiringSchedule {
   dateModified: Date = new Date();
   segments: Segment[] = [];
   tempScale: string = 'F'; // F or C
+  creator: string = '';
   maxTemp: number = 2232;
 
   constructor(id: string, uid: string, name: string, description: string, segments: Segment[]) {

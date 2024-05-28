@@ -260,8 +260,9 @@ export class FirestoreService {
   async upsertFiringSchedule(firingSchedule: FiringSchedule) {
     const data = {
       id: firingSchedule.id || uuidv4(),
-      uid: firingSchedule.uid,
+      uid: this.auth.userMeta?.uid || '',
       name: firingSchedule.name,
+      description: firingSchedule.description,
       segments: firingSchedule.segments.map((segment) => ({
         lowTemp: segment.lowTemp,
         highTemp: segment.highTemp,
@@ -269,6 +270,8 @@ export class FirestoreService {
         hold: segment.hold,
         type: segment.type,
       })),
+      tempScale: firingSchedule.tempScale,
+      maxTemp: firingSchedule.maxTemp,
       creator: this.auth.userMeta?.nickname || '',
       dateCreated: firingSchedule.dateCreated || new Date(),
       dateModified: new Date(),

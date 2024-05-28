@@ -12,7 +12,9 @@ import { FiringDetailsService } from 'src/app/Services/firing-details.service';
 import { Segment } from 'src/app/Models/segment';
 import { FiringSchedule } from 'src/app/Models/firingScheduleModel';
 import { FiringScheduleComponent } from 'src/app/Components/firing-schedule/firing-schedule.component';
-import { AlertController, IonItemSliding } from '@ionic/angular';
+import { AlertController, IonItemSliding, LoadingController, ToastController } from '@ionic/angular';
+import { FirestoreService } from 'src/app/Services/firestore.service';
+import { AuthService } from 'src/app/Services/auth.service';
 
 @Component({
   selector: 'app-firing-schedule-builder',
@@ -47,7 +49,11 @@ export class FiringScheduleBuilderPage {
     public firingScheduleService: FiringScheduleService,
     private firingDetailsService: FiringDetailsService,
     private animationService: AnimationService,
-    private alertController: AlertController
+    private alertController: AlertController,
+    private firestoreService: FirestoreService,
+    private toast: ToastController,
+    private loadingController: LoadingController,
+    private auth: AuthService
   ) {
     this.hourInputs =
       this.firingScheduleService.firingScheduleBuildInProgress.segments.map(
@@ -352,6 +358,16 @@ export class FiringScheduleBuilderPage {
   }
 
   setLowTemp(index: number) {
+    if (this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp.toString().length > 4) {
+      this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp = parseInt(this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp.toString().substring(0, 4));
+    }
+    if (this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp < 0) {
+      this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp = 0;
+    }
+    if (this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp > this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp) {
+      this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp - 1;
+    }
+
     //check if there is a segment after this one
     if (
       this.firingScheduleService.firingScheduleBuildInProgress.segments.length >
@@ -367,7 +383,11 @@ export class FiringScheduleBuilderPage {
           index + 1
         ].lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
           index
-        ].highTemp;
+        ].lowTemp;
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[index + 1].highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index
+        ].lowTemp;
+        this.setLowTemp(index + 1);
       } else if (
         this.firingScheduleService.firingScheduleBuildInProgress.segments[
           index + 1
@@ -387,13 +407,24 @@ export class FiringScheduleBuilderPage {
           index + 1
         ].lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
           index
-        ].highTemp;
+        ].lowTemp;
       }
     }
     this.updateChildChart();
   }
 
   setHighTemp(index: number) {
+
+    if (this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp.toString().length > 4) {
+      this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp = parseInt(this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp.toString().substring(0, 4));
+    }
+    if (this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp > this.firingScheduleService.firingScheduleBuildInProgress.maxTemp) {
+      this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp = this.firingScheduleService.firingScheduleBuildInProgress.maxTemp;
+    }
+    if (this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp < this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp) {
+      this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp + 1;
+    }
+
     //check if there is a segment after this one
     if (
       this.firingScheduleService.firingScheduleBuildInProgress.segments.length >
@@ -410,6 +441,10 @@ export class FiringScheduleBuilderPage {
         ].lowTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
           index
         ].highTemp;
+        this.firingScheduleService.firingScheduleBuildInProgress.segments[index + 1].highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
+          index
+        ].highTemp;
+        this.setHighTemp(index + 1);
       } else if (
         this.firingScheduleService.firingScheduleBuildInProgress.segments[
           index + 1
@@ -484,6 +519,48 @@ export class FiringScheduleBuilderPage {
     });
 
     return data;
+  }
+
+  async saveFiringScheduleToFirestore() {
+
+    if (this.firingScheduleService.firingScheduleBuildInProgress.name === '') {
+      this.alertController
+        .create({
+          header: 'Name Your Firing Schedule',
+          message: 'Please enter a name for your firing schedule.',
+          buttons: ['OK'],
+        })
+        .then((alert) => alert.present());
+      return;
+    }
+
+    const loading = await this.loadingController
+      .create({
+        message: 'Saving Firing Schedule...',
+      });
+    await loading.present();
+    this.firingScheduleService.userFiringSchedules = await this.firestoreService.getUserFiringSchedules(this.auth.userMeta?.uid || '');
+
+    console.log(this.firingScheduleService.userFiringSchedules);
+
+    if (this.firingScheduleService.userFiringSchedules.some(schedule => schedule.name === this.firingScheduleService.firingScheduleBuildInProgress.name)) {
+      await this.alertController.create({
+        header: 'Firing Schedule Name Taken',
+        message: 'A firing schedule with this name already exists. Please choose a different name.',
+        buttons: ['OK'],
+      }).then((alert) => alert.present());
+      await loading.dismiss();
+      return;
+    }
+    await this.firestoreService.upsertFiringSchedule(this.firingScheduleService.firingScheduleBuildInProgress);
+
+    await loading.dismiss();
+    this.toast.create({
+      message: 'Firing Schedule Saved!',
+      duration: 2000,
+      color: 'success',
+      position: 'bottom',
+    }).then((toast) => toast.present());
   }
 
   getTotalTime() {

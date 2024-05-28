@@ -1,5 +1,16 @@
-<app-side-menu-header [title]="'Firing Schedule Builder'">
-</app-side-menu-header>
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button size="small" slot="end" *ngIf="firingScheduleService.firingScheduleBuildInProgress.segments.length > 1" (click)="saveFiringScheduleToFirestore()">
+        Save
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Firing Schedule Builder</ion-title>
+  </ion-toolbar>
+</ion-header>
 
 <ion-content [fullscreen]="true">
   <div class="chart-container">
@@ -8,13 +19,13 @@
         <ion-row class="ion-align-items-center ion-justify-content-center">
           <ion-col class="ion-align-items-center ion-justify-content-center horizontal-center">
             <ion-item class="ion-justify-content-center">
+              <ion-input label="Name" labelPlacement="stacked" [(ngModel)]="firingScheduleService.firingScheduleBuildInProgress.name"></ion-input>
               <ion-radio-group [value]="firingScheduleService.firingScheduleBuildInProgress.tempScale" (ionChange)="adjustTempScale($event)">
                 <ion-item lines="none">
                   <ion-radio labelPlacement="stacked" value="C" >Celsius</ion-radio>
                   <ion-radio labelPlacement="stacked" value="F">Fahrenheit</ion-radio>
                 </ion-item>
               </ion-radio-group>
-              <ion-button [disabled]="addSegmentDisabled" size="small" (click)="openSegmentDialog()">Add Segment</ion-button>
             </ion-item>
           </ion-col>
         </ion-row>
@@ -25,6 +36,7 @@
                 <ion-select-option *ngFor="let cone of coneOptions" [value]="cone">{{cone}}</ion-select-option>
               </ion-select>
               <ion-input class="ion-margin" type="number" label="Target temp" labelPlacement="stacked" [(ngModel)]="firingScheduleService.firingScheduleBuildInProgress.maxTemp"></ion-input>
+              <ion-button [disabled]="addSegmentDisabled" size="small" (click)="openSegmentDialog()">Add Segment</ion-button>
             </ion-item>
           </ion-col>
         </ion-row>
