@@ -34,16 +34,17 @@ export class FiringScheduleBuilderPage {
   minuteOptions: number[] = Array.from({ length: 61 }, (_, k) => k);
 
   coneOptions: string[] = this.firingDetailsService.firingCones;
-  selectedCone: string = '6';
 
-  chartHeightStyle: string = `height: ${window.innerWidth * 0.7}px;`;
-  chartData: any = this.transformFiringSchedule(
+  chartData: any = this.firingScheduleService.transformFiringSchedule(
     this.firingScheduleService.firingScheduleBuildInProgress
   );
 
   addSegmentDisabled: boolean = false;
 
   options!: EChartsOption;
+
+  chartContainerClass: string = 'chart-container fore';
+  itemsContainerClass: string = 'ion-items-container rear';
 
   constructor(
     public firingScheduleService: FiringScheduleService,
@@ -358,6 +359,8 @@ export class FiringScheduleBuilderPage {
   }
 
   setLowTemp(index: number) {
+
+    //check for valid input
     if (this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp.toString().length > 4) {
       this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp = parseInt(this.firingScheduleService.firingScheduleBuildInProgress.segments[index].lowTemp.toString().substring(0, 4));
     }
@@ -387,6 +390,7 @@ export class FiringScheduleBuilderPage {
         this.firingScheduleService.firingScheduleBuildInProgress.segments[index + 1].highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
           index
         ].lowTemp;
+        //recursive call to set the low temp of the next segment
         this.setLowTemp(index + 1);
       } else if (
         this.firingScheduleService.firingScheduleBuildInProgress.segments[
@@ -415,6 +419,7 @@ export class FiringScheduleBuilderPage {
 
   setHighTemp(index: number) {
 
+    //check for valid input
     if (this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp.toString().length > 4) {
       this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp = parseInt(this.firingScheduleService.firingScheduleBuildInProgress.segments[index].highTemp.toString().substring(0, 4));
     }
@@ -444,6 +449,7 @@ export class FiringScheduleBuilderPage {
         this.firingScheduleService.firingScheduleBuildInProgress.segments[index + 1].highTemp = this.firingScheduleService.firingScheduleBuildInProgress.segments[
           index
         ].highTemp;
+        //recursive call to set the low temp of the next segment
         this.setHighTemp(index + 1);
       } else if (
         this.firingScheduleService.firingScheduleBuildInProgress.segments[
@@ -471,7 +477,7 @@ export class FiringScheduleBuilderPage {
   }
 
   updateChildChart() {
-    this.chartData = this.transformFiringSchedule(
+    this.chartData = this.firingScheduleService.transformFiringSchedule(
       this.firingScheduleService.firingScheduleBuildInProgress
     );
     this.firingScheduleComponent.updateChart(
@@ -479,46 +485,6 @@ export class FiringScheduleBuilderPage {
       this.firingScheduleService.firingScheduleBuildInProgress,
       this.getTotalTime()
     );
-  }
-
-  transformFiringSchedule(schedule: FiringSchedule) {
-    let time: number = 0;
-    let data = [] as [number, number, string][]; // Array of [time, temperature] pairs
-
-    schedule.segments.forEach((segment) => {
-      let durationMinutes =
-        parseInt(segment.duration.split(':')[0]) * 60 +
-        parseInt(segment.duration.split(':')[1]);
-
-      // If the segment is the first one
-      if (schedule.segments.indexOf(segment) === 0) {
-        data.push([time / 60, segment.lowTemp, '#800000']); // Convert minutes to hours
-        time += durationMinutes;
-        data.push([
-          time / 60,
-          segment.hold ? segment.lowTemp : segment.highTemp, '#800000'
-        ]); // Convert minutes to hours
-        return;
-      }
-
-      // For non-first segments, update data with color based on type
-      time += durationMinutes;
-      let dataTemp: number = 0;
-      let segmentColor: string = '#800000'; // default color (red)
-      if (segment.type === 'ramp') {
-        dataTemp = segment.highTemp;
-        segmentColor = '#FF0000'; // red
-      } else if (segment.type === 'hold') {
-        dataTemp = segment.lowTemp;
-        segmentColor = '#0000FF'; // blue
-      } else if (segment.type === 'cool') {
-        dataTemp = segment.lowTemp;
-        segmentColor = '#008000'; // green
-      }
-      data.push([time / 60, dataTemp, segmentColor]);
-    });
-
-    return data;
   }
 
   async saveFiringScheduleToFirestore() {
@@ -580,6 +546,18 @@ export class FiringScheduleBuilderPage {
     return `${hours.toString().padStart(2, '0')}:${minutes
       .toString()
       .padStart(2, '0')}`;
+  }
+
+  setItemsToFore() {
+    console.log('items fore')
+    this.chartContainerClass = 'chart-container rear';
+    this.itemsContainerClass = 'ion-items-container fore';
+  }
+
+  setItemsToRear() {
+    console.log('items rear')
+    this.chartContainerClass = 'chart-container fore';
+    this.itemsContainerClass = 'ion-items-container rear';
   }
 
   getChipColor(type: string) {

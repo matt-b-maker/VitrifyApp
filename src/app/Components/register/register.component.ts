@@ -14,6 +14,7 @@ export class RegisterComponent {
 
   firstName: string = '';
   lastName: string = '';
+  nickname: string = '';
   email: string = '';
   password: string = '';
 
@@ -27,7 +28,16 @@ export class RegisterComponent {
     try {
       const userCredential = await this.auth.register(this.email, this.password);
       if (userCredential) {
-        await this.firestoreService.upsert('users', userCredential.user.uid, {uid: userCredential.user.uid, email: this.email, firstName: this.firstName, lastName: this.lastName, lastLogin: new Date(), displayName: this.firstName + " " + this.lastName});
+        await this.firestoreService.upsert('users', userCredential.user.uid,
+        {
+          uid: userCredential.user.uid,
+          email: this.email,
+          firstName: this.firstName,
+          lastName: this.lastName,
+          lastLogin: new Date(),
+          displayName: this.firstName + " " + this.lastName,
+          nickname: this.nickname
+        });
         this.presentRegisterPageAlert("Success", "User registered successfully. Feel free to log in now. :D");
         this.router.navigate(['/login']);
       }
@@ -50,6 +60,10 @@ export class RegisterComponent {
 
   setLastName(event:any){
     this.lastName = event.target.value;
+  }
+
+  setNickname(event:any){
+    this.nickname = event.target.value;
   }
 
   async presentRegisterPageAlert(header: string, message: string) {

@@ -1,6 +1,6 @@
 import { Injectable, input } from '@angular/core';
 import { Observable, firstValueFrom } from 'rxjs';
-import { map, materialize } from 'rxjs/operators';
+import { map, materialize, max } from 'rxjs/operators';
 import { v4 as uuidv4 } from 'uuid';
 import {
   Firestore,
@@ -21,6 +21,7 @@ import { RecipesService } from './recipes.service';
 import { UserInventory } from '../Models/userInventoryModel';
 import { TestBatch } from '../Models/testBatchModel';
 import { FiringSchedule } from '../Models/firingScheduleModel';
+import { Comment } from '../Models/commentModel';
 
 @Injectable({
   providedIn: 'root',
@@ -99,6 +100,9 @@ export class FirestoreService {
           // imageUrl: ingredient.imageUrl, // Include imageUrl if needed
         })),
       })),
+      public: recipe.public || false,
+      likes: recipe.likes || 0,
+      comments: this.transformComments(recipe.comments),
     };
     await this.upsert('recipes', data.id, data);
   }
@@ -129,6 +133,8 @@ export class FirestoreService {
         })),
       })),
       public: recipe.public || false,
+      likes: recipe.likes || 0,
+      comments: this.transformComments(recipe.comments),
     };
     await this.upsert('recipes', recipe.id, data);
   }
@@ -275,8 +281,26 @@ export class FirestoreService {
       creator: this.auth.userMeta?.nickname || '',
       dateCreated: firingSchedule.dateCreated || new Date(),
       dateModified: new Date(),
+      maxCone: firingSchedule.maxCone,
+      likes: firingSchedule.likes,
+      comments: this.transformComments(firingSchedule.comments),
     };
     await this.upsert('firingSchedules', data.id, data);
+  }
+
+  transformComments(comments: Comment[]): any[] {
+    return comments.map(comment => ({
+      id: comment.id,
+      creatorName: comment.creatorName,
+      creatorUid: comment.creatorUid,
+      dateCreated: comment.dateCreated,
+      content: comment.content,
+      comments: this.transformComments(comment.comments) // Recursively transform nested comments
+    }));
+  }
+
+  async deleteFiringSchedule(id: string) {
+    return await this.delete('firingSchedules', id);
   }
 
   //get all public and tested recipes

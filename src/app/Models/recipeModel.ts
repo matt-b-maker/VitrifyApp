@@ -1,5 +1,6 @@
 import { Ingredient } from './ingredientModel';
 import { RecipeRevision } from './recipeRevision';
+import { Comment } from './commentModel';
 
 export class Recipe {
 
@@ -17,6 +18,8 @@ export class Recipe {
     new RecipeRevision(1, [])
   ];
   public: boolean = true;
+  likes: number = 0;
+  comments: Comment[] = [];
 
   constructor(id: string, name: string, description: string, creator: string, cone: string, revisions: RecipeRevision[]) {
     this.id = id;

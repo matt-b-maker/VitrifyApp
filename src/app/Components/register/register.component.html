@@ -14,6 +14,10 @@
   </ion-item>
 
   <ion-item>
+    <ion-input [required]="true" class="medium-font centered-text ion-margin" label="Nickname" labelPlacement="stacked" type="text" [value]="nickname" (input)="setNickname($event)"></ion-input>
+  </ion-item>
+
+  <ion-item>
     <ion-input [required]="true" class="medium-font centered-text ion-margin" label="Email" labelPlacement="stacked" type="email" [value]="email" (input)="setEmail($event)"></ion-input>
   </ion-item>
 

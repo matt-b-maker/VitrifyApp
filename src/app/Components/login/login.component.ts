@@ -77,7 +77,17 @@ export class LoginComponent implements OnInit {
         return;
       }
       loading.present();
-      userCredential = await this.authService.login(this.email, this.password);
+      try {
+        userCredential = await this.authService.login(this.email, this.password);
+      }
+      catch (error) {
+        loading.dismiss();
+        this.presentLoginErrorAlert(
+          'Error',
+          'Invalid email or password. Please try again or register for a new account below.'
+        );
+        return;
+      }
     } else {
       loading.present();
       try {
@@ -90,6 +100,14 @@ export class LoginComponent implements OnInit {
       }
     }
     if (userCredential) {
+      if (userCredential.user.emailVerified === false) {
+        loading.dismiss();
+        this.presentLoginErrorAlert(
+          'Error',
+          'Please verify your email before logging in.'
+        );
+        return;
+      }
       let userMeta: UserMeta | undefined = await this.firestore.getUser(
         'users',
         userCredential.user.uid

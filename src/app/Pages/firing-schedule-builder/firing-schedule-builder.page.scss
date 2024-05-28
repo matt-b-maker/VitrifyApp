@@ -2,7 +2,6 @@
   //stick this to the top
   position: fixed;
   top: 1;
-  z-index: 100;
   background-color: white;
   padding: 10px;
   border-bottom: 1px solid #ccc;
@@ -12,9 +11,18 @@
   height: 110vw;
 }
 
+.fore {
+  z-index: 150;
+}
+
+.rear {
+  z-index: 50;
+}
+
 .ion-items-container {
   //put this directly underneath the .chart-container
   margin-top: 120vw;
+  position: relative;
 }
 
 .horizontal-center {
