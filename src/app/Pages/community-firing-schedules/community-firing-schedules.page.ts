@@ -5,11 +5,8 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './community-firing-schedules.page.html',
   styleUrls: ['./community-firing-schedules.page.scss'],
 })
-export class CommunityFiringSchedulesPage implements OnInit {
+export class CommunityFiringSchedulesPage {
 
   constructor() { }
-
-  ngOnInit() {
-  }
 
 }

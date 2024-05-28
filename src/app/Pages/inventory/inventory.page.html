@@ -9,13 +9,13 @@
     </ion-toolbar>
   </ion-header>
   <div *ngIf="loaded">
-    <ion-item *ngIf="inventoryService.userInventory.inventory.length === 0">
+    <ion-item *ngIf="!inventoryService.userInventory || inventoryService.userInventory.inventory.length === 0" lines="none" class="ion-margin">
       <div>
         <ion-label>No inventory yet</ion-label>
         <ion-label>Click the button below to add items to your inventory</ion-label>
       </div>
     </ion-item>
-    <ion-list *ngIf="inventoryService.userInventory.inventory.length > 0">
+    <ion-list *ngIf="inventoryService.userInventory && inventoryService.userInventory.inventory.length > 0">
       <ion-item *ngFor="let item of inventoryService.userInventory.inventory" (click)="setOpen(item)">
         <ion-label>{{item.Name}}</ion-label>
         <ion-label>{{item.Quantity}}{{item.Unit}}</ion-label>
@@ -32,45 +32,47 @@
           </ion-toolbar>
         </ion-header>
         <ion-content>
-          <ion-item-sliding *ngFor="let item of inventoryService.userInventory.inventory; let i = index" #itemSliding class="slide-in-animation inventory-item">
-            <ion-item>
-              <ion-grid class="ingredient-row">
-                <ion-row>
-                  <ion-col>
-                    <ion-select [value]="item.Unit" label="Unit" labelPlacement="stacked" (ionChange)="setItemUnit($event, i)">
-                      <ion-select-option *ngFor="let unit of unitSelection" [value]="unit">{{unit}}</ion-select-option>
-                    </ion-select>
-                  </ion-col>
-                </ion-row>
-                <ion-row class="ion-align-items-center">
-                  <ion-col size="9">
-                    <app-materials-select
-                      [allMaterials]="allMaterials"
-                      [material]="item"
-                      [materialName]="item.Name"
-                      (ingredientChangedEmitter)="setInventoryItem($event, i)"
-                    ></app-materials-select>
-                  </ion-col>
-                  <ion-col size="3" class="ion-text-center">
-                    <ion-input
-                      [disabled]="item.Name === ''"
-                      fill="outline"
-                      type="number"
-                      label="{{item.Unit}}"
-                      labelPlacement="floating"
-                      [value]="item.Quantity"
-                      (ionInput)="setQuantity($event, i)"
-                      [clearOnEdit]="true"></ion-input>
-                  </ion-col>
-                </ion-row>
-              </ion-grid>
-            </ion-item>
-            <ion-item-options side="end">
-              <ion-item-option color="danger" (click)="removeInventoryItem(i)">
-                <ion-icon slot="icon-only" name="trash"></ion-icon>
-              </ion-item-option>
-            </ion-item-options>
-          </ion-item-sliding>
+          <div *ngIf="inventoryService.userInventory">
+            <ion-item-sliding *ngFor="let item of inventoryService.userInventory.inventory; let i = index" #itemSliding class="slide-in-animation inventory-item">
+              <ion-item>
+                <ion-grid class="ingredient-row">
+                  <ion-row>
+                    <ion-col>
+                      <ion-select [value]="item.Unit" label="Unit" labelPlacement="stacked" (ionChange)="setItemUnit($event, i)">
+                        <ion-select-option *ngFor="let unit of unitSelection" [value]="unit">{{unit}}</ion-select-option>
+                      </ion-select>
+                    </ion-col>
+                  </ion-row>
+                  <ion-row class="ion-align-items-center">
+                    <ion-col size="9">
+                      <app-materials-select
+                        [allMaterials]="allMaterials"
+                        [material]="item"
+                        [materialName]="item.Name"
+                        (ingredientChangedEmitter)="setInventoryItem($event, i)"
+                      ></app-materials-select>
+                    </ion-col>
+                    <ion-col size="3" class="ion-text-center">
+                      <ion-input
+                        [disabled]="item.Name === ''"
+                        fill="outline"
+                        type="number"
+                        label="{{item.Unit}}"
+                        labelPlacement="floating"
+                        [value]="item.Quantity"
+                        (ionInput)="setQuantity($event, i)"
+                        [clearOnEdit]="true"></ion-input>
+                    </ion-col>
+                  </ion-row>
+                </ion-grid>
+              </ion-item>
+              <ion-item-options side="end">
+                <ion-item-option color="danger" (click)="removeInventoryItem(i)">
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          </div>
           <ion-fab vertical="bottom" horizontal="center" slot="fixed">
             <ion-button (click)="addInventoryItem()">Add Inventory</ion-button>
           </ion-fab>

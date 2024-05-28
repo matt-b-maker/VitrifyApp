@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { InfiniteScrollCustomEvent } from '@ionic/angular';
+import { InfiniteScrollCustomEvent, ModalController } from '@ionic/angular';
+import { Subscription, fromEvent } from 'rxjs';
 import { Material } from 'src/app/Interfaces/material';
 import { MaterialsService } from 'src/app/Services/materials.service';
 
@@ -22,7 +23,9 @@ export class CustomMaterialsPage implements OnInit {
   hazardous: boolean = false;
   description: string = '';
 
-  constructor(private materialsService: MaterialsService) {
+  backbuttonSubscription!: Subscription;
+
+  constructor(private materialsService: MaterialsService, private modalController: ModalController) {
     this.allMaterials = this.materialsService.materials;
     this.listMaterials = this.allMaterials.filter((material) => {
       return material.Name.charAt(0) === this.chosenLetter;
@@ -33,6 +36,13 @@ export class CustomMaterialsPage implements OnInit {
     this.allMaterials = this.materialsService.materials;
     this.listMaterials = this.allMaterials.filter((material) => {
       return material.Name.charAt(0) === this.chosenLetter;
+    });
+    const event = fromEvent(document, 'backbutton');
+    this.backbuttonSubscription = event.subscribe(async () => {
+      const modal = await this.modalController.getTop();
+      if (modal) {
+        modal.dismiss();
+      }
     });
   }
 

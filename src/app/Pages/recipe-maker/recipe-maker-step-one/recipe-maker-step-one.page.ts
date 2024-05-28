@@ -5,11 +5,7 @@ import { Component, OnInit } from '@angular/core';
   templateUrl: './recipe-maker-step-one.page.html',
   styleUrls: ['./recipe-maker-step-one.page.scss'],
 })
-export class RecipeMakerStepOnePage implements OnInit {
+export class RecipeMakerStepOnePage {
 
   constructor() { }
-
-  ngOnInit() {
-  }
-
 }

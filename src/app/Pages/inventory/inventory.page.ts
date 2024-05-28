@@ -8,13 +8,14 @@ import { AuthService } from 'src/app/Services/auth.service';
 import { MaterialsService } from 'src/app/Services/materials.service';
 import { ModalController } from '@ionic/angular';
 import { AnimationService } from 'src/app/Services/animation.service';
+import { Subscription, fromEvent } from 'rxjs';
 
 @Component({
   selector: 'app-inventory',
   templateUrl: './inventory.page.html',
   styleUrls: ['./inventory.page.scss'],
 })
-export class InventoryPage {
+export class InventoryPage implements OnInit {
   initialInventory!: Material[];
   unitSelection: string[] = ['g', 'kg', 'lb', 'oz'];
   unit: string = 'g';
@@ -29,6 +30,8 @@ export class InventoryPage {
   description: string = '';
   oxidesWeight: string = '';
 
+  backbuttonSubscription!: Subscription;
+
   constructor(
     public inventoryService: InventoryService,
     private animationCtrl: AnimationController,
@@ -41,18 +44,40 @@ export class InventoryPage {
   ) {
     (async () => {
       this.loaded = false;
-      this.inventoryService.userInventory = await this.firestore.getUserInventory(
-        this.auth.userMeta?.uid || ''
-      );
-      this.initialInventory = this.initialInventory = JSON.parse(JSON.stringify(this.inventoryService.userInventory.inventory));
+      this.inventoryService.userInventory =
+        await this.firestore.getUserInventory(this.auth.userMeta?.uid || '');
+      if (this.inventoryService.userInventory) {
+        this.initialInventory = this.initialInventory = JSON.parse(
+          JSON.stringify(this.inventoryService.userInventory.inventory)
+        );
+      } else {
+        this.inventoryService.userInventory = new UserInventory(
+          this.auth.userMeta?.uid || ''
+        );
+        this.initialInventory = [];
+      }
       this.loaded = true;
-      this.allMaterials = this.materialsService.materials.filter(
-        (material) =>
-          !this.inventoryService.userInventory.inventory.some(
-            (inventoryItem) => inventoryItem.Name.trim().toLowerCase() === material.Name.trim().toLowerCase()
-          )
-      ).slice(0, 50);
+      this.allMaterials = this.materialsService.materials
+        .filter(
+          (material) =>
+            !this.inventoryService.userInventory.inventory.some(
+              (inventoryItem) =>
+                inventoryItem.Name.trim().toLowerCase() ===
+                material.Name.trim().toLowerCase()
+            )
+        )
+        .slice(0, 50);
     })();
+  }
+
+  ngOnInit() {
+    const event = fromEvent(document, 'backbutton');
+    this.backbuttonSubscription = event.subscribe(async () => {
+      const modal = await this.modalController.getTop();
+      if (modal) {
+        modal.dismiss();
+      }
+    });
   }
 
   setOpen(material: any) {
@@ -69,13 +94,25 @@ export class InventoryPage {
   }
 
   closeModalAndSave() {
-    this.inventoryService.userInventory.inventory = this.inventoryService.userInventory.inventory.filter((item) => {
-      return item.Name !== '' || item.Quantity !== 0;
-    });
-    console.log(this.inventoryService.userInventory.inventory, this.initialInventory);
-    if (JSON.stringify(this.inventoryService.userInventory.inventory) !== JSON.stringify(this.initialInventory)){
-      this.initialInventory = JSON.parse(JSON.stringify(this.inventoryService.userInventory.inventory));
-      this.firestore.setUserInventory(this.auth.userMeta?.uid || '', this.inventoryService.userInventory);
+    this.inventoryService.userInventory.inventory =
+      this.inventoryService.userInventory.inventory.filter((item) => {
+        return item.Name !== '' || item.Quantity !== 0;
+      });
+    console.log(
+      this.inventoryService.userInventory.inventory,
+      this.initialInventory
+    );
+    if (
+      JSON.stringify(this.inventoryService.userInventory.inventory) !==
+      JSON.stringify(this.initialInventory)
+    ) {
+      this.initialInventory = JSON.parse(
+        JSON.stringify(this.inventoryService.userInventory.inventory)
+      );
+      this.firestore.setUserInventory(
+        this.auth.userMeta?.uid || '',
+        this.inventoryService.userInventory
+      );
     }
     this.modalController.dismiss();
   }
@@ -85,10 +122,14 @@ export class InventoryPage {
     let material = this.materialsService.materials.find(
       (material) => material.Name === event.Name
     ) as Material;
-    this.inventoryService.userInventory.inventory[index].Oxides = material.Oxides;
-    this.inventoryService.userInventory.inventory[index].OxidesWeight = material.OxidesWeight;
-    this.inventoryService.userInventory.inventory[index].Description = material.Description;
-    this.inventoryService.userInventory.inventory[index].Hazardous = material.Hazardous;
+    this.inventoryService.userInventory.inventory[index].Oxides =
+      material.Oxides;
+    this.inventoryService.userInventory.inventory[index].OxidesWeight =
+      material.OxidesWeight;
+    this.inventoryService.userInventory.inventory[index].Description =
+      material.Description;
+    this.inventoryService.userInventory.inventory[index].Hazardous =
+      material.Hazardous;
     this.allMaterials = this.allMaterials.filter(
       (material) =>
         !this.inventoryService.userInventory.inventory.some(
@@ -98,23 +139,33 @@ export class InventoryPage {
   }
 
   setQuantity(event: any, index: number) {
-    this.inventoryService.userInventory.inventory[index].Quantity = event.detail.value;
+    this.inventoryService.userInventory.inventory[index].Quantity =
+      event.detail.value;
   }
 
   setItemUnit(event: any, index: number) {
-    this.inventoryService.userInventory.inventory[index].Unit = event.detail.value;
+    this.inventoryService.userInventory.inventory[index].Unit =
+      event.detail.value;
   }
 
   async addInventoryItem() {
     //check if any of the ingredients are empty
-    if (this.inventoryService.userInventory.inventory.some((item) => item.Name === '')) {
-      await this.alertController.create({
-        header: 'Error',
-        message: 'Please fill out the previous ingredient before adding another.',
-        buttons: ['OK'],
-      }).then((alert) => {
-        alert.present();
-      });
+    if (
+      this.inventoryService.userInventory &&
+      this.inventoryService.userInventory.inventory.some(
+        (item) => item.Name === ''
+      )
+    ) {
+      await this.alertController
+        .create({
+          header: 'Error',
+          message:
+            'Please fill out the previous ingredient before adding another.',
+          buttons: ['OK'],
+        })
+        .then((alert) => {
+          alert.present();
+        });
       return;
     }
 

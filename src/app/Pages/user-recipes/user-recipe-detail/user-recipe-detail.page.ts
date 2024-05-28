@@ -15,6 +15,7 @@ import { Status } from 'src/app/Models/status';
 import { RecipeRevision } from 'src/app/Models/recipeRevision';
 import { IonicSlides } from '@ionic/angular';
 import { InventoryService } from 'src/app/Services/inventory.service';
+import { Subscription, fromEvent } from 'rxjs';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -71,6 +72,8 @@ export class UserRecipeDetailPage implements OnInit {
   consumeInventory: boolean = false;
   modalOpen: boolean = false;
 
+  backbuttonSubscription!: Subscription;
+
   constructor(
     private activatedRoute: ActivatedRoute,
     private recipeService: RecipesService,
@@ -104,6 +107,14 @@ export class UserRecipeDetailPage implements OnInit {
     this.setIngredientQuantities();
     this.getWaterQuantity();
     this.inventoryOptionShowing = this.inventoryService.userInventory !== null && this.inventoryService.userInventory !== undefined && this.inventoryService.userInventory.inventory.length > 0;
+
+    const event = fromEvent(document, 'backbutton');
+    this.backbuttonSubscription = event.subscribe(async () => {
+      const modal = await this.modalController.getTop();
+      if (modal) {
+        modal.dismiss();
+      }
+    });
   }
 
   deleteRecipe() {

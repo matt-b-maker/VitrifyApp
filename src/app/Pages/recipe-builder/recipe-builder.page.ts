@@ -1,14 +1,9 @@
 import {
-  AfterViewInit,
   Component,
   Inject,
-  QueryList,
   Renderer2,
   ViewChild,
-  ViewChildren,
-  ElementRef,
 } from '@angular/core';
-import { Ingredient } from 'src/app/Models/ingredientModel';
 import { AuthService } from 'src/app/Services/auth.service';
 import { IngredientTypesService } from 'src/app/Services/ingredient-types.service';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,7 +12,6 @@ import {
   AlertController,
   AnimationController,
   IonInput,
-  IonSearchbar,
   LoadingController,
 } from '@ionic/angular';
 import { RecipesService } from 'src/app/Services/recipes.service';
@@ -28,10 +22,9 @@ import { FiringDetailsService } from 'src/app/Services/firing-details.service';
 import { Status } from 'src/app/Models/status';
 import { MaterialsService } from 'src/app/Services/materials.service';
 import { Material } from 'src/app/Interfaces/material';
-import { IonicSelectableComponent } from 'ionic-selectable';
-import { ignoreElements } from 'rxjs';
-import { MaterialsSelectComponent } from 'src/app/Components/materials-select/materials-select.component';
 import { AnimationService } from 'src/app/Services/animation.service';
+import { ChemistryCalculatorService } from 'src/app/Services/chemistry-calculator.service';
+import { UmfInterface } from 'src/app/Interfaces/umfInterface';
 
 @Component({
   selector: 'app-recipe-builder',
@@ -59,6 +52,7 @@ export class RecipeBuilderPage {
   remainingPercentageOver: boolean = false;
   remainingOrAdditional: string = 'Remaining';
   coneRegex: RegExp = /^(0[1-9]|1[0-2]|[1-9])([-/](0[1-9]|1[0-2]|[1-9]))?$/;
+  umf!: UmfInterface;
   isEditing: boolean;
   //get all app-ingredient components
   @ViewChild('inputCone', { static: true }) inputCone!: IonInput;
@@ -86,7 +80,8 @@ export class RecipeBuilderPage {
     private firingDetailsService: FiringDetailsService,
     private materialsService: MaterialsService,
     private renderer: Renderer2,
-    private animationService: AnimationService
+    private animationService: AnimationService,
+    private chemistryCalcService: ChemistryCalculatorService
   ) {
 
     this.calculateTotalPercentage();
@@ -101,7 +96,7 @@ export class RecipeBuilderPage {
     this.allMaterials = this.materialsService.materials.slice(0, 50);
   }
 
-  setIngredientValue(event: any, index: number) {
+  setMaterialName(event: any, index: number) {
     this.recipeService.recipeBuildInProgess.revisions[0].materials[
       index
     ].Name = event.Name;
@@ -375,6 +370,8 @@ export class RecipeBuilderPage {
       index
     ].Percentage = parseFloat(this.trimLeadingZeros(event.target.value));
     this.calculateTotalPercentage();
+    this.umf = this.chemistryCalcService.calculateUMF(this.recipeService.recipeBuildInProgess.revisions[0].materials);
+    console.log(this.umf);
   }
 
   calculateTotalPercentage() {

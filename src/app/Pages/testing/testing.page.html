@@ -306,10 +306,9 @@
     </ion-item>
   </ion-list>
   <ion-fab class="ion-margin" vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button [disabled]="!loaded">
+    <ion-fab-button [disabled]="!loaded" (click)="addTestBatch()">
       <ion-icon
         id="add-inventory"
-        (click)="addTestBatch()"
         name="add"
       ></ion-icon>
     </ion-fab-button>
