@@ -8,7 +8,7 @@ export const environment = {
     projectId: "glazevault",
     storageBucket: "glazevault.appspot.com",
     messagingSenderId: "478684273334",
-    appId: "1:478684273334:android:62b1ff65467d65537ba417"
+    appId: "1:478684273334:android:62b1ff65467d65537ba417"  
   },
   firebaseIosConfig: {
     apiKey: "AIzaSyCHQxCe516Xg8F3ruuqhh1JEuzcO6AZ2-E",

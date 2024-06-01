@@ -35,6 +35,10 @@ border-black {
   width: auto;
 }
 
+.h-10 {
+  height: 10vh;
+}
+
 ml-5 {
   margin-left: 5px;
 }
@@ -47,7 +51,7 @@ ion-content.locked-scroll {
 .section {
   height: 100vh;
   display: flex;
-  align-items: start;
+  align-items: flex-start;
   justify-content: center;
   font-size: 2rem;
 }
@@ -68,5 +72,5 @@ ion-content.locked-scroll {
 }
 
 .w-fill-available {
-  width: fill-available;
+  width: -webkit-fill-available;
 }

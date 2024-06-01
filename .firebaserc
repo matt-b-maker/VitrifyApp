@@ -1,0 +1,9 @@
+{
+  "projects": {
+    "default": "vitrify-functions",
+    "glazevault": "glazevault"
+  },
+  "targets": {},
+  "etags": {},
+  "dataconnectEmulatorConfig": {}
+}

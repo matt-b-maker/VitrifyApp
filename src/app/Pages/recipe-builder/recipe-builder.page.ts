@@ -25,6 +25,8 @@ import { Material } from 'src/app/Interfaces/material';
 import { AnimationService } from 'src/app/Services/animation.service';
 import { ChemistryCalculatorService } from 'src/app/Services/chemistry-calculator.service';
 import { UmfInterface } from 'src/app/Interfaces/umfInterface';
+import { Recipe } from 'src/app/Models/recipeModel';
+import { RecipeRevision } from 'src/app/Models/recipeRevision';
 
 @Component({
   selector: 'app-recipe-builder',
@@ -105,6 +107,8 @@ export class RecipeBuilderPage {
 
   resetMaterials() {
     this.recipeService.recipeBuildInProgess.revisions[0].materials = [];
+    this.calculateTotalPercentage();
+    this.updateMaterialsList();
   }
 
   updateMaterialsList() {
@@ -122,8 +126,10 @@ export class RecipeBuilderPage {
       this.recipeService.recipeBuildInProgess.name.trim() !== '' &&
       this.recipeService.recipeBuildInProgess.description.trim() !== '' &&
       this.recipeService.recipeBuildInProgess.cone !== '' &&
-      this.recipeService.recipeBuildInProgess.revisions[0].materials.length >
-        0
+      this.recipeService.recipeBuildInProgess.revisions[0].materials.length > 0 &&
+      this.recipeService.recipeBuildInProgess.revisions[0].materials.every(
+        (material) => material.Name !== '' && material.Percentage > 0
+      )
     );
   }
 
@@ -202,6 +208,7 @@ export class RecipeBuilderPage {
           {
             text: 'Yes',
             handler: () => {
+              this.recipeService.resetRecipeBuildInProgress();
               this.router.navigate(['/user-recipes']);
             },
           },
@@ -288,7 +295,7 @@ export class RecipeBuilderPage {
 
   setNotes(event: any) {
     this.notes = event.target.value;
-    this.recipeService.recipeBuildInProgess.notes = event.target.value;
+    this.recipeService.recipeBuildInProgess.revisions[0].notes = event.target.value;
   }
 
   async addIngredient() {
@@ -314,7 +321,7 @@ export class RecipeBuilderPage {
     if (cancel) return;
 
     this.recipeService.recipeBuildInProgess.revisions[0].materials.push(
-      { Name: '', Oxides: [], OxidesWeight: 0, Description: '', Percentage: 0, Quantity: 0, Hazardous: false, Unit: 'g'}
+      { Name: '', Oxides: [], OxidesWeight: 0, Description: '', Percentage: 1, Quantity: 0, Hazardous: false, Unit: 'g'}
     );
 
     //update percentages
@@ -324,7 +331,7 @@ export class RecipeBuilderPage {
     await this.animationService.slideInNewItem().then(() => {
       // Get the last ingredient's HTML element and slide it in
       let materialElements = document.querySelectorAll(
-        '.material-ingredient'
+        '.ingredient'
       );
       let lastIngredientElement = materialElements[
         materialElements.length - 1
@@ -411,22 +418,20 @@ export class RecipeBuilderPage {
 
   async removeIngredient(index: number) {
     // Get the HTML element of the ingredient to be removed
-    const ingredientElements = document.querySelectorAll('.ingredient');
-    const ingredientElementToRemove = ingredientElements[index] as HTMLElement;
-
-    //get elements after the one to be removed
-    //const remainingIngredientElements: HTMLElement[] = Array.from(ingredientElements).slice(index + 1) as HTMLElement[];
+    let ingredientElements = document.querySelectorAll('.ingredient');
+    let ingredientElementToRemove = ingredientElements[index] as HTMLElement;
 
     // Slide out the ingredient first, then remove it
     await this.animationService.slideOutItem(ingredientElementToRemove).then(() => {
-      this.recipeService.recipeEditInProgess.revisions[0].materials.splice(index, 1);
+      this.recipeService.recipeBuildInProgess.revisions[0].materials.splice(index, 1);
       this.animationService.slideUpRemainingItems(
         Array.from(ingredientElements) as HTMLElement[],
         index
       );
-    });;
-    this.updateMaterialsList();
-    this.calculateTotalPercentage();
+    }).then(() => {
+      this.updateMaterialsList();
+      this.calculateTotalPercentage();
+    });
   }
 
   async aiGenerateRecipe() {

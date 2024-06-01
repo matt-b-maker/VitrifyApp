@@ -20,6 +20,14 @@ export class FiringScheduleService {
 
   }
 
+  resetFiringScheduleBuildInProgress() {
+    this.firingScheduleBuildInProgress = new FiringSchedule('', '', '', '', [new Segment(70, 200, '01:00', 'ramp')]);
+  }
+
+  resetFiringScheduleEditInProgress() {
+    this.firingScheduleEditInProgress = new FiringSchedule('', '', '', '', [new Segment(70, 200, '01:00', 'ramp')]);
+  }
+
   async getUserFiringSchedules() {
     this.userFiringSchedules = await this.firestore.getUserFiringSchedules(this.auth.userMeta?.uid || '');
   }

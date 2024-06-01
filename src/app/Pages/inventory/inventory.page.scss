@@ -1,3 +1,9 @@
+.left-title {
+  position: absolute;
+  left: 0;
+  padding-left: 16px; /* Adjust as needed */
+}
+
 .slide-in-animation {
   animation-name: slideIn;
   animation-duration: 0.3s;

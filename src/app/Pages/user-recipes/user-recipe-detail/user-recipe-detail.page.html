@@ -29,7 +29,8 @@
           src="../../../../assets/images/placeholder-image.png"
         ></ion-img>
       </ion-avatar>
-
+    </ion-card-header>
+    <ion-card-content>
       <swiper-container [pagination]="true">
         <swiper-slide
           *ngFor="let imageUrl of loadedRecipe.revisions[revision].imageUrls; let i = index"
@@ -58,8 +59,6 @@
           </ion-row>
         </ion-grid>
       </ion-item>
-    </ion-card-header>
-    <ion-card-content>
       <ion-card>
         <ion-card-content class="m-0">
           <ion-item lines="none">
@@ -133,11 +132,31 @@
       <ion-card-title>Notes</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-textarea> {{loadedRecipe.revisions[revision].notes}} </ion-textarea>
+      <ion-textarea [disabled]="loadedRecipe.revisions[revision].notes === ''"> {{loadedRecipe.revisions[revision].notes}} </ion-textarea>
     </ion-card-content>
   </ion-card>
 
-  <ion-modal [isOpen]="modalOpen">
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Discussion</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+      <ion-list *ngIf="comments.length > 0">
+        <ion-item *ngFor="let comment of comments">
+          <app-comment (reply)="handleReplyComment($event)" [comment]="comment"></app-comment>
+        </ion-item>
+      </ion-list>
+      <ion-label class="ion-margin" *ngIf="comments.length <= 0">
+        No comments yet. If you have a question or comment, get going with the chat button below!
+      </ion-label>
+    </ion-card-content>
+  </ion-card>
+
+  <div style="margin-top: 100px;">
+
+  </div>
+
+  <ion-modal #makeThisRecipeModal [isOpen]="makeRecipeModalOpen">
     <ng-template>
       <ion-header>
         <ion-toolbar>
@@ -171,43 +190,6 @@
               <ion-card-title>Let's make {{loadedRecipe.name}}</ion-card-title>
             </ion-card-header>
             <ion-card-content class="ion-justify-content-center">
-              <ion-card>
-                <ion-card-content class="ion-justify-content-center">
-                  <ion-label class="horizontal-center"
-                    >Water Quantity</ion-label
-                  >
-                  <ion-radio-group [(ngModel)]="waterPreference">
-                    <ion-radio class="ion-margin" value="Proportion"
-                      >Proportional</ion-radio
-                    >
-                    <ion-radio class="ion-margin" value="Specific Gravity"
-                      >Specific Gravity</ion-radio
-                    >
-                  </ion-radio-group>
-                  <div
-                    class="ion-justify-content-center"
-                    *ngIf="waterPreference === 'Proportion'"
-                  >
-                    <ion-label>Water to Dry Material Ratio</ion-label>
-                    <div class="horizontal-div">
-                      <ion-input
-                        (ionBlur)="scrollToSection()"
-                        type="number"
-                        [(ngModel)]="waterToDryMaterialRatio"
-                      ></ion-input>
-                      <ion-label>:10</ion-label>
-                    </div>
-                  </div>
-                  <ion-item *ngIf="waterPreference === 'Specific Gravity'">
-                    <ion-label>Specific Gravity</ion-label>
-                    <ion-input
-                      (ionBlur)="scrollToSection()"
-                      type="number"
-                      [(ngModel)]="specificGravity"
-                    ></ion-input>
-                  </ion-item>
-                </ion-card-content>
-              </ion-card>
               <ion-card>
                 <ion-card-content>
                   <ion-item>
@@ -252,6 +234,43 @@
                   <ion-item *ngIf="customBatch">
                     <ion-input [label]="'Custom Batch Size ' + '(' + batchUnit + ')'" labelPlacement="stacked" [value]="customBatchSize" (ionChange)="setCustomBatchSize($event)">
                     </ion-input>
+                  </ion-item>
+                </ion-card-content>
+              </ion-card>
+              <ion-card>
+                <ion-card-content class="ion-justify-content-center">
+                  <ion-label class="horizontal-center"
+                    >Water Quantity</ion-label
+                  >
+                  <ion-radio-group [(ngModel)]="waterPreference">
+                    <ion-radio class="ion-margin" value="Proportion"
+                      >Proportional</ion-radio
+                    >
+                    <ion-radio class="ion-margin" value="Specific Gravity"
+                      >Specific Gravity</ion-radio
+                    >
+                  </ion-radio-group>
+                  <div
+                    class="ion-justify-content-center"
+                    *ngIf="waterPreference === 'Proportion'"
+                  >
+                    <ion-label>Water to Dry Material Ratio</ion-label>
+                    <div class="horizontal-div">
+                      <ion-input
+                        (ionBlur)="scrollToSection()"
+                        type="number"
+                        [(ngModel)]="waterToDryMaterialRatio"
+                      ></ion-input>
+                      <ion-label>:10</ion-label>
+                    </div>
+                  </div>
+                  <ion-item *ngIf="waterPreference === 'Specific Gravity'">
+                    <ion-label>Specific Gravity</ion-label>
+                    <ion-input
+                      (ionBlur)="scrollToSection()"
+                      type="number"
+                      [(ngModel)]="specificGravity"
+                    ></ion-input>
                   </ion-item>
                 </ion-card-content>
               </ion-card>
@@ -319,7 +338,33 @@
     </ng-template>
   </ion-modal>
 
+  <ion-modal #addOrReplyCommentModal [isOpen]="commentModalOpen">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-buttons slot="start">
+            <ion-button (click)="cancelComment()">Cancel</ion-button>
+          </ion-buttons>
+          <ion-buttons slot="end">
+            <ion-button [strong]="true" (click)="confirmComment()">Confirm</ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-item lines="none">
+          <ion-input fill="outline" class="ion-margin h-10" [label]="'Comment on ' + loadedRecipe.name" labelPlacement="stacked" [counter]="true" maxlength="200" [(ngModel)]="commentContent"></ion-input>
+        </ion-item>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
   <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-    <ion-button (click)="setModalOpen()">Make this glaze</ion-button>
+    <ion-button (click)="shareRecipeWithDeepLink()">
+      <ion-icon name="share-social"></ion-icon>
+    </ion-button>
+    <ion-button style="margin-right: 10px; margin-left: 10px;"  (click)="setMakeRecipeModalOpen()">Make this glaze</ion-button>
+    <ion-button (click)="addComment()">
+      <ion-icon name="chatbox"></ion-icon>
+    </ion-button>
   </ion-fab>
 </ion-content>

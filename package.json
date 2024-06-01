@@ -31,11 +31,13 @@
     "@capacitor/core": "6.0.0",
     "@capacitor/filesystem": "^6.0.0",
     "@capacitor/ios": "^6.0.0",
+    "@capacitor/local-notifications": "^6.0.0",
     "@capacitor/push-notifications": "^6.0.0",
     "@capacitor/splash-screen": "^6.0.0",
     "@codetrix-studio/capacitor-google-auth": "^3.4.0-rc.1",
     "@google/generative-ai": "^0.8.0",
     "@ionic-native/core": "^5.36.0",
+    "@ionic-native/deeplinks": "^5.36.0",
     "@ionic-native/google-plus": "^5.36.0",
     "@ionic/angular": "^7.8.6",
     "angularfire2": "^5.4.2",
@@ -46,7 +48,6 @@
     "ionic-selectable": "^5.0.2",
     "ionicons": "^7.0.0",
     "lodash": "^4.17.21",
-    "ng2-charts": "^6.0.1",
     "ngx-echarts": "^18.0.0",
     "openai": "^4.0.0",
     "rxjs": "^7.8.1",
@@ -92,7 +93,8 @@
     "plugins": {
       "cordova-plugin-googleplus": {
         "REVERSED_CLIENT_ID": "com.sorminsshack.glazevaultapp"
-      }
+      },
+      "cordova-plugin-fcm-with-dependecy-updated": {}
     }
   }
 }

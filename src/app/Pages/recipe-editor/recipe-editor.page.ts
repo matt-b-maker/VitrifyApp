@@ -4,6 +4,7 @@ import {
   Component,
   ElementRef,
   Inject,
+  OnDestroy,
   ViewChild,
 } from '@angular/core';
 import { Ingredient } from 'src/app/Models/ingredientModel';
@@ -37,7 +38,7 @@ import { AnimationService } from 'src/app/Services/animation.service';
     '../../../ionic-selectable.component.scss',
   ],
 })
-export class RecipeEditorPage implements AfterViewInit {
+export class RecipeEditorPage implements AfterViewInit, OnDestroy {
   @ViewChild('swiper')
   swiperRef: ElementRef | undefined;
   swiper?: Swiper;
@@ -99,6 +100,11 @@ export class RecipeEditorPage implements AfterViewInit {
     this.isEditing = this.recipeService.isEditing;
     this.revision = this.recipeService.editingRevision;
     this.isMobile = isPlatform('cordova');
+    this.recipeService.allowExit = false;
+  }
+
+  ngOnDestroy() {
+    this.recipeService.resetRecipeEditInProgress();
   }
 
   ngAfterViewInit() {
@@ -406,10 +412,10 @@ export class RecipeEditorPage implements AfterViewInit {
               },
               {
                 text: 'No, take me away',
-                handler: () => {
+                handler: async () => {
                   this.recipeService.isRevision = false;
                   this.recipeService.allowExit = true;
-                  this.router.navigate(['/user-recipes']);
+                  await this.router.navigate(['/user-recipes']);
                   this.recipeService.allowExit = false;
                 },
               },

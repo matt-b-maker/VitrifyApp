@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.sorminsshack.glazevaultapp',
-  appName: 'The Glaze Vault',
+  appName: 'Vitrify',
   webDir: 'www'
 };
 

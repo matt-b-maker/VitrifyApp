@@ -106,16 +106,19 @@ export class AuthService {
 
   async nativeGoogleLogin() {
     try {
+      console.log('Attempting Google login...');
       const gPlusUser = await this.gPlus.login({
         webClientId:
-          '478684273334-cupehva2rmu8ce5h0ibti3fmrjgr659j.apps.googleusercontent.com',
+          '478684273334-hmtifp9lusvaaf9isu8b3pohcgmu2eo1.apps.googleusercontent.com',
         offline: true,
         scopes: 'profile email',
       });
+      console.log('Google login response: ', gPlusUser);
       const googleCredential = GoogleAuthProvider.credential(gPlusUser.idToken);
       return await signInWithCredential(this.auth, googleCredential);
     } catch (error: any) {
       this.errorMessage = error.message;
+      console.error('Error logging in with Google:', error);
       return null;
     }
   }
@@ -200,8 +203,8 @@ export class AuthService {
     const userData = JSON.parse(userDataString);
     // Check if token is still valid
     if (
-      userData.stsTokenManager &&
-      userData.stsTokenManager.expirationTime >= new Date().getTime()
+      userData.stsTokenManager
+      // && userData.stsTokenManager.expirationTime >= new Date().getTime()
     ) {
       const userMetaString = localStorage.getItem('userMeta');
       if (userMetaString) {

@@ -43,6 +43,10 @@ export class FirestoreService {
     return firstValueFrom(docData(doc(this.firestore, collectionPath, id))) as unknown as UserMeta | undefined;
   }
 
+  async updateUserFcmToken(uid: string, fcmToken: string) {
+    await this.upsert('users', uid, { fcmToken: fcmToken });
+  }
+
   async getCollection(collectionPath: string, uid?: string): Promise<any> {
     if (uid) {
       // If uid is provided, return the specific document
@@ -101,14 +105,15 @@ export class FirestoreService {
         })),
       })),
       public: recipe.public || false,
-      likes: recipe.likes || 0,
-      comments: this.transformComments(recipe.comments),
     };
     await this.upsert('recipes', data.id, data);
   }
 
   //update recipe
   async updateRecipe(recipe: Recipe) {
+    if (!recipe.comments) {
+      recipe.comments = [];
+    }
     const data = {
       id: recipe.id,
       name: recipe.name,
@@ -133,8 +138,6 @@ export class FirestoreService {
         })),
       })),
       public: recipe.public || false,
-      likes: recipe.likes || 0,
-      comments: this.transformComments(recipe.comments),
     };
     await this.upsert('recipes', recipe.id, data);
   }
@@ -283,24 +286,72 @@ export class FirestoreService {
       dateModified: new Date(),
       maxCone: firingSchedule.maxCone,
       likes: firingSchedule.likes,
-      comments: this.transformComments(firingSchedule.comments),
     };
     await this.upsert('firingSchedules', data.id, data);
   }
 
-  transformComments(comments: Comment[]): any[] {
-    return comments.map(comment => ({
-      id: comment.id,
+  async upsertComment(comment: Comment) {
+    const data = {
+      id: comment.id || uuidv4(),
+      creatorProfileImageUrl: comment.creatorProfileImageUrl,
       creatorName: comment.creatorName,
       creatorUid: comment.creatorUid,
       dateCreated: comment.dateCreated,
       content: comment.content,
+      type: comment.type,
+      recipeId: comment.recipeId,
+      comments: this.transformComments(comment.comments),
+    };
+    await this.upsert('comments', data.id, data);
+  }
+
+  async upsertComments(comments: Comment[]) {
+    for (const comment of comments) {
+      await this.upsertComment(comment);
+    }
+  }
+
+  async getCommentsByRecipeId(recipeId: string): Promise<any> {
+    const q = query(
+      collection(this.firestore, 'comments'),
+      where('recipeId', '==', recipeId)
+    );
+    return await firstValueFrom(collectionData(q));
+  }
+
+  //get Comments and allow subscribe to changes
+  getCommentsByRecipeIdObservable(recipeId: string): Observable<any> {
+    const q = query(
+      collection(this.firestore, 'comments'),
+      where('recipeId', '==', recipeId)
+    );
+    return collectionData(q);
+  }
+
+
+  transformComments(comments: Comment[]): any[] {
+    return comments.map(comment => ({
+      id: comment.id === '' ? uuidv4() : comment.id,
+      creatorProfileImageUrl: comment.creatorProfileImageUrl,
+      creatorName: comment.creatorName,
+      creatorUid: comment.creatorUid,
+      dateCreated: comment.dateCreated,
+      content: comment.content,
+      type: comment.type,
+      parentCommentId: comment.parentCommentId,
+      recipeId: comment.recipeId,
       comments: this.transformComments(comment.comments) // Recursively transform nested comments
     }));
   }
 
   async deleteFiringSchedule(id: string) {
-    return await this.delete('firingSchedules', id);
+    try {
+      const docRef = doc(this.firestore, `firingSchedules/${id}`);
+      await deleteDoc(docRef);
+      console.log('Document deleted with ID:', id);
+    } catch (error) {
+      console.error('Error deleting document:', error);
+    }
   }
 
   //get all public and tested recipes
@@ -313,6 +364,14 @@ export class FirestoreService {
     );
     return await firstValueFrom(collectionData(q));
   }
+
+  async updateFcmToken(token: string) {
+    const user = this.auth.userMeta;
+    if (user) {
+      await this.upsert('users', user.uid, { fcmToken: token });
+    }
+  }
+
 }
 
 function uuid4() {

@@ -39,6 +39,7 @@ export class ProfileEditorPage {
         'https://ionicframework.com/docs/img/demos/avatar.svg';
     });
     this.isMobile = isPlatform('cordova');
+    this.nickname = this.userMeta?.nickname || '';
   }
 
   async selectImage(source: CameraSource) {

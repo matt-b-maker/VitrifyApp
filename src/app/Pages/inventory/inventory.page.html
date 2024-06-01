@@ -21,11 +21,11 @@
         <ion-label>{{item.Quantity}}{{item.Unit}}</ion-label>
       </ion-item>
     </ion-list>
-    <ion-modal trigger="add-inventory">
+    <ion-modal [isOpen]="editModalOpen">
       <ng-template>
         <ion-header>
           <ion-toolbar>
-            <ion-title>Add Inventory Items</ion-title>
+            <ion-title class="left-title">Add Inventory Items</ion-title>
             <ion-buttons slot="end">
               <ion-button (click)="closeModalAndSave()">Close and Save</ion-button>
             </ion-buttons>
@@ -36,21 +36,19 @@
             <ion-item-sliding *ngFor="let item of inventoryService.userInventory.inventory; let i = index" #itemSliding class="slide-in-animation inventory-item">
               <ion-item>
                 <ion-grid class="ingredient-row">
-                  <ion-row>
-                    <ion-col>
-                      <ion-select [value]="item.Unit" label="Unit" labelPlacement="stacked" (ionChange)="setItemUnit($event, i)">
-                        <ion-select-option *ngFor="let unit of unitSelection" [value]="unit">{{unit}}</ion-select-option>
-                      </ion-select>
-                    </ion-col>
-                  </ion-row>
                   <ion-row class="ion-align-items-center">
-                    <ion-col size="9">
+                    <ion-col size="6">
                       <app-materials-select
                         [allMaterials]="allMaterials"
                         [material]="item"
                         [materialName]="item.Name"
                         (ingredientChangedEmitter)="setInventoryItem($event, i)"
                       ></app-materials-select>
+                    </ion-col>
+                    <ion-col size="3">
+                      <ion-select [value]="item.Unit" label="Unit" labelPlacement="stacked" (ionChange)="setItemUnit($event, i)">
+                        <ion-select-option *ngFor="let unit of unitSelection" [value]="unit">{{unit}}</ion-select-option>
+                      </ion-select>
                     </ion-col>
                     <ion-col size="3" class="ion-text-center">
                       <ion-input
@@ -139,8 +137,8 @@
     </ion-item>
   </ion-list>
   <ion-fab class="ion-margin" vertical="bottom" horizontal="end" slot="fixed">
-    <ion-fab-button [disabled]="!loaded">
-      <ion-icon id="add-inventory" (click)="addInventoryItem()" name="create"></ion-icon>
+    <ion-fab-button [disabled]="!loaded" (click)="openEditModal()">
+      <ion-icon name="create"></ion-icon>
     </ion-fab-button>
   </ion-fab>
 </ion-content>

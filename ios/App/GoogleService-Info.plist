@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
@@ -15,16 +16,35 @@
 	<key>STORAGE_BUCKET</key>
 	<string>glazevault.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
-	<false></false>
+	<false />
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false></false>
+	<false />
 	<key>IS_APPINVITE_ENABLED</key>
-	<true></true>
+	<true />
 	<key>IS_GCM_ENABLED</key>
-	<true></true>
+	<true />
 	<key>IS_SIGNIN_ENABLED</key>
-	<true></true>
+	<true />
 	<key>GOOGLE_APP_ID</key>
 	<string>1:478684273334:ios:0245fe7fca55eb987ba417</string>
+  <key>FirebaseAppDelegateProxyEnabled</key>
+  <false />
+  <key>UIBackgroundModes</key>
+  <array>
+  <string>remote-notification</string>
+  </array>
+  <key>CFBundleURLTypes</key>
+  <array>
+  <dict>
+  <key>CFBundleTypeRole</key>
+  <key>CFBundleURLName</key>
+  <key>CFBundleURLSchemes</key>
+  <string>Editor</string>
+  <string>REVERSED_CLIENT_ID</string>
+  <array>
+  <string>$REVERSED_CLIENT_ID</string>
+  </array>
+  </dict>
+  </array>
 </dict>
 </plist>

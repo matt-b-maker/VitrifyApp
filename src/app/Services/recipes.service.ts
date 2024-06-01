@@ -29,4 +29,12 @@ export class RecipesService {
   getRecipeById(id: string): Recipe {
     return {...this.allRecipes.find(recipe => recipe.id === id)!};
   }
+
+  resetRecipeBuildInProgress() {
+    this.recipeBuildInProgess = new Recipe("", "", "", "", '6', [new RecipeRevision(1, [])]);
+  }
+
+  resetRecipeEditInProgress() {
+    this.recipeEditInProgess = new Recipe("", "", "", "", '6', [new RecipeRevision(1, [])]);
+  }
 }

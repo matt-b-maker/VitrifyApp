@@ -7,7 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { UserRecipeDetailPageRoutingModule } from './user-recipe-detail-routing.module';
 
 import { UserRecipeDetailPage } from './user-recipe-detail.page';
-import { BaseChartDirective } from 'ng2-charts';
+import { CommentComponent } from 'src/app/Components/comment/comment.component';
 
 @NgModule({
   imports: [
@@ -15,9 +15,11 @@ import { BaseChartDirective } from 'ng2-charts';
     FormsModule,
     IonicModule,
     UserRecipeDetailPageRoutingModule,
-    BaseChartDirective
+    CommentComponent
   ],
   declarations: [UserRecipeDetailPage],
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
-export class UserRecipeDetailPageModule {}
+export class UserRecipeDetailPageModule {
+
+}

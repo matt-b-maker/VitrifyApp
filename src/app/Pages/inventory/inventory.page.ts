@@ -22,6 +22,7 @@ export class InventoryPage implements OnInit {
   loaded: boolean = false;
   //materials that are not already in the inventory
   allMaterials!: Material[];
+  editModalOpen: boolean = false;
   infoModalOpen: boolean = false;
 
   //info properties
@@ -95,9 +96,9 @@ export class InventoryPage implements OnInit {
 
   closeModalAndSave() {
     this.inventoryService.userInventory.inventory =
-      this.inventoryService.userInventory.inventory.filter((item) => {
-        return item.Name !== '' || item.Quantity !== 0;
-      });
+      this.inventoryService.userInventory.inventory.filter(
+        (item) => item.Name !== '' && item.Quantity.toString() !== "0"
+      );
     console.log(
       this.inventoryService.userInventory.inventory,
       this.initialInventory
@@ -115,6 +116,7 @@ export class InventoryPage implements OnInit {
       );
     }
     this.modalController.dismiss();
+    this.editModalOpen = false;
   }
 
   setInventoryItem(event: any, index: number) {
@@ -148,6 +150,12 @@ export class InventoryPage implements OnInit {
       event.detail.value;
   }
 
+  async openEditModal() {
+    this.editModalOpen = true;
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    this.addInventoryItem();
+  }
+
   async addInventoryItem() {
     //check if any of the ingredients are empty
     if (
@@ -175,7 +183,7 @@ export class InventoryPage implements OnInit {
       OxidesWeight: 0,
       Description: '',
       Percentage: 0,
-      Quantity: 0,
+      Quantity: 1,
       Hazardous: false,
       Unit: 'g',
     });

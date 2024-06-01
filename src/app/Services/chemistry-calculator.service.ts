@@ -14,7 +14,6 @@ export class ChemistryCalculatorService {
   calculateUMF(materials: Material[]): UmfInterface {
     const totalWeights: { [key: string]: number } = {};
     let totalWeightSum = 0;
-
     // Sum the weights of each oxide from all materials
     materials.forEach(material => {
       material.Oxides.forEach(oxide => {

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { LoadingController } from '@ionic/angular';
+import { LoadingController, Platform } from '@ionic/angular';
 import { AuthService } from 'src/app/Services/auth.service';
 import { OnInit } from '@angular/core';
 import { AlertController } from '@ionic/angular';
@@ -16,6 +16,8 @@ import { user } from '@angular/fire/auth';
 import { InventoryService } from 'src/app/Services/inventory.service';
 import { TestingService } from 'src/app/Services/testing.service';
 import { RecipesService } from 'src/app/Services/recipes.service';
+import { PushNotifications, Token, ActionPerformed } from '@capacitor/push-notifications';
+import { LocalNotifications } from '@capacitor/local-notifications';
 
 interface Glaze {
   imageUrl: string;
@@ -46,7 +48,8 @@ export class LoginComponent implements OnInit {
     private materialsService: MaterialsService,
     private recipesService: RecipesService,
     private inventoryService: InventoryService,
-    private testingService: TestingService
+    private testingService: TestingService,
+    private platform: Platform
   ) {
     this.authService.userSubject.subscribe((user) => {
       this.userFromStorage = user;
@@ -59,6 +62,71 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     //get random glaze from glazeGetter service
     this.chosenGlaze = this.glazeGetter.getRandomGlaze();
+    this.platform.ready().then(() => {
+      console.log('ALERT ALERT Platform ready');
+      this.initPushNotifications();
+    });
+  }
+
+  initPushNotifications() {
+    // Request permission to use push notifications
+    PushNotifications.requestPermissions().then(result => {
+      if (result.receive === 'granted') {
+        // Register with Apple / Google to receive push via APNS/FCM
+        console.log('ALERT ALERT Push registration success, token: ' + result.receive);
+        PushNotifications.register();
+      } else {
+
+      }
+    });
+
+    // On success, we should be able to receive notifications
+    PushNotifications.addListener('registration', async (token: Token) => {
+      console.log('My token: ' + token.value);
+      localStorage.setItem('token', token.value);
+    });
+    // Some issue with our setup and push will not work
+    PushNotifications.addListener('registrationError', (error: any) => {
+      console.error('Error on registration: ' + JSON.stringify(error));
+    });
+
+    // Show us the notification payload if the app is open on our device
+    PushNotifications.addListener('pushNotificationReceived', (notification: any) => {
+      console.log('Push received: ' + JSON.stringify(notification));
+      // Show a local notification when the app is in the foreground
+      LocalNotifications.schedule({
+        notifications: [
+          {
+            title: notification.title || "New Notification",
+            body: notification.body || "You have a new message.",
+            id: Math.floor(Math.random() * 1000000), // Generate a random int ID
+            schedule: { at: new Date(Date.now() + 1000) },
+            sound: undefined,
+            attachments: undefined,
+            actionTypeId: "",
+            extra: null
+          }
+        ]
+      });
+    });
+
+    // Method called when tapping on a notification
+    PushNotifications.addListener('pushNotificationActionPerformed', (notification: ActionPerformed) => {
+      console.log('Push action performed: ' + JSON.stringify(notification));
+      this.router.navigate(['/user-recipes/' + notification.notification.data.recipeId]);
+    });
+  }
+
+  async updateToken() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      await this.firestore.updateFcmToken(token);
+    }
+  }
+
+  hasOnlyOneEmptyProperty(obj: { [key: string]: any }): boolean {
+    const keys = Object.keys(obj);
+    return keys.length === 1 && obj[keys[0]] === '';
   }
 
   async login(emailAndPassword: boolean) {
@@ -94,8 +162,8 @@ export class LoginComponent implements OnInit {
         userCredential = await this.authService.loginWithGoogle();
       }
       catch (error) {
-        console.error('Error logging in with Google:', error);
         loading.dismiss();
+        console.error('Error logging in with Google:', error);
         return;
       }
     }
@@ -112,10 +180,10 @@ export class LoginComponent implements OnInit {
         'users',
         userCredential.user.uid
       );
-      if (!userMeta) {
+      if (!userMeta || userMeta == undefined || userMeta == null || this.hasOnlyOneEmptyProperty(userMeta)) {
         userMeta = {
-          firstName: userCredential.user.firstName,
-          lastName: userCredential.user.lastName,
+          firstName: userCredential.user.displayName.split(' ')[0],
+          lastName: Array.from(userCredential.user.displayName.split(' ')).slice(1).join(' '),
           email: userCredential.user.email,
           lastLogin: new Date(),
           displayName: emailAndPassword
@@ -126,12 +194,11 @@ export class LoginComponent implements OnInit {
             : userCredential.user.photoURL,
           isPremium: false,
           uid: userCredential.user.uid,
-          nickname: userCredential.displayName,
+          nickname: userCredential.user.displayName,
         };
         await this.firestore.upsert('users', userCredential.user.uid, userMeta);
         this.authService.updateUser(userCredential.user);
         this.authService.updateMeta(userMeta);
-        return;
       }
 
       userMeta.lastLogin = new Date();
@@ -153,15 +220,18 @@ export class LoginComponent implements OnInit {
       this.recipesService.userRecipes = await this.firestore.getUserRecipes(userMeta.uid || '');
       await this.inventoryService.getUserInventory();
       await this.testingService.getUserTestBatches();
+      await this.updateToken();
       loading.dismiss();
       this.router.navigate(['/profile']);
     } else {
       if (emailAndPassword) {
+        loading.dismiss();
         this.presentLoginErrorAlert(
           'Error',
           'Invalid email or password. Please try again or register for a new account below.'
         );
       } else {
+        loading.dismiss();
         this.presentLoginErrorAlert(
           'Error',
           'An error occurred while logging in with Google. Please try again.'

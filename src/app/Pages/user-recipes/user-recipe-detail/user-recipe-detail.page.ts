@@ -1,9 +1,11 @@
-import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
   AlertController,
+  IonInput,
   IonModal,
   ModalController,
+  ToastController,
 } from '@ionic/angular';
 import { Recipe } from 'src/app/Models/recipeModel';
 import { RecipesService } from 'src/app/Services/recipes.service';
@@ -16,6 +18,7 @@ import { RecipeRevision } from 'src/app/Models/recipeRevision';
 import { IonicSlides } from '@ionic/angular';
 import { InventoryService } from 'src/app/Services/inventory.service';
 import { Subscription, fromEvent } from 'rxjs';
+import { Comment } from 'src/app/Models/commentModel';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -42,6 +45,7 @@ export class UserRecipeDetailPage implements OnInit {
   // };
 
   @ViewChild(IonModal) modal!: IonModal;
+  @ViewChild('commentInput') commentInput!: ElementRef;
 
   loadedRecipe!: Recipe;
   revision: number = 0;
@@ -70,7 +74,10 @@ export class UserRecipeDetailPage implements OnInit {
   inventoryOptionShowing: boolean = false;
   userHasInventory: boolean = false;
   consumeInventory: boolean = false;
-  modalOpen: boolean = false;
+  makeRecipeModalOpen: boolean = false;
+  commentModalOpen: boolean = false;
+  commentContent: string = '';
+  comments: Comment[] = [];
 
   backbuttonSubscription!: Subscription;
 
@@ -83,10 +90,11 @@ export class UserRecipeDetailPage implements OnInit {
     private alertController: AlertController,
     private auth: AuthService,
     private inventoryService: InventoryService,
+    private toastController: ToastController
   ) {
   }
 
-  ngOnInit() {
+  async ngOnInit() {
     this.activatedRoute.paramMap.subscribe((paramMap) => {
       if (!paramMap.has('recipeId')) {
         this.route.navigate(['/user-recipes']);
@@ -104,16 +112,52 @@ export class UserRecipeDetailPage implements OnInit {
         return;
       }
     });
+    this.firestoreService.getCommentsByRecipeIdObservable(this.loadedRecipe.id).subscribe(comments => {
+      this.comments = comments;
+    });
+    //sort comments by date
+    this.comments.sort((a, b) => {
+      return (b.dateCreated as unknown as number) - (a.dateCreated as unknown as number);
+    });
     this.setIngredientQuantities();
     this.getWaterQuantity();
     this.inventoryOptionShowing = this.inventoryService.userInventory !== null && this.inventoryService.userInventory !== undefined && this.inventoryService.userInventory.inventory.length > 0;
-
     const event = fromEvent(document, 'backbutton');
     this.backbuttonSubscription = event.subscribe(async () => {
       const modal = await this.modalController.getTop();
       if (modal) {
         modal.dismiss();
       }
+    });
+  }
+
+  async shareRecipeWithDeepLink() {
+    // this.alertController
+    //   .create({
+    //     header: 'Share Recipe',
+    //     message: 'Copy the link below to share this recipe with others.',
+    //     inputs: [
+    //       {
+    //         value: 'https://beerswift.app/recipe/' + this.loadedRecipe.id,
+    //         disabled: true,
+    //       },
+    //     ],
+    //     buttons: [
+    //       {
+    //         text: 'Close',
+    //         role: 'cancel',
+    //       },
+    //     ],
+    //   })
+    //   .then((alertEl) => {
+    //     alertEl.present();
+    //   });
+    await this.alertController.create({
+      header: 'Coming Soon!',
+      message: 'This feature is coming soon!',
+      buttons: ['OK']
+    }).then(alertEl => {
+      alertEl.present();
     });
   }
 
@@ -181,11 +225,11 @@ export class UserRecipeDetailPage implements OnInit {
       });
   }
 
-  goToRecipeEditor() {
+  async goToRecipeEditor() {
     this.recipeService.isEditing = true;
     this.recipeService.isRevision = false;
     if (this.loadedRecipe.uid !== this.auth.userMeta?.uid) {
-      this.alertController
+      await this.alertController
         .create({
           header: 'Hold up..',
           message:
@@ -211,10 +255,11 @@ export class UserRecipeDetailPage implements OnInit {
         .then((alertEl) => {
           alertEl.present();
         });
+    } else {
+      this.recipeService.recipeEditInProgess = this.loadedRecipe;
+      this.recipeService.editingRevision = this.revision;
+      this.route.navigate(['/recipe-editor']);
     }
-    this.recipeService.recipeEditInProgess = this.loadedRecipe;
-    this.recipeService.editingRevision = this.revision;
-    this.route.navigate(['/recipe-editor']);
   }
 
   isUserRecipe() {
@@ -295,7 +340,7 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   //all modal stuff
-  setModalOpen() {
+  setMakeRecipeModalOpen() {
     if (this.selectedBatchSize === 'custom') {
       this.customBatch = true;
     }
@@ -324,7 +369,7 @@ export class UserRecipeDetailPage implements OnInit {
             {
               text: 'Yup, let\'s go',
               handler: () => {
-                this.modalOpen = true;
+                this.makeRecipeModalOpen = true;
               },
             },
           ],
@@ -333,14 +378,85 @@ export class UserRecipeDetailPage implements OnInit {
           await alertEl.present();
         });
     } else {
-      this.modalOpen = true;
+      this.makeRecipeModalOpen = true;
+    }
+  }
+
+  async addComment() {
+    this.commentModalOpen = true;
+  }
+
+  async confirmComment() {
+    //set up new comment with all its info
+    const newComment = {
+      id: uuidv4(),
+      creatorProfileImageUrl: this.auth.userMeta?.photoUrl || '',
+      content: this.commentContent,
+      creatorName: this.auth.userMeta?.nickname || this.auth.userMeta?.displayName || 'user unknown',
+      creatorUid: this.auth.userMeta?.uid || '',
+      dateCreated: new Date(),
+      type: 'post',
+      parentCommentId: '',
+      recipeId: this.loadedRecipe.id,
+      comments: [],
+    };
+    this.comments.push(newComment);
+
+    //update the recipe in firestore
+    await this.firestoreService.upsertComment(newComment);
+
+    //close the modal
+    this.commentContent = '';
+    this.commentModalOpen = false;
+
+    //show a toast
+    const toast = await this.toastController.create({
+      message: 'Comment added!',
+      duration: 2000,
+    });
+    toast.present();
+  }
+
+  cancelComment() {
+    this.commentContent = '';
+    this.commentModalOpen = false;
+  }
+
+  // handleReplyComment(event: Comment) {
+  //   console.log(event);
+  //   //find the parent comment
+  //   const parentComment = this.comments.find((comment) => comment.id === event.parentCommentId);
+  //   if (parentComment) {
+  //     parentComment.comments.push(event);
+  //     this.firestoreService.upsertComment(parentComment);
+  //   }
+  // }
+
+  handleReplyComment(newReply: Comment) {
+    console.log(newReply)
+    this.addNestedComment(this.comments, newReply);
+    this.firestoreService.upsertComments(this.comments).then(() => {
+      console.log('Comments updated in Firestore');
+    }).catch(error => {
+      console.error('Error updating comments in Firestore: ', error);
+    });
+  }
+
+  addNestedComment(comments: Comment[], newReply: Comment) {
+    for (let comment of comments) {
+      if (comment.id === newReply.parentCommentId) {
+        comment.comments.push(newReply);
+        return;
+      } else if (comment.comments && comment.comments.length > 0) {
+        this.addNestedComment(comment.comments, newReply);
+      }
     }
   }
 
   cancel() {
     this.currentSectionIndex = 0;
     this.nextSectionName = 'Materials';
-    this.modalOpen = false;
+    this.makeRecipeModalOpen = false;
     this.customBatch = false;
     this.modal.dismiss(null, 'cancel');
   }

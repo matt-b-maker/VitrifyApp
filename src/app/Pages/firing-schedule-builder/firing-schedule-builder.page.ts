@@ -1,6 +1,7 @@
 import {
   Component,
   ElementRef,
+  OnDestroy,
   OnInit,
   ViewChild,
   ViewChildren,
@@ -21,7 +22,7 @@ import { AuthService } from 'src/app/Services/auth.service';
   templateUrl: './firing-schedule-builder.page.html',
   styleUrls: ['./firing-schedule-builder.page.scss'],
 })
-export class FiringScheduleBuilderPage {
+export class FiringScheduleBuilderPage implements OnDestroy{
   @ViewChild(FiringScheduleComponent)
   firingScheduleComponent!: FiringScheduleComponent;
   @ViewChild('ionItemsContainer') private myScrollContainer!: ElementRef;
@@ -76,6 +77,10 @@ export class FiringScheduleBuilderPage {
           return segment.duration;
         }
       );
+  }
+
+  ngOnDestroy() {
+    this.firingScheduleService.resetFiringScheduleBuildInProgress();
   }
 
   async openSegmentDialog() {
@@ -139,10 +144,13 @@ export class FiringScheduleBuilderPage {
         this.firingScheduleService.firingScheduleBuildInProgress.segments.push({
           lowTemp: lowTemp,
           highTemp: highTemp,
-          duration: '01:00',
+          duration: '00:30',
           hold: true,
           type: type,
         });
+        this.hourInputs.push(0);
+        this.minuteInputs.push(30);
+        this.durationInputs.push('00:30');
       } else if (type === 'ramp'){
         //set up the new segment and check for max temp reached
         if (previousType === 'cool' || previousType === 'hold') {
@@ -250,6 +258,14 @@ export class FiringScheduleBuilderPage {
 
     await new Promise(resolve => setTimeout(resolve, 500));
 
+    this.updateChildChart();
+  }
+
+  setCone(event: any) {
+    console.log(event);
+    this.firingScheduleService.firingScheduleBuildInProgress.maxCone = event.detail.value;
+    this.firingScheduleService.firingScheduleBuildInProgress.maxTemp = this.firingScheduleService.firingScheduleBuildInProgress.tempScale === 'F' ? this.firingDetailsService.conesAndTemps[event.detail.value].farhenheit :
+    this.firingDetailsService.conesAndTemps[event.detail.value].celsius;
     this.updateChildChart();
   }
 
@@ -505,9 +521,8 @@ export class FiringScheduleBuilderPage {
         message: 'Saving Firing Schedule...',
       });
     await loading.present();
-    this.firingScheduleService.userFiringSchedules = await this.firestoreService.getUserFiringSchedules(this.auth.userMeta?.uid || '');
 
-    console.log(this.firingScheduleService.userFiringSchedules);
+    this.firingScheduleService.userFiringSchedules = await this.firestoreService.getUserFiringSchedules(this.auth.userMeta?.uid || '');
 
     if (this.firingScheduleService.userFiringSchedules.some(schedule => schedule.name === this.firingScheduleService.firingScheduleBuildInProgress.name)) {
       await this.alertController.create({
@@ -518,7 +533,11 @@ export class FiringScheduleBuilderPage {
       await loading.dismiss();
       return;
     }
+
     await this.firestoreService.upsertFiringSchedule(this.firingScheduleService.firingScheduleBuildInProgress);
+    console.log('saved');
+
+    this.firingScheduleService.userFiringSchedules.push(this.firingScheduleService.firingScheduleBuildInProgress);
 
     await loading.dismiss();
     this.toast.create({

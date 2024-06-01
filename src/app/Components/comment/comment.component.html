@@ -1,0 +1,24 @@
+<div class="comment">
+  <div class="comment-content">
+    <ion-item>
+      <ion-avatar slot="start">
+        <img [src]="comment.creatorProfileImageUrl === '' ? '../../assets/images/default-profile-photo.jpg' : comment.creatorProfileImageUrl" />
+      </ion-avatar>
+      <strong>{{ comment.creatorName }}</strong>
+      <small style="margin-left: 5px;">{{ getDate(comment.dateCreated) }}</small>
+    </ion-item>
+    <p class="ion-margin" style="margin-top: 5px !important;">{{ comment.content }}</p>
+    <ion-item lines="none" (click)="replyOn = !replyOn">
+      <ion-icon name="chatbox">
+      </ion-icon>
+      <small style="margin-left: 5px;">Reply</small>
+    </ion-item>
+  </div>
+  <div class="reply-section" *ngIf="replyOn">
+    <ion-input maxlength="100" [value]="replyContent" (input)="setReplyContent($event)" placeholder="Write a reply..."></ion-input>
+    <ion-button [disabled]="replyContent.length <= 0" size="small" class="ion-margin" (click)="onReply()">Reply</ion-button>
+  </div>
+  <div class="nested-comments" *ngIf="comment.comments && comment.comments.length > 0">
+    <app-comment *ngFor="let nestedComment of comment.comments" [comment]="nestedComment" (reply)="onNestedReply($event)"></app-comment>
+  </div>
+</div>

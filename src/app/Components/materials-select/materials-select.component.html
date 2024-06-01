@@ -17,9 +17,9 @@
   (ionClear)="resetMaterials($event)"
 >
   <ng-template ionicSelectableItemTemplate let-ingredient="item">
-    <div class="vertical-stack">
+    <div class="vertical-stack ion-margin">
       <label>{{ingredient.Name}}</label>
-      <label class="text-small">{{ ingredient.Oxides.length }}</label>
+      <p><small>{{getOxideInfo(ingredient)}}</small></p>
     </div>
   </ng-template>
 </ionic-selectable>

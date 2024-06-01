@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
+import { ConeTemp } from '../Interfaces/coneTempInterface';
 
 @Injectable({
   providedIn: 'root',
 })
+
 export class FiringDetailsService {
   constructor() {}
 
@@ -56,7 +58,7 @@ export class FiringDetailsService {
     '022',
   ];
 
-  conesAndTemps: { [key: string]: object } = {
+  conesAndTemps: { [key: string]: ConeTemp } = {
     //ceramic cones from 10 to 022 in the format {
     //   farhenheit: 2345,
     //   celsius: 1285,

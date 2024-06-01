@@ -4,13 +4,14 @@ import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Material } from 'src/app/Interfaces/material';
 import { MaterialsService } from 'src/app/Services/materials.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-materials-select',
   templateUrl: './materials-select.component.html',
   styleUrls: ['./materials-select.component.scss'],
   standalone: true,
-  imports: [IonicSelectableComponent, FormsModule, IonicSelectableItemTemplateDirective]
+  imports: [IonicSelectableComponent, FormsModule, IonicSelectableItemTemplateDirective, CommonModule]
 })
 export class MaterialsSelectComponent {
 
@@ -93,5 +94,17 @@ export class MaterialsSelectComponent {
   }
 
   resetMaterials(event: any) {
+  }
+
+  getOxideInfo(material: Material) {
+    let oxides = material.Oxides;
+    let oxideInfo = '';
+    for (let i = 0; i < oxides.length; i++) {
+      if (i !== 0) {
+        oxideInfo += ' ~ ';
+      }
+      oxideInfo += oxides[i].OxideName + ': ' + oxides[i].Analysis + '%';
+    }
+    return oxideInfo;
   }
 }

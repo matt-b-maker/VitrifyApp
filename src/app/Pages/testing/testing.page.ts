@@ -36,6 +36,9 @@ import { parse } from 'uuid';
   styleUrls: ['./testing.page.scss'],
 })
 export class TestingPage implements OnInit {
+
+  userHasRecipes: boolean = false;
+
   initialTestBatches!: TestBatch[];
   testBatchUnderEdit!: TestBatch;
   editingModalOpen: boolean = false;
@@ -64,8 +67,8 @@ export class TestingPage implements OnInit {
       role: 'cancel',
       handler: () => {
         console.log('Cancel clicked');
-      }
-    }
+      },
+    },
   ];
 
   constructor(
@@ -82,6 +85,13 @@ export class TestingPage implements OnInit {
   ) {
     //this.testingService.getUserTestBatches();
     (async () => {
+      this.recipesService.userRecipes = await this.firestore.getUserRecipes(
+        this.auth.userMeta?.uid || ''
+      );
+      this.userHasRecipes = this.recipesService.userRecipes.length > 0;
+      if (!this.userHasRecipes) {
+        return;
+      }
       this.loaded = false;
       await this.testingService.getUserTestBatches();
       this.testingService.testBatches.forEach((batch) => {
@@ -89,9 +99,6 @@ export class TestingPage implements OnInit {
           this.testingService.testBatches.indexOf(batch)
         );
       });
-      this.recipesService.userRecipes = await this.firestore.getUserRecipes(
-        this.auth.userMeta?.uid || ''
-      );
       this.initialTestBatches = this.testingService.testBatches;
       this.loaded = true;
     })();
@@ -267,6 +274,7 @@ export class TestingPage implements OnInit {
   }
 
   addTestBatch() {
+    console.log('click');
     this.editOrAdd = 'New Test Batch';
     this.testBatchUnderEdit = new TestBatch(
       '',
@@ -367,7 +375,8 @@ export class TestingPage implements OnInit {
     } else if (
       this.testingService.testBatches.some(
         (batch) => batch.name === this.testBatchUnderEdit.name
-      ) && !this.editingModalOpen
+      ) &&
+      !this.editingModalOpen
     ) {
       //let the user close the modal and clear the test batch if they want to
       await this.alertController
@@ -533,24 +542,25 @@ export class TestingPage implements OnInit {
   }
 
   getDateCreated(testBatch: TestBatch): string {
-
-    if (typeof testBatch.dateCreated === 'object'){
-      console.log('dateCreated is an object');
-      const month = (testBatch.dateCreated.getMonth() + 1).toString().padStart(2, '0');
+    try {
+      const month = (testBatch.dateCreated.getMonth() + 1)
+        .toString()
+        .padStart(2, '0');
       const day = testBatch.dateCreated.getDate().toString().padStart(2, '0');
       const year = testBatch.dateCreated.getFullYear().toString();
 
       return `${month}/${day}/${year}`;
-    }
-    const timeStamp = testBatch.dateCreated as unknown as Timestamp;
-    const date = new Date(
-      timeStamp.nanoseconds / 1000000 + timeStamp.seconds * 1000
-    );
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const year = date.getFullYear().toString();
+    } catch {
+      const timeStamp = testBatch.dateCreated as unknown as Timestamp;
+      const date = new Date(
+        timeStamp.nanoseconds / 1000000 + timeStamp.seconds * 1000
+      );
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      const year = date.getFullYear().toString();
 
-    return `${month}/${day}/${year}`;
+      return `${month}/${day}/${year}`;
+    }
   }
 
   getChipColor(testBatch: TestBatch) {
@@ -564,7 +574,6 @@ export class TestingPage implements OnInit {
   }
 
   async completeTest(updateRecipeStatuses: boolean) {
-
     const loading = await this.loadingController.create({
       message: 'Completing this Test...',
     });
@@ -578,7 +587,7 @@ export class TestingPage implements OnInit {
       //update the status of the recipes in the test batch
       this.testBatchUnderEdit.tiles.forEach((tile) => {
         tile.recipes.forEach(async (recipe, index) => {
-          console.log(tile.selectedRevisions[index])
+          console.log(tile.selectedRevisions[index]);
           if (moddedRecipes.includes(recipe.id)) {
             return;
           }
@@ -586,7 +595,8 @@ export class TestingPage implements OnInit {
             (userRecipe) => userRecipe.id === recipe.id
           );
           if (recipeToUpdate) {
-            recipeToUpdate.revisions[tile.selectedRevisions[index] - 1].status = Status.Tested;
+            recipeToUpdate.revisions[tile.selectedRevisions[index] - 1].status =
+              Status.Tested;
             moddedRecipes.push(recipeToUpdate.id);
             await this.firestore.updateRecipe(recipeToUpdate);
           }

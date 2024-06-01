@@ -1,13 +1,14 @@
-import { Component, OnDestroy, OnInit, ViewChild, getPlatform } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, ViewChild, getPlatform } from '@angular/core';
 import { AuthService } from './Services/auth.service';
 import { Subscription } from 'rxjs';
 import { User } from 'firebase/auth';
 import { Router, RouterOutlet } from '@angular/router';
 import { AlertController, Platform } from '@ionic/angular';
-import { App as CapacitorApp } from '@capacitor/app';
+import { App as CapacitorApp, App, URLOpenListenerEvent } from '@capacitor/app';
 import { UserMeta } from './Models/userMetaModel';
 import { MaterialsService } from './Services/materials.service';
 import { register } from 'swiper/element/bundle';
+import { FirestoreService } from './Services/firestore.service';
 
 register();
 
@@ -20,10 +21,12 @@ export class AppComponent implements OnInit, OnDestroy {
 
   constructor(
     public auth: AuthService,
+    private firestore: FirestoreService,
     private router: Router,
     private alertController: AlertController,
     private platform: Platform,
-    private materialsService: MaterialsService
+    private materialsService: MaterialsService,
+    private zone: NgZone
   ) {
     this.auth.user$.subscribe((user) => {
       this.user = user;
@@ -33,12 +36,12 @@ export class AppComponent implements OnInit, OnDestroy {
     });
       (async () => {
         await this.materialsService.setMaterials();
-        //remove "LOI" from materials oxides
         this.materialsService.materials.forEach((material) => {
           material.Oxides.forEach((oxide) => {
-            if (oxide.OxideName === 'LOI') {
-              material.Oxides.splice(material.Oxides.indexOf(oxide), 1);
-            }
+            //remove "LOI" from materials oxides
+            // if (oxide.OxideName === 'LOI') {
+            //   material.Oxides.splice(material.Oxides.indexOf(oxide), 1);
+            // }
             //sort oxides by analysis percentage
             material.Oxides.sort((a, b) => {
               return b.Analysis - a.Analysis;
@@ -69,6 +72,18 @@ export class AppComponent implements OnInit, OnDestroy {
   ];
 
   initializeApp() {
+    App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
+      this.zone.run(() => {
+          // Example url: https://beerswift.app/tabs/tab2
+          // slug = /tabs/tab2
+          const slug = event.url.split(".app").pop();
+          if (slug) {
+              this.router.navigateByUrl(slug);
+          }
+          // If no match, do nothing - let regular routing
+          // logic take over
+      });
+  });
 
     this.platform.ready().then(() => {
       CapacitorApp.addListener('backButton', async ({ canGoBack }) => {
@@ -127,6 +142,7 @@ export class AppComponent implements OnInit, OnDestroy {
     const role = await confirm.onDidDismiss();
     // Check the user's response
     if (role.data === 'Yup') {
+      await this.firestore.updateFcmToken('');
       await this.auth.logout();
       // Redirect or navigate to the next page after successful logout
       this.router.navigate(['/login']);

@@ -39,7 +39,6 @@ export class CanDeactivateGuard {
     return new Promise(async (resolve) => {
       // Immediately resolve if exiting is allowed
       if (this.recipeService.allowExit) {
-        this.recipeService.allowExit = false; // Reset the flag
         return resolve(true); // Resolve and exit the function
       }
 
