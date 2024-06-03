@@ -132,7 +132,7 @@
       <ion-card-title>Notes</ion-card-title>
     </ion-card-header>
     <ion-card-content>
-      <ion-textarea [disabled]="loadedRecipe.revisions[revision].notes === ''"> {{loadedRecipe.revisions[revision].notes}} </ion-textarea>
+      <ion-label [disabled]="loadedRecipe.revisions[revision].notes === ''"> {{loadedRecipe.revisions[revision].notes}} </ion-label>
     </ion-card-content>
   </ion-card>
 
@@ -160,180 +160,152 @@
     <ng-template>
       <ion-header>
         <ion-toolbar>
-          <ion-buttons slot="start">
-            <ion-button (click)="cancel()">Cancel</ion-button>
-            <ion-button
-              *ngIf="currentSectionIndex !== 0"
-              (click)="prevSection()"
-              >Previous {{prevSectionName}}</ion-button
-            >
-          </ion-buttons>
           <ion-buttons slot="end">
-            <ion-button
-              *ngIf="currentSectionIndex !== 3"
-              (click)="nextSection()"
-              >Next: {{nextSectionName}}</ion-button
-            >
-            <ion-button
-              *ngIf="currentSectionIndex === 3"
-              [strong]="true"
-              (click)="confirm()"
-              >Confirm</ion-button
-            >
+            <ion-button (click)="makeRecipeModalOpen = false">Close</ion-button>
           </ion-buttons>
         </ion-toolbar>
       </ion-header>
-      <ion-content class="ion-padding" scroll-y="false">
-        <div id="section-0" class="section">
+      <ion-content class="ion-padding">
+        <ion-card>
+          <ion-card-header>
+            <ion-card-title>Let's make {{loadedRecipe.name}}</ion-card-title>
+          </ion-card-header>
+          <ion-card-content class="ion-justify-content-center">
+            <ion-card>
+              <ion-card-content>
+                <ion-item>
+                  <ion-label>Batch Size</ion-label>
+                  <ion-select class="ion-text-right" [value]="batchUnit" label="Unit" labelPlacement="stacked" (ionChange)="setBatchUnit($event)">
+                    <ion-select-option *ngFor="let unit of batchUnits" [value]="unit">{{unit}}</ion-select-option>
+                  </ion-select>
+                </ion-item>
+                <ion-radio-group
+                  [value]="selectedBatchSize"
+                  (ionChange)="setBatchSize($event)"
+                >
+                  <ion-radio
+                    class="ion-margin"
+                    labelPlacement="start"
+                    [value]="testBatchSize"
+                  >
+                    Test Batch ({{testBatchSize}}{{batchUnit}})
+                  </ion-radio>
+                  <ion-radio
+                    class="ion-margin"
+                    labelPlacement="start"
+                    [value]="mediumBatchSize"
+                  >
+                    Medium Batch ({{mediumBatchSize}}{{batchUnit}})
+                  </ion-radio>
+                  <ion-radio
+                    class="ion-margin"
+                    labelPlacement="start"
+                    [value]="largeBatchSize"
+                  >
+                    Large Batch ({{largeBatchSize}}{{batchUnit}})
+                  </ion-radio>
+                  <ion-radio
+                    class="ion-margin"
+                    labelPlacement="start"
+                    value="custom"
+                  >
+                    Custom
+                  </ion-radio>
+                </ion-radio-group>
+                <ion-item *ngIf="customBatch">
+                  <ion-input [label]="'Custom Batch Size ' + '(' + batchUnit + ')'" labelPlacement="stacked" [value]="customBatchSize" (ionChange)="setCustomBatchSize($event)">
+                  </ion-input>
+                </ion-item>
+              </ion-card-content>
+            </ion-card>
+            <ion-card>
+              <ion-card-content class="ion-justify-content-center">
+                <ion-label class="horizontal-center"
+                  >Water Quantity</ion-label
+                >
+                <ion-radio-group [(ngModel)]="waterPreference">
+                  <ion-radio class="ion-margin" value="Proportion"
+                    >Proportional</ion-radio
+                  >
+                  <ion-radio class="ion-margin" value="Specific Gravity"
+                    >Specific Gravity</ion-radio
+                  >
+                </ion-radio-group>
+                <div
+                  class="ion-justify-content-center"
+                  *ngIf="waterPreference === 'Proportion'"
+                >
+                  <ion-label>Water to Dry Material Ratio</ion-label>
+                  <ion-item class="horizontal-div ion-justify-content-center">
+                    <ion-input
+                      class="ion-text-right"
+                      type="number"
+                      [(ngModel)]="waterToDryMaterialRatio"
+                      (ionChange)="setWaterToDryMaterialRatio($event)"
+                    ></ion-input>
+                    <ion-label style="display: flex; align-items: center;">:10</ion-label>
+                  </ion-item>
+                </div>
+                <ion-item *ngIf="waterPreference === 'Specific Gravity'">
+                  <ion-label>Specific Gravity</ion-label>
+                  <ion-input
+                    type="number"
+                    [(ngModel)]="specificGravity"
+                  ></ion-input>
+                </ion-item>
+              </ion-card-content>
+            </ion-card>
+          </ion-card-content>
+        </ion-card>
+        <div class="w-fill-available">
           <ion-card>
             <ion-card-header>
-              <ion-card-title>Let's make {{loadedRecipe.name}}</ion-card-title>
+              <ion-toolbar>
+                <ion-card-subtitle>Weigh 'em Out</ion-card-subtitle>
+                <ion-card-title>Materials</ion-card-title>
+                <div slot="end" *ngIf="inventoryOptionShowing">
+                  <ion-toggle [value]="consumeInventory" (ionChange)="setConsumeInventory($event)" labelPlacement="stacked">
+                    <ion-label>Consume Inventory</ion-label>
+                  </ion-toggle>
+                </div>
+              </ion-toolbar>
             </ion-card-header>
-            <ion-card-content class="ion-justify-content-center">
-              <ion-card>
-                <ion-card-content>
-                  <ion-item>
-                    <ion-label>Batch Size</ion-label>
-                    <ion-select [value]="batchUnit" label="Unit" labelPlacement="stacked" (ionChange)="setBatchUnit($event)">
-                      <ion-select-option *ngFor="let unit of batchUnits" [value]="unit">{{unit}}</ion-select-option>
-                    </ion-select>
-                  </ion-item>
-                  <ion-radio-group
-                    [value]="selectedBatchSize"
-                    (ionChange)="setBatchSize($event)"
+            <ion-card-content>
+              <ion-list>
+                <ion-item
+                  *ngFor="let material of loadedRecipe.revisions[revision].materials"
+                >
+                  <ion-checkbox class="ion-text-wrap" (ionChange)="checkInventoryForQuantity(material.Name, material.Quantity, material.Unit)"
+                    >{{material.Name}}: {{material.Quantity}}{{batchUnit}}</ion-checkbox
                   >
-                    <ion-radio
-                      class="ion-margin"
-                      labelPlacement="start"
-                      [value]="testBatchSize"
-                    >
-                      Test Batch ({{testBatchSize}}{{batchUnit}})
-                    </ion-radio>
-                    <ion-radio
-                      class="ion-margin"
-                      labelPlacement="start"
-                      [value]="mediumBatchSize"
-                    >
-                      Medium Batch ({{mediumBatchSize}}{{batchUnit}})
-                    </ion-radio>
-                    <ion-radio
-                      class="ion-margin"
-                      labelPlacement="start"
-                      [value]="largeBatchSize"
-                    >
-                      Large Batch ({{largeBatchSize}}{{batchUnit}})
-                    </ion-radio>
-                    <ion-radio
-                      class="ion-margin"
-                      labelPlacement="start"
-                      value="custom"
-                    >
-                      Custom
-                    </ion-radio>
-                  </ion-radio-group>
-                  <ion-item *ngIf="customBatch">
-                    <ion-input [label]="'Custom Batch Size ' + '(' + batchUnit + ')'" labelPlacement="stacked" [value]="customBatchSize" (ionChange)="setCustomBatchSize($event)">
-                    </ion-input>
-                  </ion-item>
-                </ion-card-content>
-              </ion-card>
-              <ion-card>
-                <ion-card-content class="ion-justify-content-center">
-                  <ion-label class="horizontal-center"
-                    >Water Quantity</ion-label
+                </ion-item>
+              </ion-list>
+            </ion-card-content>
+          </ion-card>
+          <ion-card>
+            <ion-card-header>
+              <ion-card-title>Water</ion-card-title>
+            </ion-card-header>
+            <ion-card-content>
+              <ion-list>
+                <ion-item *ngIf="waterPreference === 'Proportion'">
+                  <ion-label
+                    >Your ratio is {{waterToDryMaterialRatio}}:10, so the
+                    amount of water you need is {{this.totalBatchSize *
+                    (this.waterToDryMaterialRatio / 10)}}{{batchUnit}}</ion-label
                   >
-                  <ion-radio-group [(ngModel)]="waterPreference">
-                    <ion-radio class="ion-margin" value="Proportion"
-                      >Proportional</ion-radio
-                    >
-                    <ion-radio class="ion-margin" value="Specific Gravity"
-                      >Specific Gravity</ion-radio
-                    >
-                  </ion-radio-group>
-                  <div
-                    class="ion-justify-content-center"
-                    *ngIf="waterPreference === 'Proportion'"
+                </ion-item>
+                <ion-item *ngIf="waterPreference === 'Specific Gravity'">
+                  <ion-label
+                    >Start with a 1:1 ratio of water and your batch size is {{totalBatchSize}}, so in this case,
+                    {{totalBatchSize}}g of water. Add more little by little until
+                    you reach your desired specific gravity</ion-label
                   >
-                    <ion-label>Water to Dry Material Ratio</ion-label>
-                    <div class="horizontal-div">
-                      <ion-input
-                        (ionBlur)="scrollToSection()"
-                        type="number"
-                        [(ngModel)]="waterToDryMaterialRatio"
-                      ></ion-input>
-                      <ion-label>:10</ion-label>
-                    </div>
-                  </div>
-                  <ion-item *ngIf="waterPreference === 'Specific Gravity'">
-                    <ion-label>Specific Gravity</ion-label>
-                    <ion-input
-                      (ionBlur)="scrollToSection()"
-                      type="number"
-                      [(ngModel)]="specificGravity"
-                    ></ion-input>
-                  </ion-item>
-                </ion-card-content>
-              </ion-card>
+                </ion-item>
+              </ion-list>
             </ion-card-content>
           </ion-card>
         </div>
-        <div id="section-1" class="section w-fill-available vertical-center">
-          <!-- <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'"> </canvas> -->
-          <div class="w-fill-available">
-            <ion-card>
-              <ion-card-header>
-                <ion-toolbar>
-                  <ion-card-subtitle>Weigh 'em Out</ion-card-subtitle>
-                  <ion-card-title>Materials</ion-card-title>
-                  <div slot="end" *ngIf="inventoryOptionShowing">
-                    <ion-toggle [value]="consumeInventory" (ionChange)="setConsumeInventory($event)" labelPlacement="stacked">
-                      <ion-label>Consume Inventory</ion-label>
-                    </ion-toggle>
-                  </div>
-                </ion-toolbar>
-              </ion-card-header>
-              <ion-card-content>
-                <ion-list>
-                  <ion-item
-                    *ngFor="let material of loadedRecipe.revisions[revision].materials"
-                  >
-                    <ion-checkbox (ionChange)="checkInventoryForQuantity(material.Name, material.Quantity, material.Unit)"
-                      >{{material.Name}}: {{material.Quantity}}{{batchUnit}}</ion-checkbox
-                    >
-                  </ion-item>
-                </ion-list>
-              </ion-card-content>
-            </ion-card>
-          </div>
-        </div>
-        <div id="section-2" class="section vertical-center">
-          <div class="w-fill-available">
-            <ion-card>
-              <ion-card-header>
-                <ion-card-title>Water</ion-card-title>
-              </ion-card-header>
-              <ion-card-content>
-                <ion-list>
-                  <ion-item *ngIf="waterPreference === 'Proportion'">
-                    <ion-label
-                      >Your ratio is {{waterToDryMaterialRatio}}:10, so the
-                      amount of water you need is {{this.totalBatchSize *
-                      (this.waterToDryMaterialRatio / 10)}}{{batchUnit}}</ion-label
-                    >
-                  </ion-item>
-                  <ion-item *ngIf="waterPreference === 'Specific Gravity'">
-                    <ion-label
-                      >Start with a 1:1 ratio of water and your batch size is {{totalBatchSize}}, so in this case,
-                      {{totalBatchSize}}g of water. Add more little by little until
-                      you reach your desired specific gravity</ion-label
-                    >
-                  </ion-item>
-                </ion-list>
-              </ion-card-content>
-            </ion-card>
-          </div>
-        </div>
-        <div id="section-3" class="section">Section 4</div>
       </ion-content>
     </ng-template>
   </ion-modal>

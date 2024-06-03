@@ -19,6 +19,7 @@ import { IonicSlides } from '@ionic/angular';
 import { InventoryService } from 'src/app/Services/inventory.service';
 import { Subscription, fromEvent } from 'rxjs';
 import { Comment } from 'src/app/Models/commentModel';
+import { Timestamp } from 'firebase/firestore';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -114,11 +115,15 @@ export class UserRecipeDetailPage implements OnInit {
     });
     this.firestoreService.getCommentsByRecipeIdObservable(this.loadedRecipe.id).subscribe(comments => {
       this.comments = comments;
+      this.comments = this.comments.sort((a, b) => {
+        //date created is a timestamp here
+        let aTimestamp = a.dateCreated as unknown as Timestamp;
+        let bTimestamp = b.dateCreated as unknown as Timestamp;
+        return bTimestamp.toMillis() - aTimestamp.toMillis();
+      });
     });
-    //sort comments by date
-    this.comments.sort((a, b) => {
-      return (b.dateCreated as unknown as number) - (a.dateCreated as unknown as number);
-    });
+    //sort comments by date: 6/3 before 6/1
+    await this.inventoryService.getUserInventory();
     this.setIngredientQuantities();
     this.getWaterQuantity();
     this.inventoryOptionShowing = this.inventoryService.userInventory !== null && this.inventoryService.userInventory !== undefined && this.inventoryService.userInventory.inventory.length > 0;
@@ -129,6 +134,16 @@ export class UserRecipeDetailPage implements OnInit {
         modal.dismiss();
       }
     });
+  }
+
+  setWaterToDryMaterialRatio(event: any) {
+    if (this.waterToDryMaterialRatio < 1) {
+      this.waterToDryMaterialRatio = 1;
+    }
+    if (this.waterToDryMaterialRatio > 10) {
+      this.waterToDryMaterialRatio = 10;
+    }
+    this.getWaterQuantity();
   }
 
   async shareRecipeWithDeepLink() {
@@ -402,6 +417,8 @@ export class UserRecipeDetailPage implements OnInit {
     };
     this.comments.push(newComment);
 
+    this.comments = this.comments.sort((a, b) => a.dateCreated.getTime() - b.dateCreated.getTime());
+
     //update the recipe in firestore
     await this.firestoreService.upsertComment(newComment);
 
@@ -470,49 +487,6 @@ export class UserRecipeDetailPage implements OnInit {
 
   onWillDismiss(event: Event) {
     this.currentSectionIndex = 0;
-  }
-
-  nextSection() {
-    if (this.currentSectionIndex < 3) {
-      this.currentSectionIndex++;
-      this.scrollToSection();
-    }
-    if (this.currentSectionIndex > 0) {
-      this.prevSectionName = this.sectionNames[this.currentSectionIndex - 1];
-    }
-    if (this.currentSectionIndex < 3) {
-      this.nextSectionName = this.sectionNames[this.currentSectionIndex + 1];
-    }
-  }
-
-  prevSection() {
-    if (this.currentSectionIndex > 0) {
-      this.currentSectionIndex--;
-      this.scrollToSection();
-    }
-    if (this.currentSectionIndex > 0) {
-      this.prevSectionName = this.sectionNames[this.currentSectionIndex - 1];
-    }
-    if (this.currentSectionIndex < 3) {
-      this.nextSectionName = this.sectionNames[this.currentSectionIndex + 1];
-    }
-  }
-
-  scrollToSection() {
-    const sectionElement = document.getElementById(
-      'section-' + this.currentSectionIndex
-    );
-    if (sectionElement) {
-      sectionElement.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start',
-        inline: 'nearest',
-      });
-    }
-  }
-
-  scrollBack() {
-    this.scrollToSection();
   }
 
   setCustomBatchSize(event: any) {

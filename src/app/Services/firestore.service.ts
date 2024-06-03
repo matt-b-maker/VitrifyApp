@@ -325,6 +325,7 @@ export class FirestoreService {
       collection(this.firestore, 'comments'),
       where('recipeId', '==', recipeId)
     );
+
     return collectionData(q);
   }
 

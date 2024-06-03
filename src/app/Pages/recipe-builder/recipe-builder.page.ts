@@ -1,8 +1,12 @@
 import {
+  AfterViewInit,
   Component,
+  ElementRef,
   Inject,
+  QueryList,
   Renderer2,
   ViewChild,
+  ViewChildren,
 } from '@angular/core';
 import { AuthService } from 'src/app/Services/auth.service';
 import { IngredientTypesService } from 'src/app/Services/ingredient-types.service';
@@ -36,7 +40,7 @@ import { RecipeRevision } from 'src/app/Models/recipeRevision';
     '../../../ionic-selectable.component.scss',
   ],
 })
-export class RecipeBuilderPage {
+export class RecipeBuilderPage implements AfterViewInit {
   searching: boolean = false;
   lowerCone: string = '6';
   upperCone: string = '10';
@@ -58,6 +62,7 @@ export class RecipeBuilderPage {
   isEditing: boolean;
   //get all app-ingredient components
   @ViewChild('inputCone', { static: true }) inputCone!: IonInput;
+  @ViewChildren('percentageInput') percentageInputs!: QueryList<IonInput>;
 
   totalPercentage: number = 0;
   remainingPercentage: number = 100;
@@ -93,6 +98,14 @@ export class RecipeBuilderPage {
     );
   }
 
+  ngAfterViewInit() {
+    // Subscribe to changes in the QueryList
+    this.percentageInputs.changes.subscribe((list: QueryList<IonInput>) => {
+      this.percentageInputs = list;
+    });
+  }
+
+
   onSelectableClose(event: any) {
     this.searching = false;
     this.allMaterials = this.materialsService.materials.slice(0, 50);
@@ -102,6 +115,11 @@ export class RecipeBuilderPage {
     this.recipeService.recipeBuildInProgess.revisions[0].materials[
       index
     ].Name = event.Name;
+    //focus on the next percentage input
+    const inputArray = this.percentageInputs.toArray();
+    console.log(inputArray);
+    const percentageInput = inputArray[index];
+    percentageInput.setFocus();
     this.updateMaterialsList();
   }
 
@@ -351,10 +369,12 @@ export class RecipeBuilderPage {
   }
 
   setPercentage(event: any, index: number) {
+    console.log(event.target.value);
     if (
       event.target.value === '0' ||
       event.target.value === '' ||
-      !event.target.value
+      !event.target.value ||
+      event.target.value === 1
     ) {
       this.recipeService.recipeBuildInProgess.revisions[0].materials[
         index
@@ -410,7 +430,7 @@ export class RecipeBuilderPage {
   }
 
   trimLeadingZeros(input: string): string {
-    if (input) {
+    if (input && input.length > 0) {
       return input.replace(/^0+/, '');
     }
     return '';

@@ -10,6 +10,8 @@
   [(items)]="allMaterials"
   [canSearch]="true"
   (onClose)="onSelectableClose($event)"
+  (onSelect)="onMaterialSelect($event)"
+  [shouldFocusSearchbar]="true"
   (onSearch)="searchIngredients($event)"
   (onChange)="setIngredientValue($event)"
   [hasInfiniteScroll]="true"
