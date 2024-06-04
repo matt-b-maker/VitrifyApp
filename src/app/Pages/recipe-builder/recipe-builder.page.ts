@@ -397,8 +397,6 @@ export class RecipeBuilderPage implements AfterViewInit {
       index
     ].Percentage = parseFloat(this.trimLeadingZeros(event.target.value));
     this.calculateTotalPercentage();
-    this.umf = this.chemistryCalcService.calculateUMF(this.recipeService.recipeBuildInProgess.revisions[0].materials);
-    console.log(this.umf);
   }
 
   calculateTotalPercentage() {

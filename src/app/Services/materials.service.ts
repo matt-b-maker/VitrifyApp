@@ -75,6 +75,10 @@ export class MaterialsService {
     );
   }
 
+  getMaterial(name: string): Material {
+    return this.materials.find(material => material.Name === name) as Material;
+  }
+
   // materialsJson: MaterialsJson = {
   //   "Alumina Hydrate": {
   //     "Chemical Composition": "Al(OH)₃",

@@ -20,6 +20,7 @@ import { InventoryService } from 'src/app/Services/inventory.service';
 import { Subscription, fromEvent } from 'rxjs';
 import { Comment } from 'src/app/Models/commentModel';
 import { Timestamp } from 'firebase/firestore';
+import { ChemistryCalculatorService } from 'src/app/Services/chemistry-calculator.service';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -91,7 +92,8 @@ export class UserRecipeDetailPage implements OnInit {
     private alertController: AlertController,
     private auth: AuthService,
     private inventoryService: InventoryService,
-    private toastController: ToastController
+    private toastController: ToastController,
+    private chemistryCalculator: ChemistryCalculatorService
   ) {
   }
 
@@ -134,6 +136,19 @@ export class UserRecipeDetailPage implements OnInit {
         modal.dismiss();
       }
     });
+
+    console.log(this.loadedRecipe.revisions[this.revision]);
+
+    let materials = this.chemistryCalculator.getMaterialsFromNames(this.loadedRecipe.revisions[this.revision].materials);
+
+    let umf: Map<string, number> = this.chemistryCalculator.calculateUMF(
+      this.chemistryCalculator.normalizeFluxes(
+        this.chemistryCalculator.calculateTotalOxides(materials)
+      ),
+      this.chemistryCalculator.calculateTotalOxides(materials)
+    );
+
+    console.log(umf);
   }
 
   setWaterToDryMaterialRatio(event: any) {
