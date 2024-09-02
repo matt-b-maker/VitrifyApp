@@ -11,7 +11,7 @@ $RECYCLE.BIN/
 
 *.log
 log.txt
-
+  
 
 /.sourcemaps
 /.versions
@@ -22,7 +22,9 @@ log.txt
 /www
 /platforms
 /plugins
-/src/environments
+/environments
+/environments/*.ts
+
 
 # Compiled output
 /dist
