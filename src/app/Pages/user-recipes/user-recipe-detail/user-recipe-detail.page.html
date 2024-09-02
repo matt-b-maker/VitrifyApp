@@ -2,7 +2,7 @@
   <ion-header translucent>
     <ion-toolbar>
       <ion-buttons slot="start">
-        <ion-button *ngIf="isUserRecipe()" (click)="addRevision()">
+        <ion-button *ngIf="isUserRecipe" (click)="addRevision()">
           Add Revision
         </ion-button>
       </ion-buttons>
@@ -213,7 +213,7 @@
                   </ion-radio>
                 </ion-radio-group>
                 <ion-item *ngIf="customBatch">
-                  <ion-input [label]="'Custom Batch Size ' + '(' + batchUnit + ')'" labelPlacement="stacked" [value]="customBatchSize" (ionChange)="setCustomBatchSize($event)">
+                  <ion-input [clearOnEdit]="true" [label]="'Custom Batch Size ' + '(' + batchUnit + ')'" labelPlacement="stacked" [value]="customBatchSize" (ionChange)="setCustomBatchSize($event)">
                   </ion-input>
                 </ion-item>
               </ion-card-content>
@@ -275,7 +275,7 @@
                 <ion-item
                   *ngFor="let material of loadedRecipe.revisions[revision].materials"
                 >
-                  <ion-checkbox class="ion-text-wrap" (ionChange)="checkInventoryForQuantity(material.Name, material.Quantity, material.Unit)"
+                  <ion-checkbox class="ion-text-wrap checkbox-wrap" (ionChange)="checkInventoryForQuantity(material.Name, material.Quantity, material.Unit)"
                     >{{material.Name}}: {{material.Quantity}}{{batchUnit}}</ion-checkbox
                   >
                 </ion-item>
@@ -331,7 +331,7 @@
   </ion-modal>
 
   <ion-fab vertical="bottom" horizontal="center" slot="fixed">
-    <ion-button (click)="shareRecipeWithDeepLink()">
+    <ion-button (click)="shareDeepLink()">
       <ion-icon name="share-social"></ion-icon>
     </ion-button>
     <ion-button style="margin-right: 10px; margin-left: 10px;"  (click)="setMakeRecipeModalOpen()">Make this glaze</ion-button>

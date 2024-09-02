@@ -9,7 +9,6 @@
   placeholder="Select Material"
   [(items)]="allMaterials"
   [canSearch]="true"
-  (onClose)="onSelectableClose($event)"
   (onSelect)="onMaterialSelect($event)"
   [shouldFocusSearchbar]="true"
   (onSearch)="searchIngredients($event)"

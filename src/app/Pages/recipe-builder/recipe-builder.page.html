@@ -38,6 +38,8 @@
               [value]="recipeService.recipeBuildInProgess.name"
               (ionBlur)="trimName()"
               (input)="setName($event)"
+              [autocorrect]="true"
+              autocapitalize="words"
             ></ion-input>
           </ion-col>
         </ion-row>

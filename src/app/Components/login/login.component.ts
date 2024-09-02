@@ -218,6 +218,7 @@ export class LoginComponent implements OnInit {
       this.authService.updateUser(userCredential.user);
       this.authService.updateMeta(userMeta);
       this.recipesService.userRecipes = await this.firestore.getUserRecipes(userMeta.uid || '');
+      this.recipesService.allRecipes = await this.firestore.getPublicRecipes();
       await this.inventoryService.getUserInventory();
       await this.testingService.getUserTestBatches();
       await this.updateToken();

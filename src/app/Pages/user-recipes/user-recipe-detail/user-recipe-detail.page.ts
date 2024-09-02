@@ -21,6 +21,7 @@ import { Subscription, fromEvent } from 'rxjs';
 import { Comment } from 'src/app/Models/commentModel';
 import { Timestamp } from 'firebase/firestore';
 import { ChemistryCalculatorService } from 'src/app/Services/chemistry-calculator.service';
+import { Share } from '@capacitor/share';
 
 @Component({
   selector: 'app-user-recipe-detail',
@@ -80,6 +81,8 @@ export class UserRecipeDetailPage implements OnInit {
   commentModalOpen: boolean = false;
   commentContent: string = '';
   comments: Comment[] = [];
+  isUserRecipe: boolean = false;
+  recipeId: string = '';
 
   backbuttonSubscription!: Subscription;
 
@@ -98,7 +101,7 @@ export class UserRecipeDetailPage implements OnInit {
   }
 
   async ngOnInit() {
-    this.activatedRoute.paramMap.subscribe((paramMap) => {
+    this.activatedRoute.paramMap.subscribe(async (paramMap) => {
       if (!paramMap.has('recipeId')) {
         this.route.navigate(['/user-recipes']);
         return;
@@ -107,8 +110,9 @@ export class UserRecipeDetailPage implements OnInit {
       if (recipeId !== null) {
         this.loadedRecipe = this.recipeService.getUserRecipeById(recipeId);
         if (Object.keys(this.loadedRecipe).length === 0) {
-          this.loadedRecipe = this.recipeService.getRecipeById(recipeId);
+          this.loadedRecipe = this.recipeService.getPublicRecipeById(recipeId);
         }
+        this.checkIsUserRecipe();
         this.revision = this.loadedRecipe.revisions.length - 1;
       } else {
         //route somewhere else
@@ -161,33 +165,13 @@ export class UserRecipeDetailPage implements OnInit {
     this.getWaterQuantity();
   }
 
-  async shareRecipeWithDeepLink() {
-    // this.alertController
-    //   .create({
-    //     header: 'Share Recipe',
-    //     message: 'Copy the link below to share this recipe with others.',
-    //     inputs: [
-    //       {
-    //         value: 'https://beerswift.app/recipe/' + this.loadedRecipe.id,
-    //         disabled: true,
-    //       },
-    //     ],
-    //     buttons: [
-    //       {
-    //         text: 'Close',
-    //         role: 'cancel',
-    //       },
-    //     ],
-    //   })
-    //   .then((alertEl) => {
-    //     alertEl.present();
-    //   });
-    await this.alertController.create({
-      header: 'Coming Soon!',
-      message: 'This feature is coming soon!',
-      buttons: ['OK']
-    }).then(alertEl => {
-      alertEl.present();
+  async shareDeepLink() {
+    const deepLink = 'https://resilient-stardust-d78e45.netlify.app/user-recipes/' + this.loadedRecipe.id;
+    await Share.share({
+      title: 'Check out this recipe!',
+      text: 'Take a look at this recipe I found:',
+      url: deepLink,
+      dialogTitle: 'Share this recipe'
     });
   }
 
@@ -292,8 +276,8 @@ export class UserRecipeDetailPage implements OnInit {
     }
   }
 
-  isUserRecipe() {
-    return this.loadedRecipe.uid === this.auth.userMeta?.uid;
+  checkIsUserRecipe() {
+    this.isUserRecipe = this.loadedRecipe.uid === this.auth.userMeta?.uid;
   }
 
   getChipColor(status: Status) {

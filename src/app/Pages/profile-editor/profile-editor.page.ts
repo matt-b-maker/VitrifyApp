@@ -140,11 +140,19 @@ export class ProfileEditorPage {
     }
     this.userMeta.nickname = this.nickname;
     this.auth.updateMeta(this.userMeta);
-    this.firestoreService.upsert(
+    await this.firestoreService.upsert(
       'users',
       this.auth.user?.uid || '',
       this.userMeta
     );
+
+    this.auth.updateMeta(this.userMeta);
+
+    await this.alertController.create({
+      header: 'Success',
+      message: 'Nickname updated successfully!',
+      buttons: ['Sweet'],
+    });
   }
 
   setNickname(event: any) {

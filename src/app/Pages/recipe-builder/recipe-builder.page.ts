@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   Inject,
+  OnDestroy,
   QueryList,
   Renderer2,
   ViewChild,
@@ -40,7 +41,7 @@ import { RecipeRevision } from 'src/app/Models/recipeRevision';
     '../../../ionic-selectable.component.scss',
   ],
 })
-export class RecipeBuilderPage implements AfterViewInit {
+export class RecipeBuilderPage implements AfterViewInit, OnDestroy {
   searching: boolean = false;
   lowerCone: string = '6';
   upperCone: string = '10';
@@ -103,8 +104,14 @@ export class RecipeBuilderPage implements AfterViewInit {
     this.percentageInputs.changes.subscribe((list: QueryList<IonInput>) => {
       this.percentageInputs = list;
     });
+    if (!this.recipeService.isEditing && this.recipeService.recipeBuildInProgess.revisions[0].materials.length === 0) {
+      this.addIngredient();
+    }
   }
 
+  ngOnDestroy() {
+    this.recipeService.isEditing = false;
+  }
 
   onSelectableClose(event: any) {
     this.searching = false;
@@ -117,9 +124,12 @@ export class RecipeBuilderPage implements AfterViewInit {
     ].Name = event.Name;
     //focus on the next percentage input
     const inputArray = this.percentageInputs.toArray();
-    console.log(inputArray);
     const percentageInput = inputArray[index];
     percentageInput.setFocus();
+    //check if there is an ingredient after this one and if there isn't add a new ingredient
+    if (index === this.recipeService.recipeBuildInProgess.revisions[0].materials.length - 1) {
+      this.addIngredient();
+    }
     this.updateMaterialsList();
   }
 
@@ -142,10 +152,9 @@ export class RecipeBuilderPage implements AfterViewInit {
   recipeComplete(): boolean {
     return (
       this.recipeService.recipeBuildInProgess.name.trim() !== '' &&
-      this.recipeService.recipeBuildInProgess.description.trim() !== '' &&
       this.recipeService.recipeBuildInProgess.cone !== '' &&
       this.recipeService.recipeBuildInProgess.revisions[0].materials.length > 0 &&
-      this.recipeService.recipeBuildInProgess.revisions[0].materials.every(
+      this.recipeService.recipeBuildInProgess.revisions[0].materials.some(
         (material) => material.Name !== '' && material.Percentage > 0
       )
     );
@@ -320,7 +329,7 @@ export class RecipeBuilderPage implements AfterViewInit {
     let cancel = false;
     if (
       this.recipeService.recipeBuildInProgess.revisions[0].materials.length >=
-      5
+      15
     ) {
       await this.dialogueService
         .presentConfirmationDialog(
@@ -369,7 +378,6 @@ export class RecipeBuilderPage implements AfterViewInit {
   }
 
   setPercentage(event: any, index: number) {
-    console.log(event.target.value);
     if (
       event.target.value === '0' ||
       event.target.value === '' ||

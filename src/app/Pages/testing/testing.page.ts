@@ -35,7 +35,7 @@ import { parse } from 'uuid';
   templateUrl: './testing.page.html',
   styleUrls: ['./testing.page.scss'],
 })
-export class TestingPage implements OnInit {
+export class TestingPage {
 
   userHasRecipes: boolean = false;
 
@@ -102,16 +102,6 @@ export class TestingPage implements OnInit {
       this.initialTestBatches = this.testingService.testBatches;
       this.loaded = true;
     })();
-  }
-
-  ngOnInit() {
-    const event = fromEvent(document, 'backbutton');
-    this.backbuttonSubscription = event.subscribe(async () => {
-      const modal = await this.modal.getTop();
-      if (modal) {
-        modal.dismiss();
-      }
-    });
   }
 
   getTileSetupString(index: number): string {
@@ -283,6 +273,7 @@ export class TestingPage implements OnInit {
       [new TestTile(1, [new Recipe('', '', '', '', '', [])], '')]
     );
     this.editingModalOpen = true;
+    this.backbuttonSubscription
   }
 
   async deleteTestBatch(testBatch: TestBatch) {

@@ -19,7 +19,6 @@ export class MaterialsSelectComponent {
   @Input() material: Material = { Name: '', Oxides: [], OxidesWeight: 0, Description: '', Percentage: 0, Quantity: 0, Hazardous: false, Unit: 'g'};
   @Input() allMaterials: Material[] = this.materialsService.materials.slice(0, 50);
   @Output() ingredientChangedEmitter: EventEmitter<Material> = new EventEmitter<Material>();
-  @Output() selectableClose: EventEmitter<any> = new EventEmitter<any>();
   searching: boolean = false;
 
   constructor(private materialsService: MaterialsService) {
@@ -27,12 +26,6 @@ export class MaterialsSelectComponent {
       a.Name.localeCompare(b.Name)
     );
    }
-
-   onSelectableClose(event: any) {
-    this.searching = false;
-    this.allMaterials = this.materialsService.materials.slice(0, 50);
-    this.selectableClose.emit(event);
-  }
 
   onMaterialSelect(event: any) {
     this.materialName = event.Name;

@@ -1,4 +1,11 @@
-import { Component, NgZone, OnDestroy, OnInit, ViewChild, getPlatform } from '@angular/core';
+import {
+  Component,
+  NgZone,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  getPlatform,
+} from '@angular/core';
 import { AuthService } from './Services/auth.service';
 import { Subscription } from 'rxjs';
 import { User } from 'firebase/auth';
@@ -18,7 +25,6 @@ register();
   styleUrls: ['app.component.scss'],
 })
 export class AppComponent implements OnInit, OnDestroy {
-
   constructor(
     public auth: AuthService,
     private firestore: FirestoreService,
@@ -34,25 +40,25 @@ export class AppComponent implements OnInit, OnDestroy {
     this.auth.userMeta$.subscribe((userMeta) => {
       this.userMeta = userMeta;
     });
-      (async () => {
-        await this.materialsService.setMaterials();
-        this.materialsService.materials.forEach((material) => {
-          material.Oxides.forEach((oxide) => {
-            //remove "LOI" from materials oxides
-            // if (oxide.OxideName === 'LOI') {
-            //   material.Oxides.splice(material.Oxides.indexOf(oxide), 1);
-            // }
-            //sort oxides by analysis percentage
-            material.Oxides.sort((a, b) => {
-              return b.Analysis - a.Analysis;
-            });
+    (async () => {
+      await this.materialsService.setMaterials();
+      this.materialsService.materials.forEach((material) => {
+        material.Oxides.forEach((oxide) => {
+          //remove "LOI" from materials oxides
+          // if (oxide.OxideName === 'LOI') {
+          //   material.Oxides.splice(material.Oxides.indexOf(oxide), 1);
+          // }
+          //sort oxides by analysis percentage
+          material.Oxides.sort((a, b) => {
+            return b.Analysis - a.Analysis;
           });
         });
-      })();
-      this.initializeApp();
-    }
+      });
+    })();
+    this.initializeApp();
+  }
 
-    isLoggedIn: boolean = false;
+  isLoggedIn: boolean = false;
   user: User | null = null || this.auth.user;
   userMeta: UserMeta | null = this.auth.userMeta;
   profileImageUrl: string = '';
@@ -61,9 +67,17 @@ export class AppComponent implements OnInit, OnDestroy {
     { title: 'Home', url: '/home', icon: 'home' },
     { title: 'My Recipes', url: '/user-recipes', icon: 'book' },
     { title: 'Recipe Builder', url: '/recipe-builder', icon: 'construct' },
-    { title: 'My Firing Schedules', url: '/user-firing-schedules', icon: 'flame'},
-    { title: 'Firing Schedule Builder', url: '/firing-schedule-builder', icon: 'bar-chart' },
-    { title: 'My Inventory', url: "/inventory", icon: 'file-tray-stacked'},
+    {
+      title: 'My Firing Schedules',
+      url: '/user-firing-schedules',
+      icon: 'flame',
+    },
+    {
+      title: 'Firing Schedule Builder',
+      url: '/firing-schedule-builder',
+      icon: 'bar-chart',
+    },
+    { title: 'My Inventory', url: '/inventory', icon: 'file-tray-stacked' },
     { title: 'Testing', url: '/testing', icon: 'newspaper' },
     { title: 'Materials', url: '/materials-tabs', icon: 'flask' },
     { title: 'Explore', url: '/explore', icon: 'globe' },
@@ -74,16 +88,17 @@ export class AppComponent implements OnInit, OnDestroy {
   initializeApp() {
     App.addListener('appUrlOpen', (event: URLOpenListenerEvent) => {
       this.zone.run(() => {
-          // Example url: https://beerswift.app/tabs/tab2
-          // slug = /tabs/tab2
-          const slug = event.url.split(".app").pop();
-          if (slug) {
-              this.router.navigateByUrl(slug);
-          }
-          // If no match, do nothing - let regular routing
-          // logic take over
+        // const domain = 'resilient-stardust-d78e45.netlify.app';
+        // const path = event.url.split(domain).pop();
+        // if (path) {
+        //   this.router.navigateByUrl(path);
+        // }
+        const slug = event.url.split('.app').pop();
+        if (slug) {
+          this.router.navigateByUrl(slug);
+        }
       });
-  });
+    });
 
     this.platform.ready().then(() => {
       CapacitorApp.addListener('backButton', async ({ canGoBack }) => {
@@ -91,8 +106,10 @@ export class AppComponent implements OnInit, OnDestroy {
           CapacitorApp.exitApp();
         } else {
           // Get the URL of the previous route if possible
-          let previousUrl = (window.history.state && window.history.state.navigationId > 1)
-            ? window.history.state['url'] : null;
+          let previousUrl =
+            window.history.state && window.history.state.navigationId > 1
+              ? window.history.state['url']
+              : null;
 
           // Check if the next page in history is the login page
           if (previousUrl === '/login') {

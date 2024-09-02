@@ -74,3 +74,8 @@ ion-content.locked-scroll {
 .w-fill-available {
   width: -webkit-fill-available;
 }
+
+.checkbox-wrap {
+  white-space: normal;  /* Allow text to wrap */
+  line-height: normal;  /* Adjust line height if necessary */
+}

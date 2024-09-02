@@ -154,6 +154,17 @@ export class FirestoreService {
     return await this.getDocumentsByUid('recipes', uid);
   }
 
+  //get all public and tested recipes
+  async getPublicRecipes(): Promise<any> {
+    const q = query(
+      collection(this.firestore, 'recipes'),
+      where('uid', '!=', this.auth.userMeta?.uid),
+      // where('public', '==', true),
+      // where('tested', '==', true)
+    );
+    return await firstValueFrom(collectionData(q));
+  }
+
   async getUserInventory(uid: string): Promise<UserInventory> {
     let inventoryData: any = await this.getDocumentsByUid('inventory', uid);
 
@@ -353,17 +364,6 @@ export class FirestoreService {
     } catch (error) {
       console.error('Error deleting document:', error);
     }
-  }
-
-  //get all public and tested recipes
-  async getPublicRecipes(): Promise<any> {
-    const q = query(
-      collection(this.firestore, 'recipes'),
-      where('uid', '!=', this.auth.userMeta?.uid),
-      // where('public', '==', true),
-      // where('tested', '==', true)
-    );
-    return await firstValueFrom(collectionData(q));
   }
 
   async updateFcmToken(token: string) {

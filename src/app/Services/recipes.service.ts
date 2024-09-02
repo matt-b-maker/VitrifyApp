@@ -26,7 +26,7 @@ export class RecipesService {
     return {...this.userRecipes.find(recipe => recipe.id === id)!};
   }
 
-  getRecipeById(id: string): Recipe {
+  getPublicRecipeById(id: string): Recipe {
     return {...this.allRecipes.find(recipe => recipe.id === id)!};
   }
 
